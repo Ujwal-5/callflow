@@ -1,0 +1,25 @@
+# T070
+duration_seconds: 103
+outcome: wrong_person
+prospect_role: office staff; the Director sits in another city
+company_kind: mid-size private manufacturer
+company: Swara Polymers (fictional)
+caller: Divya, Meridian Growth Partners (fictional)
+
+CALLER: Hello.
+PROSPECT: Hello.
+CALLER: Hello. Ah, Mahesh ji se baat ho sakti hai kya?
+PROSPECT: Kis liye baat karni hai?
+CALLER: Ah, Swara Polymers ke baare mein baat karni thi.
+PROSPECT: Swara Polymers se hi baat kar rahi hoon. Kis liye baat karni hai?
+CALLER: Actually, humne last time jab call kiya tha, bola tha ki company ke baare mein ek growth report bana rahe hain. To usi ke baare mein Mahesh ji ko hamare founder se baat karni thi. Unko connect karwane ke liye ye call thi.
+PROSPECT: Hello.
+CALLER: Hello.
+PROSPECT: Kya matlab, aapko Mahesh ji se connect karwana hai? Kis liye? Kis type ki report banani thi?
+CALLER: Actually, hum Mahesh ji se business ke baare mein baat karna chahte the. Business level discussion, hamare founder Vikram ke saath. Usi ke baare mein ye call thi.
+PROSPECT: Ma'am, last time jis number se baat hui thi na, usi number pe baat kar lijiye. Mahesh ji yahan baithte nahi hain. Woh Chennai mein baithte hain. Us number pe WhatsApp kar dijiye, ya direct us number par call kar lijiye.
+CALLER: Yahi number pe last time baat hui thi.
+PROSPECT: Woh ho hi nahi sakta ma'am. Is number se Mahesh ji se baat ho hi nahi sakti hai. Yahan baithte hi nahi hain.
+CALLER: Achha. Theek hai, unka number mil sakta hai kya?
+PROSPECT: Nahi ma'am, number nahi mil sakta. Mere paas available nahi hota.
+CALLER: Achha, theek hai. Thank you.

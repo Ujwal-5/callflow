@@ -1,0 +1,21 @@
+# T040
+duration_seconds: 47
+outcome: moved_company
+prospect_role: Director, Learning Platforms (former)
+company_kind: India arm of a multinational
+company: Lifeline Medical India (fictional)
+caller: Divya, Meridian Growth Partners (fictional)
+
+CALLER: Hello?
+PROSPECT: Hello.
+CALLER: Am I speaking with Nitin ji?
+PROSPECT: Yes, speaking.
+CALLER: Hi Nitin ji. I'm Divya calling from Meridian Growth Partners, Hyderabad, and this call is regarding Lifeline Medical. I hope I'm pronouncing it right.
+PROSPECT: Yes, that's correct.
+CALLER: Hello?
+PROSPECT: Yeah, Lifeline Medical, and what is it regarding? Can you make it...
+CALLER: Yeah. So this call is regarding that. We wanted to set up a meeting with our founder, Vikram, to explore growth opportunities and business with you.
+PROSPECT: Is it related to a job opportunity, or are you trying to expand your business? Is it a...
+CALLER: Uh, we are trying to work with the company, sir.
+PROSPECT: No, no. I am not with Lifeline anymore, okay? Sorry.
+CALLER: Okay, thank you.

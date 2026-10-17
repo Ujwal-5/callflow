@@ -1,0 +1,23 @@
+# T030
+duration_seconds: 61
+outcome: wrong_person
+prospect_role: Director
+company_kind: India arm of a multinational
+company: Emrys Clinical Research India (fictional)
+caller: Sameer, Meridian Growth Partners (fictional)
+
+CALLER: Yes, hello Arindam ji, I am Sameer calling from Meridian Growth Partners. If you have some time, would you be available to discuss a short growth report?
+PROSPECT: Hello.
+CALLER: Hello Arindam ji.
+PROSPECT: Boliye.
+CALLER: Hello, I am Sameer calling from Meridian Growth Partners, as I said...
+PROSPECT: Kahan se?
+CALLER: Meridian Growth Partners, Hyderabad.
+PROSPECT: Meridian?
+CALLER: Meridian. M-E-R-I-D-I-A-N. Meridian Growth Partners.
+PROSPECT: Okay.
+CALLER: The company is based out of Hyderabad. So this call is regarding Emrys, and we would like to create a short growth report for your company highlighting the high margin growth...
+PROSPECT: See, I am not into this business development and all this.
+CALLER: Okay, so who might be the right person, if you can help me?
+PROSPECT: Find out Mr. Sen. Mr. Sen. He might help you.
+CALLER: Okay, thank you.

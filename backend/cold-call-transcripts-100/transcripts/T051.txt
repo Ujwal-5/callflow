@@ -1,0 +1,39 @@
+# T051
+duration_seconds: 185
+outcome: agreed_to_receive_report
+prospect_role: Co-Founder and Managing Partner
+company_kind: mid-size private company
+company: Studio Arka Design (fictional)
+caller: Neha, Meridian Growth Partners (fictional)
+
+CALLER: Hello.
+PROSPECT: Hello.
+CALLER: Uh, hello Dhruv ji, this is Neha from Meridian Growth Partners. Is this the right time to speak with you?
+PROSPECT: Hi, calling from?
+CALLER: Meridian Growth Partners.
+PROSPECT: Sorry, I didn't get the name again.
+CALLER: Yeah, I am calling from Meridian Growth Partners.
+PROSPECT: Meridian, okay.
+CALLER: Yeah, so this call is regarding your company, Studio Arka. We work with companies that are heavy on research and innovation. We are making a growth research series, where we send a short growth report to companies that are on our list, and we found your company as well. So is it okay if I explain what is in the report on the call, or would you like to receive the draft directly?
+PROSPECT: Can you explain to me what it is, and then I can take it from there.
+CALLER: Yeah, yeah. So the report has two parts. The first part covers how your company makes its money, why customers choose you, and your innovation. The second part is a recipe for growth: we map your existing way of working from outside, and one more way of working which we think is an opportunity for you, which you can try and test and see if it works for you, with a few small experiments you can run to grow the company. So that is what the report is about.
+PROSPECT: Okay. So basically you do the research and the analysis, and you generate a report. Is that what you are saying?
+CALLER: Yeah. We work with companies to increase their profit by finding better customers for them. We are doing this research because we keep studying these companies anyway, and we thought this would be a good way to connect with them, send them the report, and let them see what we do.
+PROSPECT: Sure, and is this a paid service?
+CALLER: No, this is not a paid service.
+PROSPECT: Okay, and how do you benefit out of this?
+CALLER: Most of our clients came through this report. They went through it, and there is one more part in the report, the places where we think the growth is getting stuck. They wanted to go deeper on that and discuss how they could improve it. That is when they connected back with us, and they are working with us. So this is basically brand promotion for us. That's how we benefit.
+PROSPECT: Oh, okay. So basically you generate a primary report, and on that basis, if someone wants deeper analysis and help in solving problems, that's when you come in on the consulting bit.
+CALLER: Yes, yes.
+PROSPECT: I understand. Okay. And what would you require from our side?
+CALLER: We just want you to correct it if there are any mistakes, because we do the research from outside and sometimes there is some misinformation about a company. If you correct the report and give us consent to post it, we publish it on our website, so that if people search for Studio Arka they can read the report and study your company as well.
+PROSPECT: Hmm, okay. And would you be mailing this to me, or how does it work?
+CALLER: Yeah, I was going to ask you that. Would you prefer mail or WhatsApp?
+PROSPECT: I'll prefer mail, please.
+CALLER: Okay. So your mail is the one on your profile?
+PROSPECT: That's my personal ID. Would you be able to send it to my official ID, please?
+CALLER: Okay. Can you share that once?
+PROSPECT: Yeah. It's my initials at the studio's domain.
+CALLER: Okay, got it. I'll send it there.
+PROSPECT: Got it.
+CALLER: Okay, thank you for your time.

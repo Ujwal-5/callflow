@@ -1,0 +1,19 @@
+# T022
+duration_seconds: 54
+outcome: wrong_person
+prospect_role: listed as Director
+company_kind: India arm of a multinational
+company: Prestige Consumer Goods India (fictional)
+caller: Arjun, Meridian Growth Partners (fictional)
+
+CALLER: Yeah. Am I speaking to Payal Bhatia?
+PROSPECT: Yeah.
+PROSPECT: Uh, aap kis silsile me baat karna chahte hain?
+CALLER: Uh, I wanted to speak to someone from Prestige Consumer Goods. So, yeah, is this the right work phone? Uh, so I'll quickly tell you what we do as a company. I'm Arjun, I'm calling from Meridian Growth Partners. We work with growing businesses and help them solve the operational challenges that are in the way of growth. But we would like to understand what your idea of growth is and how you measure it, and then provide you with some value. So, is it fine if I ask a...
+PROSPECT: This is my number. And this is not my WhatsApp number.
+CALLER: Okay.
+PROSPECT: Okay. Okay. Context clear ho jayega.
+CALLER: Okay. Okay. But, uh, are you from Prestige Consumer Goods?
+PROSPECT: No, no, I'm not.
+CALLER: Okay, fine.
+PROSPECT: Okay.

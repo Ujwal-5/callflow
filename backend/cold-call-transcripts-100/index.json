@@ -1,0 +1,1002 @@
+[
+ {
+  "id": "T001",
+  "duration_seconds": "75",
+  "outcome": "next_step_agreed",
+  "prospect_role": "Technical Services Director",
+  "company_kind": "mid-size private company",
+  "company": "Kalpana Chem Supplies (fictional)",
+  "caller": "Priya, Meridian Growth Partners (fictional)",
+  "turns": 18
+ },
+ {
+  "id": "T002",
+  "duration_seconds": "54",
+  "outcome": "not_logged",
+  "prospect_role": "CEO and CTO",
+  "company_kind": "startup",
+  "company": "Orbit Automation (fictional)",
+  "caller": "Divya, Meridian Growth Partners (fictional)",
+  "turns": 15
+ },
+ {
+  "id": "T003",
+  "duration_seconds": "34",
+  "outcome": "do_not_call",
+  "prospect_role": "Associate Director",
+  "company_kind": "India office of a multinational",
+  "company": "Novara Foods India (fictional)",
+  "caller": "Priya, Meridian Growth Partners (fictional)",
+  "turns": 10
+ },
+ {
+  "id": "T004",
+  "duration_seconds": "71",
+  "outcome": "wrong_person",
+  "prospect_role": "listed as Director, Strategic Marketing",
+  "company_kind": "mid-size private company",
+  "company": "Aerolink Signal Systems (fictional)",
+  "caller": "Meera, Meridian Growth Partners (fictional)",
+  "turns": 26
+ },
+ {
+  "id": "T005",
+  "duration_seconds": "36",
+  "outcome": "not_logged",
+  "prospect_role": "not known",
+  "company_kind": "not known",
+  "company": "Suvarna Microsystems (fictional)",
+  "caller": "Rohit, Meridian Growth Partners (fictional)",
+  "turns": 13
+ },
+ {
+  "id": "T006",
+  "duration_seconds": "42",
+  "outcome": "next_step_agreed",
+  "prospect_role": "Chief Executive Officer",
+  "company_kind": "mid-size private manufacturer",
+  "company": "Kaveri Electric Motors (fictional)",
+  "caller": "Anjali, Meridian Growth Partners (fictional)",
+  "turns": 13
+ },
+ {
+  "id": "T007",
+  "duration_seconds": "59",
+  "outcome": "not_interested",
+  "prospect_role": "Chief Executive Officer",
+  "company_kind": "listed Indian company",
+  "company": "Udhav Textiles (fictional)",
+  "caller": "Sana, Meridian Growth Partners (fictional)",
+  "turns": 11
+ },
+ {
+  "id": "T008",
+  "duration_seconds": "77",
+  "outcome": "next_step_agreed",
+  "prospect_role": "Founder and CEO",
+  "company_kind": "startup",
+  "company": "OneWave Digital (fictional)",
+  "caller": "Divya, Meridian Growth Partners (fictional)",
+  "turns": 17
+ },
+ {
+  "id": "T009",
+  "duration_seconds": "38",
+  "outcome": "not_interested",
+  "prospect_role": "Vice President, Human Resources",
+  "company_kind": "India arm of a multinational",
+  "company": "Idris Fluidics India (fictional)",
+  "caller": "Rachel, Meridian Growth Partners (fictional)",
+  "turns": 13
+ },
+ {
+  "id": "T010",
+  "duration_seconds": "81",
+  "outcome": "agreed_to_receive_report",
+  "prospect_role": "Director",
+  "company_kind": "mid-size private manufacturer",
+  "company": "ChromaChem India (fictional)",
+  "caller": "Arjun, Meridian Growth Partners (fictional)",
+  "turns": 18
+ },
+ {
+  "id": "T011",
+  "duration_seconds": "31",
+  "outcome": "follow_up",
+  "prospect_role": "Chief Executive Officer",
+  "company_kind": "mid-size private company",
+  "company": "Kavach Geo Systems (fictional)",
+  "caller": "Anjali, Meridian Growth Partners (fictional)",
+  "turns": 12
+ },
+ {
+  "id": "T012",
+  "duration_seconds": "76",
+  "outcome": "not_interested",
+  "prospect_role": "Founder",
+  "company_kind": "mid-size private company",
+  "company": "Alloy Research Labs (fictional)",
+  "caller": "Divya, Meridian Growth Partners (fictional)",
+  "turns": 18
+ },
+ {
+  "id": "T013",
+  "duration_seconds": "75",
+  "outcome": "do_not_call",
+  "prospect_role": "former Independent Director",
+  "company_kind": "listed Indian company",
+  "company": "Arunodaya Specialty Chemicals (fictional)",
+  "caller": "Divya, Meridian Growth Partners (fictional)",
+  "turns": 10
+ },
+ {
+  "id": "T014",
+  "duration_seconds": "34",
+  "outcome": "follow_up",
+  "prospect_role": "Director, Program Management",
+  "company_kind": "India arm of a multinational",
+  "company": "Loram Automotive India (fictional)",
+  "caller": "Divya, Meridian Growth Partners (fictional)",
+  "turns": 9
+ },
+ {
+  "id": "T015",
+  "duration_seconds": "43",
+  "outcome": "do_not_call",
+  "prospect_role": "not the person on the list",
+  "company_kind": "India arm of a multinational",
+  "company": "Camber Engines India (fictional)",
+  "caller": "Arjun, Meridian Growth Partners (fictional)",
+  "turns": 14
+ },
+ {
+  "id": "T016",
+  "duration_seconds": "50",
+  "outcome": "call_again",
+  "prospect_role": "Vice President, Business Excellence",
+  "company_kind": "listed Indian company",
+  "company": "Marudhar Motors (fictional)",
+  "caller": "Rachel, Meridian Growth Partners (fictional)",
+  "turns": 17
+ },
+ {
+  "id": "T017",
+  "duration_seconds": "70",
+  "outcome": "not_interested",
+  "prospect_role": "Director",
+  "company_kind": "India arm of a multinational",
+  "company": "Nexora Semiconductors India (fictional)",
+  "caller": "Priya, Meridian Growth Partners (fictional)",
+  "turns": 11
+ },
+ {
+  "id": "T018",
+  "duration_seconds": "63",
+  "outcome": "not_interested",
+  "prospect_role": "Associate Director, Statistical Programming",
+  "company_kind": "India arm of a multinational",
+  "company": "Astrella Pharma India (fictional)",
+  "caller": "Arjun, Meridian Growth Partners (fictional)",
+  "turns": 19
+ },
+ {
+  "id": "T019",
+  "duration_seconds": "65",
+  "outcome": "not_logged",
+  "prospect_role": "not known",
+  "company_kind": "mid-size private company",
+  "company": "Circuit Drive Automation (fictional)",
+  "caller": "Kavya, Meridian Growth Partners (fictional)",
+  "turns": 11
+ },
+ {
+  "id": "T020",
+  "duration_seconds": "33",
+  "outcome": "do_not_call",
+  "prospect_role": "Co-Founder",
+  "company_kind": "startup",
+  "company": "Tilak Components (fictional)",
+  "caller": "Vidya, Meridian Growth Partners (fictional)",
+  "turns": 11
+ },
+ {
+  "id": "T021",
+  "duration_seconds": "54",
+  "outcome": "do_not_call",
+  "prospect_role": "CEO and Founder",
+  "company_kind": "mid-size private company",
+  "company": "Pure Harvest Organics (fictional)",
+  "caller": "Neha, Meridian Growth Partners (fictional)",
+  "turns": 15
+ },
+ {
+  "id": "T022",
+  "duration_seconds": "54",
+  "outcome": "wrong_person",
+  "prospect_role": "listed as Director",
+  "company_kind": "India arm of a multinational",
+  "company": "Prestige Consumer Goods India (fictional)",
+  "caller": "Arjun, Meridian Growth Partners (fictional)",
+  "turns": 11
+ },
+ {
+  "id": "T023",
+  "duration_seconds": "33",
+  "outcome": "not_logged",
+  "prospect_role": "not known",
+  "company_kind": "mid-size private company",
+  "company": "not named on the call",
+  "caller": "Sana, Meridian Growth Partners (fictional)",
+  "turns": 12
+ },
+ {
+  "id": "T024",
+  "duration_seconds": "78",
+  "outcome": "do_not_call",
+  "prospect_role": "Chief Executive Officer",
+  "company_kind": "listed Indian company",
+  "company": "Prakash Steel Structures (fictional)",
+  "caller": "Sana, Meridian Growth Partners (fictional)",
+  "turns": 14
+ },
+ {
+  "id": "T025",
+  "duration_seconds": "47",
+  "outcome": "wrong_person",
+  "prospect_role": "Sales Director, India",
+  "company_kind": "India arm of a multinational",
+  "company": "Quanta Wireless Modules (fictional)",
+  "caller": "Divya, Meridian Growth Partners (fictional)",
+  "turns": 13
+ },
+ {
+  "id": "T026",
+  "duration_seconds": "51",
+  "outcome": "next_step_agreed",
+  "prospect_role": "Vice President and Head, People and Organisation",
+  "company_kind": "India arm of a multinational",
+  "company": "Sigma Technologies India (fictional)",
+  "caller": "Neha, Meridian Growth Partners (fictional)",
+  "turns": 14
+ },
+ {
+  "id": "T027",
+  "duration_seconds": "42",
+  "outcome": "follow_up",
+  "prospect_role": "Director",
+  "company_kind": "mid-size private company",
+  "company": "Bharat Exim (fictional)",
+  "caller": "Rohit, Meridian Growth Partners (fictional)",
+  "turns": 9
+ },
+ {
+  "id": "T028",
+  "duration_seconds": "35",
+  "outcome": "wrong_person",
+  "prospect_role": "listed as Director",
+  "company_kind": "mid-size private company",
+  "company": "Vinayak Distributors (fictional)",
+  "caller": "Rohit, Meridian Growth Partners (fictional)",
+  "turns": 12
+ },
+ {
+  "id": "T029",
+  "duration_seconds": "30",
+  "outcome": "wrong_person",
+  "prospect_role": "Technical Director",
+  "company_kind": "India arm of a multinational",
+  "company": "Broadline Semiconductors India (fictional)",
+  "caller": "Kavya, Meridian Growth Partners (fictional)",
+  "turns": 8
+ },
+ {
+  "id": "T030",
+  "duration_seconds": "61",
+  "outcome": "wrong_person",
+  "prospect_role": "Director",
+  "company_kind": "India arm of a multinational",
+  "company": "Emrys Clinical Research India (fictional)",
+  "caller": "Sameer, Meridian Growth Partners (fictional)",
+  "turns": 15
+ },
+ {
+  "id": "T031",
+  "duration_seconds": "35",
+  "outcome": "call_again",
+  "prospect_role": "not the person on the list",
+  "company_kind": "public sector utility",
+  "company": "Northern Power Distribution (fictional)",
+  "caller": "Divya, Meridian Growth Partners (fictional)",
+  "turns": 13
+ },
+ {
+  "id": "T032",
+  "duration_seconds": "40",
+  "outcome": "call_again",
+  "prospect_role": "Chief Executive Officer",
+  "company_kind": "listed Indian company",
+  "company": "Pinnacle Apparel (fictional)",
+  "caller": "Neha, Meridian Growth Partners (fictional)",
+  "turns": 14
+ },
+ {
+  "id": "T033",
+  "duration_seconds": "57",
+  "outcome": "interested",
+  "prospect_role": "Chief Operating Officer",
+  "company_kind": "mid-size private manufacturer",
+  "company": "Metro Rubber Technologies (fictional)",
+  "caller": "Anjali, Meridian Growth Partners (fictional)",
+  "turns": 8
+ },
+ {
+  "id": "T034",
+  "duration_seconds": "71",
+  "outcome": "moved_company",
+  "prospect_role": "Director",
+  "company_kind": "mid-size private manufacturer",
+  "company": "Osprey Rubber Products (fictional)",
+  "caller": "Arjun, Meridian Growth Partners (fictional)",
+  "turns": 19
+ },
+ {
+  "id": "T035",
+  "duration_seconds": "65",
+  "outcome": "interested",
+  "prospect_role": "Chief Executive Officer",
+  "company_kind": "startup",
+  "company": "Elektra Motors (fictional)",
+  "caller": "Neha, Meridian Growth Partners (fictional)",
+  "turns": 20
+ },
+ {
+  "id": "T036",
+  "duration_seconds": "67",
+  "outcome": "not_logged",
+  "prospect_role": "Chief Executive Officer",
+  "company_kind": "mid-size private manufacturer",
+  "company": "JK Electronica (fictional)",
+  "caller": "Manish, Meridian Growth Partners (fictional)",
+  "turns": 13
+ },
+ {
+  "id": "T037",
+  "duration_seconds": "59",
+  "outcome": "not_interested",
+  "prospect_role": "Chairman and Co-Founder",
+  "company_kind": "mid-size private manufacturer",
+  "company": "Ashwin Automation (fictional)",
+  "caller": "Kiran, Meridian Growth Partners (fictional)",
+  "turns": 17
+ },
+ {
+  "id": "T038",
+  "duration_seconds": "72",
+  "outcome": "moved_company",
+  "prospect_role": "Director, Projects (former)",
+  "company_kind": "India arm of a multinational",
+  "company": "Fairline Electronics (fictional)",
+  "caller": "Sameer, Meridian Growth Partners (fictional)",
+  "turns": 17
+ },
+ {
+  "id": "T039",
+  "duration_seconds": "45",
+  "outcome": "moved_company",
+  "prospect_role": "Director of Software Engineering (former)",
+  "company_kind": "India arm of a multinational",
+  "company": "Omnicare Systems India (fictional)",
+  "caller": "Priya, Meridian Growth Partners (fictional)",
+  "turns": 11
+ },
+ {
+  "id": "T040",
+  "duration_seconds": "47",
+  "outcome": "moved_company",
+  "prospect_role": "Director, Learning Platforms (former)",
+  "company_kind": "India arm of a multinational",
+  "company": "Lifeline Medical India (fictional)",
+  "caller": "Divya, Meridian Growth Partners (fictional)",
+  "turns": 13
+ },
+ {
+  "id": "T041",
+  "duration_seconds": "108",
+  "outcome": "do_not_call",
+  "prospect_role": "Associate Director",
+  "company_kind": "India arm of a multinational",
+  "company": "Panorama Electronics India (fictional)",
+  "caller": "Sameer, Meridian Growth Partners (fictional)",
+  "turns": 18
+ },
+ {
+  "id": "T042",
+  "duration_seconds": "90",
+  "outcome": "not_logged",
+  "prospect_role": "Owner",
+  "company_kind": "small private company",
+  "company": "Spectrum Tools (fictional)",
+  "caller": "Pallavi, Meridian Growth Partners (fictional)",
+  "turns": 24
+ },
+ {
+  "id": "T043",
+  "duration_seconds": "114",
+  "outcome": "not_interested",
+  "prospect_role": "Sales Director",
+  "company_kind": "mid-size private company",
+  "company": "Sunrise Dye-Chem (fictional)",
+  "caller": "Neha, Meridian Growth Partners (fictional)",
+  "turns": 18
+ },
+ {
+  "id": "T044",
+  "duration_seconds": "91",
+  "outcome": "not_interested",
+  "prospect_role": "Director, Business Development, Defence and Government",
+  "company_kind": "India arm of a multinational",
+  "company": "Trident Navigation India (fictional)",
+  "caller": "Arjun, Meridian Growth Partners (fictional)",
+  "turns": 10
+ },
+ {
+  "id": "T045",
+  "duration_seconds": "131",
+  "outcome": "not_logged",
+  "prospect_role": "Owner (former dealership)",
+  "company_kind": "small private company, since acquired",
+  "company": "Rathi Motors (fictional)",
+  "caller": "Manish, Meridian Growth Partners (fictional)",
+  "turns": 17
+ },
+ {
+  "id": "T046",
+  "duration_seconds": "162",
+  "outcome": "not_logged",
+  "prospect_role": "Director",
+  "company_kind": "mid-size private company",
+  "company": "Kalyx Enterprises (fictional)",
+  "caller": "Arjun, Meridian Growth Partners (fictional)",
+  "turns": 26
+ },
+ {
+  "id": "T047",
+  "duration_seconds": "90",
+  "outcome": "interested",
+  "prospect_role": "Chief Operations Officer",
+  "company_kind": "listed Indian company",
+  "company": "Sangeet Textiles (fictional)",
+  "caller": "Anjali, Meridian Growth Partners (fictional)",
+  "turns": 21
+ },
+ {
+  "id": "T048",
+  "duration_seconds": "132",
+  "outcome": "follow_up",
+  "prospect_role": "Senior Director, Marketing, South Asia",
+  "company_kind": "India arm of a multinational",
+  "company": "Averline Labels (fictional)",
+  "caller": "Sameer, Meridian Growth Partners (fictional)",
+  "turns": 18
+ },
+ {
+  "id": "T049",
+  "duration_seconds": "90",
+  "outcome": "do_not_call",
+  "prospect_role": "Senior Vice President, Sustainability",
+  "company_kind": "listed Indian company",
+  "company": "Marudhar Motors (fictional)",
+  "caller": "Neha, Meridian Growth Partners (fictional)",
+  "turns": 16
+ },
+ {
+  "id": "T050",
+  "duration_seconds": "118",
+  "outcome": "not_logged",
+  "prospect_role": "Director",
+  "company_kind": "mid-size private manufacturer",
+  "company": "Annapurna Kitchen Equipment (fictional)",
+  "caller": "Sana, Meridian Growth Partners (fictional)",
+  "turns": 18
+ },
+ {
+  "id": "T051",
+  "duration_seconds": "185",
+  "outcome": "agreed_to_receive_report",
+  "prospect_role": "Co-Founder and Managing Partner",
+  "company_kind": "mid-size private company",
+  "company": "Studio Arka Design (fictional)",
+  "caller": "Neha, Meridian Growth Partners (fictional)",
+  "turns": 31
+ },
+ {
+  "id": "T052",
+  "duration_seconds": "114",
+  "outcome": "not_logged",
+  "prospect_role": "Chief Executive Officer and Co-Founder",
+  "company_kind": "startup",
+  "company": "Greenmile Mobility (fictional)",
+  "caller": "Neha, Meridian Growth Partners (fictional)",
+  "turns": 23
+ },
+ {
+  "id": "T053",
+  "duration_seconds": "94",
+  "outcome": "not_interested",
+  "prospect_role": "Director",
+  "company_kind": "India arm of a multinational",
+  "company": "Kessler Endoscopy India (fictional)",
+  "caller": "Sameer, Meridian Growth Partners (fictional)",
+  "turns": 15
+ },
+ {
+  "id": "T054",
+  "duration_seconds": "114",
+  "outcome": "agreed_to_receive_report",
+  "prospect_role": "Director",
+  "company_kind": "mid-size private company",
+  "company": "Dorabji Dairy Foods (fictional)",
+  "caller": "Sameer, Meridian Growth Partners (fictional)",
+  "turns": 14
+ },
+ {
+  "id": "T055",
+  "duration_seconds": "93",
+  "outcome": "follow_up",
+  "prospect_role": "Director",
+  "company_kind": "mid-size private manufacturer",
+  "company": "Conquer Engineering (fictional)",
+  "caller": "Arjun, Meridian Growth Partners (fictional)",
+  "turns": 17
+ },
+ {
+  "id": "T056",
+  "duration_seconds": "90",
+  "outcome": "not_logged",
+  "prospect_role": "Co-founder",
+  "company_kind": "startup",
+  "company": "Gyan AI (fictional)",
+  "caller": "Divya, Meridian Growth Partners (fictional)",
+  "turns": 18
+ },
+ {
+  "id": "T057",
+  "duration_seconds": "224",
+  "outcome": "follow_up",
+  "prospect_role": "Founder",
+  "company_kind": "mid-size private company",
+  "company": "KrishiWheels (fictional)",
+  "caller": "Sana, Meridian Growth Partners (fictional)",
+  "turns": 20
+ },
+ {
+  "id": "T058",
+  "duration_seconds": "162",
+  "outcome": "agreed_to_receive_report",
+  "prospect_role": "Senior Director, Finance",
+  "company_kind": "India arm of a multinational",
+  "company": "Tektra Instruments India (fictional)",
+  "caller": "Rohit, Meridian Growth Partners (fictional)",
+  "turns": 24
+ },
+ {
+  "id": "T059",
+  "duration_seconds": "97",
+  "outcome": "moved_company",
+  "prospect_role": "Regional Director, Asia Pacific (former)",
+  "company_kind": "India arm of a multinational",
+  "company": "Celera Flow Technology (fictional)",
+  "caller": "Arjun, Meridian Growth Partners (fictional)",
+  "turns": 16
+ },
+ {
+  "id": "T060",
+  "duration_seconds": "167",
+  "outcome": "next_step_agreed",
+  "prospect_role": "Founder and CEO",
+  "company_kind": "startup",
+  "company": "Nexus Systems (fictional)",
+  "caller": "Divya, Meridian Growth Partners (fictional)",
+  "turns": 35
+ },
+ {
+  "id": "T061",
+  "duration_seconds": "115",
+  "outcome": "agreed_to_receive_report",
+  "prospect_role": "Retail Director",
+  "company_kind": "mid-size private company",
+  "company": "Octet Apparel (fictional)",
+  "caller": "Arjun, Meridian Growth Partners (fictional)",
+  "turns": 22
+ },
+ {
+  "id": "T062",
+  "duration_seconds": "154",
+  "outcome": "agreed_to_receive_report",
+  "prospect_role": "CEO",
+  "company_kind": "mid-size private company",
+  "company": "Pankaj Overseas (fictional)",
+  "caller": "Rachel, Meridian Growth Partners (fictional)",
+  "turns": 31
+ },
+ {
+  "id": "T063",
+  "duration_seconds": "135",
+  "outcome": "follow_up",
+  "prospect_role": "Managing Director",
+  "company_kind": "mid-size private company",
+  "company": "Mode Apparel Consulting (fictional)",
+  "caller": "Divya, Meridian Growth Partners (fictional)",
+  "turns": 28
+ },
+ {
+  "id": "T064",
+  "duration_seconds": "110",
+  "outcome": "follow_up",
+  "prospect_role": "Chief Executive Officer",
+  "company_kind": "mid-size private manufacturer",
+  "company": "Nav Jyoti Chemicals (fictional)",
+  "caller": "Neha, Meridian Growth Partners (fictional)",
+  "turns": 13
+ },
+ {
+  "id": "T065",
+  "duration_seconds": "90",
+  "outcome": "agreed_to_receive_report",
+  "prospect_role": "Associate Director, Operations",
+  "company_kind": "large private company",
+  "company": "Fresh Cuts Foods (fictional)",
+  "caller": "Meera, Meridian Growth Partners (fictional)",
+  "turns": 17
+ },
+ {
+  "id": "T066",
+  "duration_seconds": "91",
+  "outcome": "not_interested",
+  "prospect_role": "listed as Chief Executive Officer (left eight years ago)",
+  "company_kind": "mid-size private manufacturer",
+  "company": "Rajshree Plastwood (fictional)",
+  "caller": "Manish, Meridian Growth Partners (fictional)",
+  "turns": 16
+ },
+ {
+  "id": "T067",
+  "duration_seconds": "90",
+  "outcome": "agreed_to_receive_report",
+  "prospect_role": "Director, South India",
+  "company_kind": "large private company",
+  "company": "Pavitra Waters (fictional)",
+  "caller": "Priya, Meridian Growth Partners (fictional)",
+  "turns": 15
+ },
+ {
+  "id": "T068",
+  "duration_seconds": "100",
+  "outcome": "follow_up",
+  "prospect_role": "not the person on the list; a service desk at a different company",
+  "company_kind": "not known",
+  "company": "listed as Ingram Industrial India (fictional)",
+  "caller": "Meera, Meridian Growth Partners (fictional)",
+  "turns": 21
+ },
+ {
+  "id": "T069",
+  "duration_seconds": "94",
+  "outcome": "follow_up",
+  "prospect_role": "Associate Director, Biostatistics",
+  "company_kind": "India arm of a multinational",
+  "company": "Ace Digital Services (fictional)",
+  "caller": "Priya, Meridian Growth Partners (fictional)",
+  "turns": 17
+ },
+ {
+  "id": "T070",
+  "duration_seconds": "103",
+  "outcome": "wrong_person",
+  "prospect_role": "office staff; the Director sits in another city",
+  "company_kind": "mid-size private manufacturer",
+  "company": "Swara Polymers (fictional)",
+  "caller": "Divya, Meridian Growth Partners (fictional)",
+  "turns": 17
+ },
+ {
+  "id": "T071",
+  "duration_seconds": "107",
+  "outcome": "not_interested",
+  "prospect_role": "Associate Director, Nutrition Business",
+  "company_kind": "listed Indian company",
+  "company": "Jubilee Ingredients (fictional)",
+  "caller": "Priya, Meridian Growth Partners (fictional)",
+  "turns": 12
+ },
+ {
+  "id": "T072",
+  "duration_seconds": "107",
+  "outcome": "next_step_agreed",
+  "prospect_role": "Co-Founder and Director",
+  "company_kind": "mid-size private company",
+  "company": "TechnoFit Sportswear (fictional)",
+  "caller": "Anjali, Meridian Growth Partners (fictional)",
+  "turns": 19
+ },
+ {
+  "id": "T073",
+  "duration_seconds": "98",
+  "outcome": "agreed_to_receive_report",
+  "prospect_role": "Founder and CEO",
+  "company_kind": "mid-size private company",
+  "company": "MediaPlus Group (fictional)",
+  "caller": "Divya, Meridian Growth Partners (fictional)",
+  "turns": 19
+ },
+ {
+  "id": "T074",
+  "duration_seconds": "113",
+  "outcome": "next_step_agreed",
+  "prospect_role": "Founder Director",
+  "company_kind": "mid-size private company",
+  "company": "Accordia Systems (fictional)",
+  "caller": "Rachel, Meridian Growth Partners (fictional)",
+  "turns": 23
+ },
+ {
+  "id": "T075",
+  "duration_seconds": "92",
+  "outcome": "do_not_call",
+  "prospect_role": "Director of Hardware Engineering",
+  "company_kind": "India arm of a multinational",
+  "company": "Intellect Semiconductors India (fictional)",
+  "caller": "Meera, Meridian Growth Partners (fictional)",
+  "turns": 18
+ },
+ {
+  "id": "T076",
+  "duration_seconds": "147",
+  "outcome": "not_interested",
+  "prospect_role": "Vice President, APAC and International Accounts",
+  "company_kind": "India arm of a multinational",
+  "company": "Cura Surgical International (fictional)",
+  "caller": "Divya, Meridian Growth Partners (fictional)",
+  "turns": 21
+ },
+ {
+  "id": "T077",
+  "duration_seconds": "104",
+  "outcome": "call_again",
+  "prospect_role": "Assistant Vice President",
+  "company_kind": "listed Indian company",
+  "company": "RK Cables (fictional)",
+  "caller": "Neha, Meridian Growth Partners (fictional)",
+  "turns": 18
+ },
+ {
+  "id": "T078",
+  "duration_seconds": "145",
+  "outcome": "interested",
+  "prospect_role": "Marketing Director",
+  "company_kind": "mid-size private company",
+  "company": "Genera Healthcare (fictional)",
+  "caller": "Arjun, Meridian Growth Partners (fictional)",
+  "turns": 17
+ },
+ {
+  "id": "T079",
+  "duration_seconds": "109",
+  "outcome": "wrong_person",
+  "prospect_role": "Associate Director",
+  "company_kind": "India arm of a multinational",
+  "company": "Evalora Research (fictional)",
+  "caller": "Sameer, Meridian Growth Partners (fictional)",
+  "turns": 19
+ },
+ {
+  "id": "T080",
+  "duration_seconds": "157",
+  "outcome": "interested",
+  "prospect_role": "Chief Executive Officer",
+  "company_kind": "mid-size private manufacturer",
+  "company": "Namaha Industries (fictional)",
+  "caller": "Manish, Meridian Growth Partners (fictional)",
+  "turns": 25
+ },
+ {
+  "id": "T081",
+  "duration_seconds": "444",
+  "outcome": "interested",
+  "prospect_role": "Chief Executive Officer",
+  "company_kind": "mid-size private manufacturer",
+  "company": "Cyra Pharma (fictional)",
+  "caller": "Neha, Meridian Growth Partners (fictional)",
+  "turns": 35
+ },
+ {
+  "id": "T082",
+  "duration_seconds": "425",
+  "outcome": "not_logged",
+  "prospect_role": "Owner",
+  "company_kind": "mid-size private manufacturer",
+  "company": "Kiran Lighting (fictional)",
+  "caller": "Kavya, Meridian Growth Partners (fictional)",
+  "turns": 46
+ },
+ {
+  "id": "T083",
+  "duration_seconds": "290",
+  "outcome": "agreed_to_receive_report",
+  "prospect_role": "Director of Software",
+  "company_kind": "large private company",
+  "company": "Vyom Technologies (fictional)",
+  "caller": "Meera, Meridian Growth Partners (fictional)",
+  "turns": 28
+ },
+ {
+  "id": "T084",
+  "duration_seconds": "296",
+  "outcome": "do_not_call",
+  "prospect_role": "Managing Director",
+  "company_kind": "mid-size private manufacturer",
+  "company": "Vijay Writing Instruments (fictional)",
+  "caller": "Arjun, Meridian Growth Partners (fictional)",
+  "turns": 33
+ },
+ {
+  "id": "T085",
+  "duration_seconds": "255",
+  "outcome": "next_step_agreed",
+  "prospect_role": "Director, Product and Training",
+  "company_kind": "India arm of a multinational",
+  "company": "Terra Equipment India (fictional)",
+  "caller": "Arjun, Meridian Growth Partners (fictional)",
+  "turns": 34
+ },
+ {
+  "id": "T086",
+  "duration_seconds": "242",
+  "outcome": "next_step_agreed",
+  "prospect_role": "Chief Executive Officer",
+  "company_kind": "mid-size private company",
+  "company": "Swadesh Home (fictional)",
+  "caller": "Anjali, Meridian Growth Partners (fictional)",
+  "turns": 29
+ },
+ {
+  "id": "T087",
+  "duration_seconds": "281",
+  "outcome": "follow_up",
+  "prospect_role": "listed as Chief Executive Officer; says he is not a decision maker",
+  "company_kind": "listed Indian company",
+  "company": "Bhagwati Automotive (fictional)",
+  "caller": "Sana, Meridian Growth Partners (fictional)",
+  "turns": 37
+ },
+ {
+  "id": "T088",
+  "duration_seconds": "389",
+  "outcome": "not_interested",
+  "prospect_role": "Director of Engineering",
+  "company_kind": "India arm of a multinational",
+  "company": "Hanover Technologies India (fictional)",
+  "caller": "Arjun, Meridian Growth Partners (fictional)",
+  "turns": 24
+ },
+ {
+  "id": "T089",
+  "duration_seconds": "244",
+  "outcome": "follow_up",
+  "prospect_role": "Owner",
+  "company_kind": "mid-size private manufacturer",
+  "company": "NextGen Robotics (fictional)",
+  "caller": "Arjun, Meridian Growth Partners (fictional)",
+  "turns": 25
+ },
+ {
+  "id": "T090",
+  "duration_seconds": "242",
+  "outcome": "interested",
+  "prospect_role": "Director",
+  "company_kind": "mid-size private manufacturer",
+  "company": "Radiant Hydraulics (fictional)",
+  "caller": "Sana, Meridian Growth Partners (fictional)",
+  "turns": 24
+ },
+ {
+  "id": "T091",
+  "duration_seconds": "242",
+  "outcome": "agreed_to_receive_report",
+  "prospect_role": "Director, Partner Engineering",
+  "company_kind": "India arm of a multinational",
+  "company": "Crestline Electronics (fictional)",
+  "caller": "Arjun, Meridian Growth Partners (fictional)",
+  "turns": 27
+ },
+ {
+  "id": "T092",
+  "duration_seconds": "251",
+  "outcome": "agreed_to_receive_report",
+  "prospect_role": "Joint Managing Director",
+  "company_kind": "mid-size private manufacturer",
+  "company": "Agrovel Industries (fictional)",
+  "caller": "Neha, Meridian Growth Partners (fictional)",
+  "turns": 18
+ },
+ {
+  "id": "T093",
+  "duration_seconds": "659",
+  "outcome": "follow_up",
+  "prospect_role": "Chief Operating Officer",
+  "company_kind": "large private company",
+  "company": "Sarvodaya Garments (fictional)",
+  "caller": "Neha, Meridian Growth Partners (fictional)",
+  "turns": 37
+ },
+ {
+  "id": "T094",
+  "duration_seconds": "339",
+  "outcome": "not_logged",
+  "prospect_role": "Managing Director",
+  "company_kind": "mid-size private manufacturer",
+  "company": "Suryodaya Manufacturing (fictional)",
+  "caller": "Pallavi, Meridian Growth Partners (fictional)",
+  "turns": 30
+ },
+ {
+  "id": "T095",
+  "duration_seconds": "282",
+  "outcome": "next_step_agreed",
+  "prospect_role": "Director",
+  "company_kind": "mid-size private manufacturer",
+  "company": "Dhanchand Chemicals (fictional)",
+  "caller": "Arjun, Meridian Growth Partners (fictional)",
+  "turns": 31
+ },
+ {
+  "id": "T096",
+  "duration_seconds": "687",
+  "outcome": "next_step_agreed",
+  "prospect_role": "Chief Executive Officer",
+  "company_kind": "startup",
+  "company": "Kavach Geo Systems (fictional)",
+  "caller": "Anjali, Meridian Growth Partners (fictional)",
+  "turns": 35
+ },
+ {
+  "id": "T097",
+  "duration_seconds": "286",
+  "outcome": "not_interested",
+  "prospect_role": "Senior Director, Supply Chain IT",
+  "company_kind": "India arm of a multinational",
+  "company": "Novara Foods India (fictional)",
+  "caller": "Arjun, Meridian Growth Partners (fictional)",
+  "turns": 23
+ },
+ {
+  "id": "T098",
+  "duration_seconds": "293",
+  "outcome": "follow_up",
+  "prospect_role": "Director, Software Quality Engineering",
+  "company_kind": "India arm of a multinational",
+  "company": "Stellar Motors India (fictional)",
+  "caller": "Arjun, Meridian Growth Partners (fictional)",
+  "turns": 26
+ },
+ {
+  "id": "T099",
+  "duration_seconds": "254",
+  "outcome": "agreed_to_receive_report",
+  "prospect_role": "listed as Director, Software Engineering; says he is in insurance sales",
+  "company_kind": "India arm of a multinational",
+  "company": "Visionex Technologies (fictional)",
+  "caller": "Arjun, Meridian Growth Partners (fictional)",
+  "turns": 25
+ },
+ {
+  "id": "T100",
+  "duration_seconds": "280",
+  "outcome": "agreed_to_receive_report",
+  "prospect_role": "Director, Safety Data Management",
+  "company_kind": "India arm of a multinational",
+  "company": "Vocis Life Sciences (fictional)",
+  "caller": "Arjun, Meridian Growth Partners (fictional)",
+  "turns": 37
+ }
+]

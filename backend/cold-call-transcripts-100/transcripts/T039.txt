@@ -1,0 +1,19 @@
+# T039
+duration_seconds: 45
+outcome: moved_company
+prospect_role: Director of Software Engineering (former)
+company_kind: India arm of a multinational
+company: Omnicare Systems India (fictional)
+caller: Priya, Meridian Growth Partners (fictional)
+
+CALLER: Hello.
+PROSPECT: Hello.
+CALLER: Am I speaking with Prakash ji?
+PROSPECT: Who is this?
+CALLER: I am Priya calling from Meridian Growth Partners, and this call is regarding Omnicare. Is this the right time to speak?
+PROSPECT: Who are you?
+CALLER: Hello, I didn't get you.
+PROSPECT: No, no, what is this regarding? Why are you asking me about Omnicare?
+CALLER: So what we do as a company is, we work with fast growing companies and understand the operational problems which arise during growth. Regarding that, our founder wanted to connect about Omnicare and discuss the approach we take and how our work goes. So is it fine if I quickly explain it?
+PROSPECT: I am no longer with Omnicare.
+CALLER: Okay, okay, I understand. Thank you, Prakash ji.

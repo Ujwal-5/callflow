@@ -1,0 +1,22 @@
+# T024
+duration_seconds: 78
+outcome: do_not_call
+prospect_role: Chief Executive Officer
+company_kind: listed Indian company
+company: Prakash Steel Structures (fictional)
+caller: Sana, Meridian Growth Partners (fictional)
+
+CALLER: Hello.
+PROSPECT: Hello.
+CALLER: Hello, am I talking to Mr. Reddy?
+PROSPECT: Yeah, speaking.
+CALLER: Hello sir, this is Sana. I am calling from Meridian Growth Partners.
+PROSPECT: Yeah.
+CALLER: Actually sir, we are making a research series on mid-size companies that are heavy on research and innovation, but very few people know about them. And sir, we would like to make a full report on Prakash Steel Structures. Could I please have one minute of your time?
+PROSPECT: Yeah, tell me.
+CALLER: Yes sir. Sir, Meridian is a Hyderabad company which has been running for many years. We work with manufacturers who are strong in R&D and innovation. Our work is very simple, sir. We help them increase their profit. How? By finding higher margin customers for them in India and in exports. Our research team keeps studying good manufacturing companies, and that is this series. This is how we found your company, sir.
+PROSPECT: Okay, but I am not the right person to give you the data, because my CFO takes care of all those things. And I am not supposed to reveal any financial data or innovation data, nothing, okay? So you better be in touch with our CFO.
+CALLER: Okay sir.
+PROSPECT: Okay?
+CALLER: Yes, thank you for your time.
+PROSPECT: Thank you.

@@ -1,0 +1,20 @@
+# T028
+duration_seconds: 35
+outcome: wrong_person
+prospect_role: listed as Director
+company_kind: mid-size private company
+company: Vinayak Distributors (fictional)
+caller: Rohit, Meridian Growth Partners (fictional)
+
+CALLER: Hello.
+PROSPECT: Hello.
+CALLER: Hello sir. Am I talking to Mr. Vinod?
+PROSPECT: Hello.
+CALLER: Hello, am I talking to Mr. Vinod?
+PROSPECT: Hello, yaar.
+CALLER: Hello, am I talking to Mr. Vinod?
+PROSPECT: Vinod. Vinod who?
+CALLER: I want to talk to Mr. Vinod of Vinayak Distributors. This is...
+PROSPECT: Hello.
+CALLER: Hello.
+PROSPECT: Is this Vinod who is speaking?

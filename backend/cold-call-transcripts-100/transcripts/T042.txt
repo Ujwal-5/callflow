@@ -1,0 +1,32 @@
+# T042
+duration_seconds: 90
+outcome: not_logged
+prospect_role: Owner
+company_kind: small private company
+company: Spectrum Tools (fictional)
+caller: Pallavi, Meridian Growth Partners (fictional)
+
+CALLER: Hello, am I talking to Mr. Gopal?
+PROSPECT: Yeah, tell me please.
+CALLER: I'm Pallavi and I'm calling from Meridian Growth Partners. We are making...
+PROSPECT: You're calling from which place?
+CALLER: Meridian Growth Partners. Actually, Meridian is a...
+PROSPECT: Meridian? Okay, yes. Yeah.
+CALLER: So we are making a research series on mid-size companies that are heavy on research and innovation but very few people know about them. We'd like to make a full profile of your company, Spectrum Tools. So can I take two minutes of your time?
+PROSPECT: What do you want to do with this?
+CALLER: Uh, we'd like to make a research profile of your company.
+PROSPECT: Research profile of my company? But mine is a very small company, so...
+CALLER: Yeah, that's why, so that you can grow...
+PROSPECT: Very, very small company.
+CALLER: Yeah, I know sir, but we want to make a research profile so that you can grow and become a big company. That's what our...
+PROSPECT: I appreciate your intentions, but I know my limitations, ma'am.
+CALLER: Uh, okay.
+PROSPECT: Yeah. To be very honest with you, ma'am, I know what is lacking.
+CALLER: However, this is absolutely free, if that is a concern.
+PROSPECT: I got your point. But presently, ma'am, I'm sitting with my CA and doing my auditing. So at this point of time I won't be able to. If you really want to do this, you can do it on Monday. Give me a call on Monday around 3 PM. By that time I'll be free.
+CALLER: Um, can I call you in the evening, if that's fine, on that day?
+PROSPECT: Evening? What time, ma'am?
+CALLER: Um, 5 PM to 9 PM, any time comfortable for you.
+PROSPECT: 5 PM. So how much time will you take? 15 minutes?
+CALLER: Yeah, 15 minutes is enough.
+PROSPECT: Okay, and you can give me a call on Monday by...

@@ -1,0 +1,22 @@
+# T054
+duration_seconds: 114
+outcome: agreed_to_receive_report
+prospect_role: Director
+company_kind: mid-size private company
+company: Dorabji Dairy Foods (fictional)
+caller: Sameer, Meridian Growth Partners (fictional)
+
+CALLER: Hello? Hello, am I talking to Mr. Raina?
+PROSPECT: Yes, Raina here.
+CALLER: Yes, hello Mr. Raina, I am Sameer calling from Meridian Growth Partners. This call is regarding Dorabji Dairy Foods. Is this a good time to speak with you?
+PROSPECT: Mhmm. Yeah, tell me.
+CALLER: So I will keep it short so I don't waste your time. Right now we are working on a research series where we study how leading companies create and sustain growth, and the operational challenges that come with that growth, right?
+PROSPECT: Okay.
+CALLER: Before discussing anything further, we wanted to show you some value first. As part of our research we have prepared a completely free growth report specifically for Dorabji. If you agree, I can send you that report on WhatsApp or by email. You can take your time and look at it. It's completely free, and if you're interested you can reply back.
+PROSPECT: Okay, all right. You can email me the report.
+CALLER: May I know where I can send it? Email or WhatsApp?
+PROSPECT: You can send it on WhatsApp, but it will be better if you email me also. My email ID is... [he spells out his email address].
+CALLER: Got it. So I can send it to this email.
+PROSPECT: Yeah.
+CALLER: Okay. Thank you.
+PROSPECT: Welcome.

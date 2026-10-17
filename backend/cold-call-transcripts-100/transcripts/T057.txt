@@ -1,0 +1,28 @@
+# T057
+duration_seconds: 224
+outcome: follow_up
+prospect_role: Founder
+company_kind: mid-size private company
+company: KrishiWheels (fictional)
+caller: Sana, Meridian Growth Partners (fictional)
+
+CALLER: Hello?
+PROSPECT: Ha, bola.
+CALLER: Mi Prakash Shinde sobat boltey ka?
+PROSPECT: Haan.
+CALLER: Hello, this is Sana. Mi Meridian Growth Partners madhun boltey, Hyderabad.
+PROSPECT: Kutun?
+CALLER: Hyderabad. Hi company amchi, Meridian, Hyderabad madhe aahe.
+PROSPECT: Ho.
+CALLER: Ani sir, amhi ek research series banatoy, mid-sized companies chya baddal, je research ani innovation var khup laksha detat, pan khup kami lokanna tyanchya baddal mahiti aahe. Ani we would like to make a full profile, a report, on KrishiWheels. Tar tumchyakade don minute aahet ka, aikayla ani profile sathi consent dyayla?
+PROSPECT: Hm, bola.
+CALLER: Sir, Meridian Hyderabad based company aahe, khup varshanpasun chalat aali aahe. Amhi manufacturers sobat kaam karto who are strong in research and innovation. Amcha kaam simple aahe: amhi tyanna tyancha nafa vadhvayla madat karto, changle customer shodhun, India madhe ani baherchya deshat pan. Amchi research team changlya companies study karat aste, ani tasach amhala KrishiWheels bhetla.
+CALLER: Ani report baddal: teen bhag astil. First, tumcha growth ani margin numbers, dusrya peer companies shi compare karun. Second, tumcha market kiti motha aahe ani kuthe chalalay. Third, kuthe amhala vatatay ki tumchi growth thambtey kinva pudhe kuthun yeu shakte. He mi tumchyasathi banvun pathvu shakte, paach minutat vachayla. Ani nantar call var, jar kahi corrections aahet, tar amhi te karun gheu.
+PROSPECT: Pan yachya madhe mala he nahi samajla ki tumcha commercialisation kay aahe? He sagla kelyanantar mag pudhe kay honar? Tumhi profile banavla, research kela, mi paach minutat vachla. Tyanantar pudhe kay?
+CALLER: Tyanantar sir, jar tumhi profile vachun consent dila, tar amche founder tumchyasobat ek meet var yeun boltil. Pudhe kay, te tyanchya sobat tharel. Amhala tyachya baddal evdha sangitla nahiye.
+PROSPECT: Mala pahile he samajna garjeche aahe ki tumcha nakki commercial intention kay aahe. Te kalala tar apan pudhe jau shakto. Barobar na? Nahitar aajkal navin navin companies customer acquire karnyasathi thodasa pralobhan dakhavtat, ani nantar sangtat amcha commercial evdha aahe. Tyapeksha, jar commercial kaam karnar asu, tar pahile commercial var bolna garjecha aahe. He deu, te deu, he sagla commercial var bolla tar bara.
+CALLER: Haan.
+PROSPECT: Barobar?
+CALLER: Barobar aahe.
+PROSPECT: Chalo, theek aahe. Okay, thank you.
+CALLER: Thank you, sir.

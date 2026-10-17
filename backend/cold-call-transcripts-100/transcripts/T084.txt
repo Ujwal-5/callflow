@@ -1,0 +1,41 @@
+# T084
+duration_seconds: 296
+outcome: do_not_call
+prospect_role: Managing Director
+company_kind: mid-size private manufacturer
+company: Vijay Writing Instruments (fictional)
+caller: Arjun, Meridian Growth Partners (fictional)
+
+CALLER: Hello. Hi Ayesha ji. This is Arjun calling from Meridian Growth Partners. This call is regarding Vijay Writing Instruments. Is this the right time to speak?
+PROSPECT: You are calling me from?
+CALLER: Meridian Growth Partners. It's a company based in Hyderabad.
+PROSPECT: What do you guys do?
+CALLER: So basically we work with companies and help them solve the operational problems which come up during growth.
+PROSPECT: Okay, and where did you get my number from?
+CALLER: Actually I spoke to Mr. Jain. He referred me your number and said you might be a better person to talk to about this.
+PROSPECT: Okay. So can you tell me the process you follow and the services you provide? How are you going to help me grow my business?
+CALLER: Yeah. So I'll quickly ask you three questions, so I can understand your idea of growth. First: is your people's growth, your employees' growth, equal to your business's growth?
+PROSPECT: Hm. How do you compare that? I want to know that. If I talk about my overall business through the year, it has been constant for the last three years, but I provide constant growth to my people, to my employees.
+CALLER: Okay, okay. I got it. And second: do you think trying new things is important for your business to grow?
+PROSPECT: It should be practical. Trying new things we all know, but it should be practical.
+CALLER: Yes, yes. I got you there. And one more: is regular review a key part? What do you say?
+PROSPECT: Like what?
+CALLER: Like review discipline, conducting review sessions and so on.
+PROSPECT: I mean, we are a manufacturing facility here. We have three types of employees. One is totally blue collar, that is labour. They have the basic etiquette, the basic discipline that we expect from them. But if you are going to ask them to behave like a white collar boy, they can't.
+CALLER: Yeah, yeah. I understand. Okay. I got my answers from your responses. Thank you for that. What I'll do: we are really interested in your company, and given your answers we want to give you a gift. It would be a report with a few growth ideas. We research your industry, we pull out some of your competitors and top players, and we give you some ideas on how you can improve your margins and some on how you can drive more sales.
+PROSPECT: What I have understood is that you are an analyst company. You analyse the business and the processes and tell us how we can improve.
+CALLER: That is a part. We also build software tools where a problem can be solved with them. So we are a mix of both.
+PROSPECT: But how am I going to apply software to manufacturing?
+CALLER: That is a much later discussion. We don't have to get into any of that. First we would like to understand your business, which I already know a little, and right now I'll give you the growth ideas, as I said. You can go through it.
+PROSPECT: So you have an idea of what we manufacture? You have done research on us?
+CALLER: Yes. We've done basic research, enough to have this conversation, but we'll do some heavy research now and give you the ideas. It will take five minutes for you to read. If you see value and merit, we can discuss how you can actually implement them in your work.
+PROSPECT: For sure. Sounds good.
+CALLER: So how would you like the report? WhatsApp or email?
+PROSPECT: Both work for me. You can send it over WhatsApp.
+CALLER: Okay. I'll share it on WhatsApp, and can I call you next Thursday to discuss the report?
+PROSPECT: Done.
+CALLER: Right, okay. Thank you, Ayesha ji.
+PROSPECT: What's your good name?
+CALLER: Arjun.
+PROSPECT: Arjun. Yes.
+CALLER: Okay. Thank you. Take care. Bye.

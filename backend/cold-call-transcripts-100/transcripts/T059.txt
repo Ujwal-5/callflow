@@ -1,0 +1,24 @@
+# T059
+duration_seconds: 97
+outcome: moved_company
+prospect_role: Regional Director, Asia Pacific (former)
+company_kind: India arm of a multinational
+company: Celera Flow Technology (fictional)
+caller: Arjun, Meridian Growth Partners (fictional)
+
+RECEPTION: Name and reason for calling. I'll see if this person is available.
+CALLER: My name is Arjun. I wanted to speak to Mr. Rangarajan about Celera Flow Technology.
+RECEPTION: Thanks, Arjun. Please stay on the line.
+PROSPECT: Hello?
+CALLER: Hello. Hi Rangarajan ji. This is Arjun calling from Meridian Growth Partners. I wanted to have a quick conversation about Celera Flow Technology. Is this the right time?
+PROSPECT: Calling from where?
+CALLER: Meridian Growth Partners. It's a company based in Hyderabad.
+PROSPECT: And what do you manufacture? I'm no longer in Celera, by the way. Just wanted to let you know first.
+CALLER: Okay. Uh, did you move within the group?
+PROSPECT: No, I'm moving to a different organisation altogether. Not working with Celera right now.
+CALLER: Okay, okay. Is it fine if I know which organisation?
+PROSPECT: I have not revealed it to the larger teams. I'll be doing it shortly. But what was it regarding?
+CALLER: Uh, so basically we at Meridian work with organisations and help them solve the bottlenecks or obstacles which come in the way of growth. And you were in a position at Celera where we wanted to speak to you.
+PROSPECT: Yeah. I appreciate you approaching me, but probably not the right time, or the right person, for Celera. I'll let you know if anything else is required. Okay?
+CALLER: Yeah, sure. Thank you.
+PROSPECT: Thank you.

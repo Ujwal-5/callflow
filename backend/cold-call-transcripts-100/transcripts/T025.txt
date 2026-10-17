@@ -1,0 +1,21 @@
+# T025
+duration_seconds: 47
+outcome: wrong_person
+prospect_role: Sales Director, India
+company_kind: India arm of a multinational
+company: Quanta Wireless Modules (fictional)
+caller: Divya, Meridian Growth Partners (fictional)
+
+CALLER: Hello.
+PROSPECT: Hello.
+CALLER: Am I speaking with Dilip ji?
+PROSPECT: Yes.
+CALLER: Hi Dilip ji. I am Divya calling from Meridian Growth Partners, and this call is just... Meridian Growth Partners, so.
+PROSPECT: About what?
+CALLER: This call was regarding Quanta Wireless. So is it a good time to speak right now?
+PROSPECT: It is regarding what, basically? What are you calling for?
+CALLER: Basically, we wanted to work with the company to help translate their growth ambition into actual business growth.
+PROSPECT: You can talk to our distributor for the product, you know. We have a distributor in Hyderabad, Orion Components. You can just look at their website. They are our Indian partners. You can talk to them, they are the right people for that.
+CALLER: Okay. They are in Hyderabad?
+PROSPECT: Orion. They have an office near the lake. It's called Orion Components, O-R-I-O-N. So they are the right people, they can guide you properly, and they manage all of our Indian business. Okay? Thank you.
+CALLER: Okay, thank you.

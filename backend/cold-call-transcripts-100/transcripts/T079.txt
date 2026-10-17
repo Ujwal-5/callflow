@@ -1,0 +1,27 @@
+# T079
+duration_seconds: 109
+outcome: wrong_person
+prospect_role: Associate Director
+company_kind: India arm of a multinational
+company: Evalora Research (fictional)
+caller: Sameer, Meridian Growth Partners (fictional)
+
+PROSPECT: Hello?
+CALLER: Hello, am I speaking with Mr. Bhalla?
+PROSPECT: Ji, haan.
+CALLER: Yes, hello Bhalla ji, I am Sameer, calling from Meridian Growth Partners.
+PROSPECT: Which... what is it?
+CALLER: Meridian Growth Partners, a company based out of Hyderabad.
+PROSPECT: Okay.
+CALLER: So this call is regarding the company Evalora. Is this a good time to speak with you?
+PROSPECT: Yeah.
+CALLER: So we run a research series studying how leading companies drive growth and address their operational challenges. As part of this, we have created a short growth report specifically for Evalora. Would you be open to taking a look at it?
+PROSPECT: I mean, what is it? What do you want from me?
+CALLER: It's a growth report for your company. I just want you to take a look at it, and if you like it, you can approve it, so we can post it on the web.
+PROSPECT: But I'm not authorised to have a look at it or approve it, so I'm not the concerned person.
+CALLER: Okay, so who might be the person I should talk to?
+PROSPECT: You need to look at somebody from compliance and check with them.
+CALLER: Okay. Okay. One more question, if you have two minutes? I was looking at your profile on LinkedIn, and I saw that you have over 30 years of experience. I was just thinking, how do you build relationships with people, in consulting, with consulting clients?
+PROSPECT: Um, I'm in the middle of something. I don't think I can speak on that right now. But get in touch with somebody from the compliance team. I'm sure they will be able to help you out, yeah?
+CALLER: Okay, I just wanted your personal perspective, but okay, fine. Thank you.
+PROSPECT: Yeah, thank you.

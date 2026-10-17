@@ -1,0 +1,24 @@
+# T066
+duration_seconds: 91
+outcome: not_interested
+prospect_role: listed as Chief Executive Officer (left eight years ago)
+company_kind: mid-size private manufacturer
+company: Rajshree Plastwood (fictional)
+caller: Manish, Meridian Growth Partners (fictional)
+
+PROSPECT: Speaking.
+CALLER: Yes sir. Sir, I'm Manish and I'm calling from Meridian Growth Partners, Hyderabad. Do you have a minute or two so that I can explain what this call is regarding?
+PROSPECT: Okay.
+CALLER: Yes sir. We are making a research series about mid-sized companies that are heavy on research and innovation, but in reality very few people know about them. So we would like to make a full profile on your company. The report has three parts, and I can explain what they are so you get an idea. If you consent, we make the report on your company and send it over to you. If you find it fine, we publish it on our website and our social media. If there is any discrepancy, you can tell us.
+PROSPECT: What is my company's name? What is my company's name?
+CALLER: Sir, can you come again?
+PROSPECT: What is my company's name? Rajshree Plastwood, right? I left that company eight years back.
+CALLER: Eight years back?
+PROSPECT: You understand, the data you have is so old.
+CALLER: Okay. So where are you currently working?
+PROSPECT: I'm not working anywhere. I have my own practice now.
+CALLER: Okay. And what is it, sir?
+PROSPECT: Chartered accountancy.
+CALLER: Okay. The data I got says Rajshree Plastwood. Okay, no issues sir. I'll see to it and we'll get it rectified. Sorry for this.
+PROSPECT: You can save your time by first verifying which company and which person it is, because like me, you might be having data for other people also which is wrong.
+CALLER: Yeah.

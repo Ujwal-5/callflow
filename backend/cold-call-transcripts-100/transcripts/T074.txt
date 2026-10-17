@@ -1,0 +1,31 @@
+# T074
+duration_seconds: 113
+outcome: next_step_agreed
+prospect_role: Founder Director
+company_kind: mid-size private company
+company: Accordia Systems (fictional)
+caller: Rachel, Meridian Growth Partners (fictional)
+
+CALLER: Hello. Am I speaking to Mr. Prabhakar?
+PROSPECT: Yeah, speaking.
+CALLER: Yeah. I am Rachel and I am calling from Meridian Growth Partners. Is this a good moment to speak?
+PROSPECT: You are calling from where, ma'am?
+CALLER: Meridian Growth Partners.
+PROSPECT: Okay, I still couldn't get it. But yeah, tell me, what is it about?
+CALLER: Actually, it's a Hyderabad based company, and this call is regarding Accordia. We would like to make a short growth report on it. Would you like me to explain it?
+PROSPECT: If you can quickly, because I'm moving, going out now.
+CALLER: Okay, fine. I'll make it pretty simple. We are making this report and it contains some important growth analysis about your company. First, the market: where your company stands in the market and how it is performing now, and how it could perform in a few years. Then a list of high value customers. It's a two-minute read. It won't consume your time. It gives you an outside perspective on your company.
+PROSPECT: Okay, okay. So how do we go about it, ma'am? Can you share some information on email or WhatsApp?
+CALLER: Yeah, I could send it to you on email. Would you like to confirm your email once?
+PROSPECT: [He gives his email address.]
+CALLER: Okay, fine. Once you view the report, is it okay if we connect this week or next week?
+PROSPECT: Hello?
+CALLER: Hello. Am I audible?
+PROSPECT: No, ma'am. Could you repeat the last sentence?
+CALLER: Yeah, I was saying that once you read the report, is it okay if we connect this week or next week?
+PROSPECT: Yeah, yeah, we could do that. Would you suggest any date this week?
+CALLER: Not this week, ma'am... sorry, sir. This week is too tight for me.
+PROSPECT: Okay, that's understandable. Next week?
+CALLER: Yes, next week. Tuesday?
+PROSPECT: Next week Tuesday. Yeah. Okay, fine. Thank you.
+CALLER: All right, sir. Thank you.

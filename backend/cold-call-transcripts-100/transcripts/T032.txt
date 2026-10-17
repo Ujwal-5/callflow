@@ -1,0 +1,22 @@
+# T032
+duration_seconds: 40
+outcome: call_again
+prospect_role: Chief Executive Officer
+company_kind: listed Indian company
+company: Pinnacle Apparel (fictional)
+caller: Neha, Meridian Growth Partners (fictional)
+
+CALLER: Hello.
+PROSPECT: Hello.
+CALLER: Hello.
+PROSPECT: Hello.
+CALLER: Hello. Am I speaking with Shankar ji?
+PROSPECT: Shankar. Okay. Shankar, Shankar.
+CALLER: Shankar only, right?
+PROSPECT: Haan, okay, yes, yes.
+CALLER: Okay. This is Neha from Meridian Growth Partners. Is this the right time to speak with you?
+PROSPECT: Ah, I didn't get you. Can you repeat?
+CALLER: Okay. Hindi or English?
+PROSPECT: Kannada maatadi.
+CALLER: Okay, okay. Someone else will call you back. Thank you for your time.
+PROSPECT: Sari.

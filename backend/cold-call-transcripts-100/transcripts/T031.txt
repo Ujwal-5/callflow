@@ -1,0 +1,21 @@
+# T031
+duration_seconds: 35
+outcome: call_again
+prospect_role: not the person on the list
+company_kind: public sector utility
+company: Northern Power Distribution (fictional)
+caller: Divya, Meridian Growth Partners (fictional)
+
+CALLER: हेलो
+PROSPECT: हेलो
+CALLER: हांजी
+PROSPECT: हां जी
+CALLER: सुनीता जी?
+PROSPECT: आप कौन बोल रहे हो, बता सकते हो?
+CALLER: शायद सुनीता जी को कॉन्टैक्ट करना था, पर आप कौन हो बता सकते हो ताकि हम कन्फर्म कर सकें, रॉन्ग नंबर तो नहीं।
+PROSPECT: मैं राजू बोल रहा हूं मैडम जी, और सुनीता जी का पहले नंबर था ये।
+CALLER: अच्छा-अच्छा।
+PROSPECT: इस नंबर को मुझे यूज़ करते हुए कम से कम 10-11 साल हो गए।
+CALLER: अच्छा, ओके, ठीक है जी। सुनीता जी का नंबर है क्या आपके पास?
+PROSPECT: नहीं, मेरे पास तो कोई नंबर नहीं है।
+CALLER: अच्छा, ओके, थैंक यू।

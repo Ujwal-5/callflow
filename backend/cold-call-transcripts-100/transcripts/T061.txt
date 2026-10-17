@@ -1,0 +1,30 @@
+# T061
+duration_seconds: 115
+outcome: agreed_to_receive_report
+prospect_role: Retail Director
+company_kind: mid-size private company
+company: Octet Apparel (fictional)
+caller: Arjun, Meridian Growth Partners (fictional)
+
+CALLER: Hello.
+PROSPECT: Hello.
+CALLER: Am I speaking to Mr. Sinha?
+PROSPECT: Speaking.
+CALLER: Hello, Sinha ji. This is Arjun calling from Meridian Growth Partners. Is this the right time?
+PROSPECT: Calling from?
+CALLER: Meridian Growth Partners, sir. I called you last week.
+PROSPECT: Okay. Regarding?
+CALLER: Yeah, I'll repeat myself. Meridian helps organisations with the operational problems which come up during growth. I wanted to speak to you about Octet Apparel. We find your company interesting and we wanted to know your company's idea of growth. Can I quickly ask a few yes or no questions?
+PROSPECT: No, actually, Octet is not that interested. I remember, after talking to you I spoke to the management also.
+CALLER: Okay.
+PROSPECT: They have not shown any interest in it. In fact, they want to drop this idea as of now. That's the reason I have not even responded to your email.
+CALLER: I didn't send an email, sir. I'll do one thing. I'll make a short growth report for Octet. We'll study your company, your competitors and the top players in your industry, and give you a few ideas on how you can improve your margins and how you can get more sales volume. You can go through it with your management once.
+PROSPECT: Theek hai. Bhej dijiye ek baar.
+CALLER: Aapko value dikhe to aap further baat kar sakte hain.
+PROSPECT: Theek hai, theek hai.
+CALLER: Main aapki mail pe bhej doon, ya kisi aur mail pe?
+PROSPECT: Haan, meri mail pe bhej dijiye ek baar.
+CALLER: The one on your profile?
+PROSPECT: Haan, haan.
+CALLER: Okay, okay.
+PROSPECT: All right.

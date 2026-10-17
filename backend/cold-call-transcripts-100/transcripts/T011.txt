@@ -1,0 +1,20 @@
+# T011
+duration_seconds: 31
+outcome: follow_up
+prospect_role: Chief Executive Officer
+company_kind: mid-size private company
+company: Kavach Geo Systems (fictional)
+caller: Anjali, Meridian Growth Partners (fictional)
+
+PROSPECT: Hello.
+CALLER: Hello sir, I am Anjali calling from Meridian Growth Partners.
+PROSPECT: Yes, I think you sent me an email.
+CALLER: Yes sir, I sent you the company profile of Kavach Geo to your mail.
+PROSPECT: Okay.
+CALLER: Were you able to go through the profile, sir?
+PROSPECT: Uh, actually I was not. Allow me a day. Can I revert tomorrow?
+CALLER: Sure sir, I'll call you back tomorrow.
+PROSPECT: Okay, thank you.
+CALLER: You can reply with any edits, or I'll also call you and you can tell me if there are any edits from your side.
+PROSPECT: Sure, that's great. I'll reply tomorrow.
+CALLER: Okay sir, thank you.

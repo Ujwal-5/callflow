@@ -1,0 +1,33 @@
+# T099
+duration_seconds: 254
+outcome: agreed_to_receive_report
+prospect_role: listed as Director, Software Engineering; says he is in insurance sales
+company_kind: India arm of a multinational
+company: Visionex Technologies (fictional)
+caller: Arjun, Meridian Growth Partners (fictional)
+
+CALLER: Hello.
+PROSPECT: Hello.
+CALLER: Yeah, hi Raghu ji, my name is Arjun. I'm calling from Meridian Growth Partners. It's a company based in Hyderabad. I wanted to talk about Visionex Technologies. Is this a right time?
+PROSPECT: Uh, yeah, sure. You are speaking from which company?
+CALLER: I'm calling from Meridian Growth Partners.
+PROSPECT: Okay.
+CALLER: Yeah, so I'll quickly tell you what we do as a company. We at Meridian work with businesses and help them solve the operational problems that are in the way of their growth. But before that, we like to understand what your idea of growth is and provide you with some value. I had some growth-related questions for you, yes or no questions. Can I ask them now?
+PROSPECT: Yeah, yeah, sure. You can.
+CALLER: Okay. Do you think regular review is a key part of growth?
+PROSPECT: Definitely, yes. But is this related to some opening, or what?
+CALLER: Not really. We work as growth partners. This is a step before we set up a meeting with our founder, and we can discuss a business collaboration maybe in the future.
+PROSPECT: And what kind of profile are you looking for? For your company? Is it a technical one, or what?
+CALLER: It could be anything. What we focus on is increasing the profit of our customers.
+PROSPECT: I'm from a non-technical background. I'm from sales, actually.
+CALLER: Not an issue. We reach out to people who are in leadership positions, and we first show the value we can give you, and later, if our interests are aligned, we bring in the team. Initially we ask some questions and set up a meet with our founder, Vikram. In that call, we look at the steps you are already following, and I'm sure you must have set some goals of where you want to be in your department. What is the constraint, the challenge you're facing in the way of your goal? And we lay out an execution path on how to solve it. That is what you'll get from the Google Meet. I can share our company's profile with you on email or WhatsApp. You can go through it and get a clear understanding of how we approach things.
+PROSPECT: Can you do one thing? First share the profile of your company, right? And post that, we can have a discussion.
+CALLER: Yeah, perfect. How would you like me to share the profile? Email or WhatsApp?
+PROSPECT: Share it over email.
+CALLER: Okay. I think I have your personal mail. Is it the one on your profile?
+PROSPECT: No, no. Not my mail ID. See, I'm from an insurance background and I'm into sales, okay? And I'm not able to recognise whether I'll fit into your organisation or not. That is why I'm asking you to share the company profile first. Then we can have a discussion.
+CALLER: Yeah, sure.
+PROSPECT: My mail ID is... [he spells out his address].
+CALLER: Yeah, got it. I'll share it on this mail.
+PROSPECT: Okay, let me understand first whether I'll be able to manage your requirement or not. Thank you.
+CALLER: Sure, sure. You can look at that. Thank you.

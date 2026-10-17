@@ -1,0 +1,34 @@
+# T046
+duration_seconds: 162
+outcome: not_logged
+prospect_role: Director
+company_kind: mid-size private company
+company: Kalyx Enterprises (fictional)
+caller: Arjun, Meridian Growth Partners (fictional)
+
+CALLER: Hello.
+PROSPECT: Hello.
+CALLER: Uh, am I speaking to Mr. Senthil?
+PROSPECT: Yeah, I'm speaking.
+CALLER: Yeah, hi. This is Arjun calling from Meridian Growth Partners. I wanted to talk about Kalyx. Is this the right time?
+PROSPECT: Yeah, no problem. You are from?
+CALLER: Meridian Growth Partners. It's a company based in Hyderabad. So I'll quickly tell you about my company. Meridian helps growing organisations in solving the operational challenges that come up in the way of growth. But before that, we wanted to understand your company's idea of growth and show you some value. We show value by creating a short growth report. Can I give you a brief overview of the report?
+PROSPECT: Yeah, please. No problem.
+CALLER: Okay. So first we do a small research on your company, your industry, your competitors and the top players in your industry. We study their processes and we give you a few ideas: some on how you can improve your margins, and some on how you can drive more sales volume. And to understand your company's idea of growth, I'd like to ask you a few yes or no questions, if that's fine.
+PROSPECT: Yeah, please. No problem.
+CALLER: Okay. So do you think reviewing the numbers regularly is an important part of growth?
+PROSPECT: Yeah, sure.
+CALLER: And what do you think about trying new approaches?
+PROSPECT: Trying new approaches means, like, experimenting with different approaches to see what's working, what's not working. That is the only approach, because this is a new technology. You want to know the real view of the customer. You have to go in different ways to find the system and how it works out.
+CALLER: Yes, yes. Amazing. And do you think your people's growth also contributes to your business's growth?
+PROSPECT: Sure.
+CALLER: Okay. Thank you, Senthil ji. I got all my answers. I'll make this research report and send it to you. What would you prefer, email or WhatsApp?
+PROSPECT: I prefer by WhatsApp. The same number.
+CALLER: Okay, fine. I'll send it to this number.
+PROSPECT: Please.
+CALLER: Okay. And can I connect with you next Tuesday or Wednesday to talk about the result?
+PROSPECT: No problem. We can do it.
+CALLER: Which time would you prefer for me to call?
+PROSPECT: Around 10, 10:30 is fine.
+CALLER: Perfect. Okay, thank you.
+PROSPECT: Thank you, thank you.

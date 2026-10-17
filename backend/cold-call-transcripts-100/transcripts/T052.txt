@@ -1,0 +1,31 @@
+# T052
+duration_seconds: 114
+outcome: not_logged
+prospect_role: Chief Executive Officer and Co-Founder
+company_kind: startup
+company: Greenmile Mobility (fictional)
+caller: Neha, Meridian Growth Partners (fictional)
+
+CALLER: Hello.
+PROSPECT: Yes.
+CALLER: Uh, hello Mohan ji. This is Neha from Meridian Growth Partners. Is this the right time to speak with you?
+PROSPECT: You're calling from?
+CALLER: From Meridian Growth Partners.
+PROSPECT: From Meridian.
+CALLER: Meridian, yeah.
+PROSPECT: Okay.
+CALLER: Yeah. So I'm calling because we are making a research series about companies that are heavy on research and innovation, and we would like to make a full report on your company as well. Can I take two minutes of your time?
+PROSPECT: Okay. Tell me.
+CALLER: Okay, so first I'd like to introduce Meridian. Meridian is a Hyderabad based company running for many years. We work with manufacturers who are strong in R&D and innovation. Our work is simple: we help them increase their profit by finding better-margin customers for them, in India and in exports. Our research team keeps studying good manufacturing companies, that's why we started this series, and that's how we found your company.
+PROSPECT: Okay.
+CALLER: So, about the report. It has three parts: your growth and margin numbers compared with some similar companies, your market and where it is going, and the places where our team feels your growth is getting stuck or could grow more. All of this we map from outside. After we make it, we send it to you for your consent and any corrections. So would you be okay with this?
+PROSPECT: Yeah, fine. It is okay. I think I'm okay with that, yeah.
+CALLER: Okay. So in a few days I'll... okay, would you prefer WhatsApp or email for the report?
+PROSPECT: Uh, email is better. Yeah.
+CALLER: I didn't get you.
+PROSPECT: It's better to just send it on email. Yeah.
+CALLER: Okay. Your email is the one on the company website, right?
+PROSPECT: Yes, that's correct, yeah.
+CALLER: Okay. So I'll send it to you, and then we will follow up.
+PROSPECT: Sure.
+CALLER: Okay. Thank you for your time.

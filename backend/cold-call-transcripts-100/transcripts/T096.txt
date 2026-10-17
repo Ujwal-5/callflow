@@ -1,0 +1,43 @@
+# T096
+duration_seconds: 687
+outcome: next_step_agreed
+prospect_role: Chief Executive Officer
+company_kind: startup
+company: Kavach Geo Systems (fictional)
+caller: Anjali, Meridian Growth Partners (fictional)
+
+PROSPECT: Hello.
+CALLER: Hello sir, I am Anjali calling from Meridian Growth Partners.
+PROSPECT: Yes. Yes.
+CALLER: Did you get my email?
+PROSPECT: Yes, I got your email. I just read it.
+CALLER: Okay. So you want the changes to be made in a way that shows this is not a...
+PROSPECT: See, I'll tell you. I have not positioned Kavach as a drone service provider. The country has more than 500 such companies. There's no sense in that. What we focused on was building a specific model, to show how drone data can be used for governance and for creating data on a city-wide scale. We did this for a four-year period for a planned township in eastern India. That four-year contract was the pilot. Now we are fighting with the government to tell them, let's scale this to a thousand more cities in India, but change the model from contracting to a model where you think of us like a...
+CALLER: Data utility.
+PROSPECT: Like a data utility. And we think that can really change the entire approach. Right now the government has been spending on drone data for five years. But for the public, there is no outcome. No outcome on data, no outcome on governance, no outcome on city-level data usage either. The officers keep changing. Hardly anybody uses it. If 500 rupees is being spent, hardly 100 rupees of value is being generated right now. If you change it to a utility model, there is private investment into the model. We can raise capital to scale this as a utility.
+CALLER: So right now you're on a contract model, but you're asking the government to change it into a utility model, so that the funding can come from...
+PROSPECT: Finance can be arranged, and imagine, then I will have the capital, I can sell data like a map service. If I'm set up in Hyderabad, I can sell all the users in Hyderabad monthly data of the city. I think this is the way to disrupt the big map providers, by giving hyper-local data which is updated more regularly than they do.
+CALLER: Ah, yes. That will be more useful to people, instead of updates which happen once or twice a year.
+PROSPECT: Yeah. Discoverability, trade, banking, all these institutions can use data once it is supplied in a utility fashion. If they get access to stale data that the government purchased three years ago and made public now, there's no sense. But if a bank gets access to a city's data on a monthly basis, under an SLA on a ten-year contract, then they'll pay for it. Imagine a city where, against all the land parcels, banks have pre-approved loans for anybody to buy a house or do a development. So it's about re-looking at data. We've done case studies with sectors like power and mining, and we think the biggest use case is land. Everyone is managing land in some sense: lease rights, the condition of their assets. Surveillance is a very different market. We feel that to grow the geospatial industry, more people have to have access to data in a manner they can use.
+CALLER: Hm. Yes sir, I can understand what you're looking at.
+PROSPECT: See, if you look at the numbers, the balance sheet will look very poor, because we did our first contract and the contract ended. We got more contract options, but we declined all of them. We don't want to become another contractor. The country has 40 or 50 contractors. So if you play on the numbers, it is a very dismal story. Last year we got significant interest; a venture fund based in New York reached out to us proactively, and they spoke to us twice over the year. But what even they were shocked by is that in India right now we are not able to get a dialogue to build this into a utility model.
+CALLER: Okay. So the biggest challenge right now is that the government isn't supporting it as a utility model.
+PROSPECT: There's no dialogue surrounding data. I think there is a need to rethink GIS as a revenue stream rather than an expense. The government started issuing property cards to people based on drone data. What's happening to that land now? Is that data being updated? Somebody who got a property card five years ago, is he still sitting on stale data? Until we think of this as a utility, even that property card becomes invalid after ten years, if he has divided his land into four parts. So our whole pitch, with the different government departments we are talking to, is: let's build this as a utility.
+CALLER: Okay.
+PROSPECT: Which city are you in, just a quick query?
+CALLER: We are in Hyderabad, sir.
+PROSPECT: Yeah. So do you ever get a report of the condition of your ward when you pay property tax? Imagine if you got a 3D view of your land every year with the property tax bill, along with a detailed report of your entire ward.
+CALLER: Ha, that would be great.
+PROSPECT: That's what we did in the township. We gave them block reports, ward reports, each one saying what the major issues were in the block over the year, how many parks, how many roads, how many public assets, what the shops were in that area. Rethinking data from a governance perspective, for the public. Imagine your bill says you are in ward number 100, ranked 23 on tree count, and that figure changes every year based on tree data from drones.
+CALLER: Okay. And how often do you plan on updating the data?
+PROSPECT: In the township we built it as a four-year contract and did data updates every year. The idea was to show the government that if you give data as a service, people start consuming it regularly. This did happen. But because the government did not make the data public, nobody in the public knew. Only a few officers had it, then the officers changed, and the contract got cancelled. Data never became public. Even today, do you know how much your own city has spent on drone surveys? Hundreds of crores. Google it. You have never seen that data. Apart from some city planners, nobody has.
+CALLER: No, I had no idea.
+PROSPECT: So this is the challenge we are facing in the country today. Go to a city in the US and you can see the entire city in 3D on a map. Because they allow public data, there are startups building computer vision on 3D data sets and selling analysis to third-party businesses. Those businesses don't exist in India, because none of the data is public and there is no policy dialogue behind it. Out of two hundred-odd countries, about a hundred have made city data public. India is not one of them.
+CALLER: And once that becomes public, it will have a much better impact.
+PROSPECT: But in India, who will bell the cat? Who will do the dialogue? I know a couple of people in the US trying to provide regular map data, and people in Japan building field-level robots on GIS data updated every day from a third party. How do you build a startup like that in India without the data being available? Abhi toh hai hi nahi kuch, khud hi karna hoga sab. So, moonshot. We want to hit the moon, otherwise there's no sense. That's where we are today. And see, we've let go of all our employees in the recent past. I'm a single man right now. We have the interest and the capital to pursue this, but until we see a change in this direction, I think I'm going to close the company. That's where I am, practically. Now I don't know what you want to do, but if you have any other query, you can call me.
+CALLER: Yes sir. I'll make the report, and if I have any more queries, I'll call you.
+PROSPECT: Yeah, sure. One assignment we did last year which was very interesting: a 3D survey of a forested colony in a big city during the monsoon, to identify the rain-fed river that supplies the city's lake. That was interesting. After that, no major assignment, some side jobs idhar udhar. But the founders have decided that contracting is a business where third-party capital doesn't want to get involved. The only financier is the government, and then it's a cash war with startups who've raised money to burn on contracting. I can't compete with that. We want to change the model, to build a better hyper-local map data provider. I don't see it happening today. It will happen, God knows how long it will take. Maybe somebody will read your article and say, hey, let's call them.
+CALLER: Could be, sir. I'll try to make it as blunt as possible.
+PROSPECT: Blunt as possible.
+CALLER: Blunt, yes. Thank you, sir. I'll call you if I have any query.
+PROSPECT: Yeah.

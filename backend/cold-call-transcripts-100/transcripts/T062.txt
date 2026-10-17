@@ -1,0 +1,39 @@
+# T062
+duration_seconds: 154
+outcome: agreed_to_receive_report
+prospect_role: CEO
+company_kind: mid-size private company
+company: Pankaj Overseas (fictional)
+caller: Rachel, Meridian Growth Partners (fictional)
+
+RECEPTION: Hi. If you record your name and reason for calling, I'll see if this person is available.
+CALLER: Ah, I am Rachel, and is the person I'm calling available?
+RECEPTION: Thanks, Rachel. Please stay on the line.
+CALLER: Hello.
+PROSPECT: Hello.
+CALLER: Uh, hello. Am I speaking to Mr. Agarwal?
+PROSPECT: Yes, I am speaking.
+CALLER: Yeah, I'm Rachel and I'm calling from Meridian Growth Partners. Is this a good moment to speak?
+PROSPECT: Uh, where from, ma'am?
+CALLER: Meridian Growth Partners.
+PROSPECT: Meridian, yes. Tell me.
+CALLER: Okay, so this call is regarding Pankaj Overseas, and we would like to make a short growth report on it. Would you like to know more about this report, or is it okay if I send you the draft by email or WhatsApp?
+PROSPECT: Which kind of service are you providing?
+CALLER: Uh, basically we help businesses grow. Mostly we work with manufacturing companies, and we help them grow their profit by finding higher margin customers for them.
+PROSPECT: Okay, can you send me the email, please? What kind of service you are providing, your website and everything. First I will check your profile, then we can talk about that.
+CALLER: Okay, but before that, I would like to give you a small brief about the report I was talking about. Is that fine?
+PROSPECT: First you send me your website and your projects, what you are doing. Then I will ask about the brief.
+CALLER: Okay. The thing is, we are actually making a report on your company, so that's what I wanted to tell you.
+PROSPECT: Which kind of report are you making?
+CALLER: It's a growth analysis report.
+PROSPECT: A growth analysis report. But why would we give you that kind of data?
+CALLER: No, you are not supposed to give any data. We get our data from outside sources. Our research team is responsible for that.
+PROSPECT: No, we don't want these kinds of services right now.
+CALLER: Okay, that is fine, that is completely understandable. But I will send you our company's website and also the report. Just check it out, and if you feel it is good, we could connect again. Would you like to connect this week or next week, after viewing the report?
+PROSPECT: You can send it tonight. I will check, and then tomorrow you can call me and we can finalise what to do, yes or no.
+CALLER: Okay. Email or WhatsApp? Which would you prefer?
+PROSPECT: Email.
+CALLER: Email. Can you confirm your email, if you don't mind?
+PROSPECT: [He gives his email address.]
+CALLER: Okay, fine. Thank you.
+PROSPECT: Okay.

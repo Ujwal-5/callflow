@@ -1,0 +1,16 @@
+# T029
+duration_seconds: 30
+outcome: wrong_person
+prospect_role: Technical Director
+company_kind: India arm of a multinational
+company: Broadline Semiconductors India (fictional)
+caller: Kavya, Meridian Growth Partners (fictional)
+
+PROSPECT: Hello.
+CALLER: Uh, ji, am I speaking with Mr. Dave from Broadline?
+PROSPECT: This is regarding what?
+CALLER: Uh, this is regarding Broadline, sir. I'm Kavya calling from Meridian Growth Partners. Actually, we are reaching out to different companies to understand their idea of growth and also you...
+PROSPECT: I don't think I am the right person to speak on behalf of Broadline on this. So, thank you.
+CALLER: Okay, whom can I contact, sir? Like, uh?
+PROSPECT: No, no, I don't think I can give any of those contacts to you. Thank you.
+CALLER: Okay. Thank you, sir.

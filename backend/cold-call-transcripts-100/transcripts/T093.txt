@@ -1,0 +1,45 @@
+# T093
+duration_seconds: 659
+outcome: follow_up
+prospect_role: Chief Operating Officer
+company_kind: large private company
+company: Sarvodaya Garments (fictional)
+caller: Neha, Meridian Growth Partners (fictional)
+
+CALLER: Hello.
+PROSPECT: Hello.
+CALLER: Hello, this is Neha from Meridian Growth Partners.
+PROSPECT: Who is this?
+CALLER: Neha from Meridian. I tried calling you at three. So did you get time to go through the report once? Or I can...
+PROSPECT: You were telling me that you want to discuss the report, but...
+CALLER: Yeah, sure. So I was asking, so that I can walk you through it.
+PROSPECT: It was supposed to be discussed at 3 PM, no?
+CALLER: Yeah, that's what I'm saying. I tried calling you but I couldn't connect. So I thought I'd call at four again. If you're not free, I can connect back. I haven't received any call from your side.
+PROSPECT: I did try to call. It did ring. Maybe there was some misconnection. Okay, tell me now.
+CALLER: Okay. So the report basically has six growth ideas. The first one is how you can charge more for a product, with some experiments or opportunities we saw after doing the external research. The second is how to lower your variable cost and the rework cost at each stage. Then, finding a better mix of customers: with the current customer group you have, maybe you can improve sales or sustainability by chasing a better mix, and how you can get more buyers and expand in Europe and the US in the brand segment that values traceability. One more is how you can get more margin from each buyer, and how you can have more products with a buyer: if one buyer is connected with you for one product, you can pitch them multiple products and build a good relationship. So before I dive deeper, I would like to understand your perspective on growth and what you are currently looking for. Is it okay if I ask you a few questions?
+PROSPECT: Let us go into the report first, and then we can discuss that.
+CALLER: Okay. So for more products per buyer, we have given this option: you can select one performance fabric or a circular material, create a standard development brief with test and certificate gates, and take it to two existing brand accounts you are currently working with, before expanding further, so that you understand their opinions and reviews. What we are thinking is that the capability becomes more economically useful only when it moves from a showcase product to a repeatable application, something that can be used multiple times and sold across multiple accounts. That is one opportunity we have seen. There are others. Which one would you like me to touch on now? For example, increasing the price of existing products, or a better customer mix? Whatever you want me to touch first, I can go in that order.
+PROSPECT: My suggestion is, let us go through your report first. Nowadays my customers are more and more into sustainability. So what best can we offer them in terms of a sustainable solution? That will work, I think, for the future too. It's not only about financials anymore. If you see now, the result of a company is not just the financials. How the product is sustainable, how the operations are sustainable, how the business is sustainable, those metrics are also coming into the picture now.
+CALLER: Yeah, definitely.
+PROSPECT: So my point is, on sustainability, what best can we offer to the customers, so that when they are selling their product in the US or in Europe, they can also tell that to their end customers.
+CALLER: Hmm. Definitely. So you want to become more sustainable than you are now. In the report we have not specified sustainability yet, because from the external research we made a report to increase growth based on profit and revenue. But for a sustainability-centred report, I can edit it now and send it to you in two hours. Will that be okay? Or do you want to go through this report first and customise later?
+PROSPECT: I want to go through this report first, and then we can revise it later.
+CALLER: Okay. So inside this report, should I explain how you can charge more for existing products, or should I go to the better mix of customers, or more buyers? There are six options. Which one would you like to know first?
+PROSPECT: In the report you first mentioned these growth ideas. What are they?
+CALLER: Yeah. We have summarised a system where we explain how you can charge more from a customer for a product they already like, because they are already your customer and loyal to you. Maybe you understand which product sells more and you price it higher. The second idea is where we understand your products and tell you how to lower the variable cost: simplify the process, same output, lower cost. The mix means your current customer base: maybe if you focus on a particular set of customers. If you are a luxury brand, you focus on rich customers; if you are a sustainable brand, you might focus on both. That affects the growth of the company, because the customers you go after decide the product. Then the fourth idea is an opportunity to get more buyers, and the fifth is how to get more margin from each buyer. For example, you are selling lemon juice for ₹100 and getting ₹50 profit. How can you take that from 50 to 70 percent? And the last one is more products per buyer: you have a cafe, one customer buys only lemon tea, then you introduce a new product or an existing product that was not marketed, and they buy that too. So those are the six, and we include only these six because we believe they are the ones that affect the growth of a company most. You can correct me if you think we are missing anything.
+PROSPECT: I think, first of all, thank you for going through all these levels. I want to go deeper into them. You are giving me a bird's eye view. So, the first one, a higher price. As you were saying, if we are selling one product at ₹100 per metre, and the customer is a loyal one, how can we increase that price? How?
+CALLER: See, I cannot tell you for a single product. That's why I asked if I can understand your point of view on what is going on inside the company. Of course no confidential information. Just which area you want to focus on. Based on that I can tell you. For a specific product I need to know a little more about it. I cannot give you a vague answer, because I don't want to tell you anything which won't meet your expectations.
+PROSPECT: That's why we need a little more time to go deeper into it. Better we connect again tomorrow at 3 PM, because I will have a little time at 3 PM tomorrow.
+CALLER: Okay, tomorrow 3 PM.
+PROSPECT: Meantime, can you send me the PDF of this report?
+CALLER: Actually, it's an online report, so it cannot be made into a PDF directly. Are you having any issues opening it?
+PROSPECT: No, I can open it. But if it is a PDF I can spare some time at home to go through it. More friendly to me. Technology is there, no doubt about it, I can go through it, but a PDF is easier.
+CALLER: Okay. That will take a little time. I'll have to check with the technical team. I'll let you know if that's possible by today, and if not, I'll explain all the ideas in detail with you tomorrow. But first I would like to understand your point of view as well, at 3 PM tomorrow, so that we can have a deeper conversation.
+PROSPECT: Yeah, okay. Meantime, please try to send the PDF so that I can connect better. I have gone through the report like a bird's eye view, not in depth, but it's a very good report.
+CALLER: I'm glad you liked it. I would just like you to understand that I shared this report to show you some value and to make you understand our perspective. So do you think this would be useful if Meridian works with Sarvodaya? Are you currently looking to expand more? Only then can we understand if there is any need for us there or not.
+PROSPECT: Definitely. Let's connect better and then we can think of that also.
+CALLER: Okay, sure. I'll connect with you at 3 PM tomorrow. Meanwhile I'll check if I can get the PDF. Or is it okay if I share the raw file, the backend version? It is like a PDF but a little cluttered.
+PROSPECT: Check for the PDF and let me know on WhatsApp.
+CALLER: I'll tell you if that's possible by today.
+PROSPECT: Yeah, please. Thank you.
+CALLER: Thank you.

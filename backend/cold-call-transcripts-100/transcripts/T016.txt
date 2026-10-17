@@ -1,0 +1,25 @@
+# T016
+duration_seconds: 50
+outcome: call_again
+prospect_role: Vice President, Business Excellence
+company_kind: listed Indian company
+company: Marudhar Motors (fictional)
+caller: Rachel, Meridian Growth Partners (fictional)
+
+CALLER: Hello, am I speaking to Mr. Khanna?
+PROSPECT: Yeah.
+CALLER: I am Rachel and I am calling from Meridian Growth Partners. Is this a good moment to speak?
+PROSPECT: Who is calling from?
+CALLER: Meridian Growth Partners.
+PROSPECT: What is that?
+CALLER: Actually this call is regarding Marudhar Motors. We would like to make a short growth report on it. Would you like me to explain it?
+PROSPECT: A growth report?
+CALLER: Yes.
+PROSPECT: We don't need it, but I don't know.
+CALLER: Okay, can I ask you a question though?
+PROSPECT: Sure.
+CALLER: Are you looking to grow your business as of now?
+PROSPECT: What am I looking at?
+CALLER: Are you looking to grow your business as of now?
+PROSPECT: See, your voice is cracking up. Can you just write down one number?
+CALLER: Okay, hello, actually your voice is not proper. Can you come again?

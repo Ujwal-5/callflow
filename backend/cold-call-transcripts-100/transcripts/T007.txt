@@ -1,0 +1,19 @@
+# T007
+duration_seconds: 59
+outcome: not_interested
+prospect_role: Chief Executive Officer
+company_kind: listed Indian company
+company: Udhav Textiles (fictional)
+caller: Sana, Meridian Growth Partners (fictional)
+
+CALLER: Hello.
+PROSPECT: Hello. Haanji.
+CALLER: Hello, am I talking to Udhav Textiles? Uh, am I talking to Mr. Mehta?
+PROSPECT: Yes.
+CALLER: Hello sir, this is Sana. I am calling from Meridian Growth Partners, Hyderabad.
+PROSPECT: Yes, please.
+CALLER: Actually, sir, we are making a research series on mid-size companies that are strong on research and innovation but very few people know about them. So we would like to make a full report on Udhav Textiles. Can I please have two minutes of your time?
+PROSPECT: So what is that regarding? What do I need to help you with in this?
+CALLER: Yeah. So basically the report has five parts. The first would be how the company creates wealth, your growth and margin numbers compared with the listed peers that we have. And then the second would be your market. Third...
+PROSPECT: I'm not really interested in doing so. Thank you.
+CALLER: Okay. Thank you for your time, sir.

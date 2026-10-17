@@ -1,0 +1,32 @@
+# T088
+duration_seconds: 389
+outcome: not_interested
+prospect_role: Director of Engineering
+company_kind: India arm of a multinational
+company: Hanover Technologies India (fictional)
+caller: Arjun, Meridian Growth Partners (fictional)
+
+CALLER: Hello, am I speaking to Mr. Banerjee?
+PROSPECT: Speaking.
+CALLER: Hello, this is Arjun calling from Meridian Growth Partners. I wanted to have a quick chat about Hanover Technologies. Is this the right time?
+PROSPECT: I mean, what is this about?
+CALLER: So I'll quickly tell you what we do as a company first. We at Meridian work with organisations and we identify and help in solving the obstacles which are coming in the way of growth. So is it fine if I ask you some simple yes or no questions?
+PROSPECT: See, look, I may not be the right person for this discussion, because we have a different set of team that generally gets involved in such discussions. And plus, I'm a little outside, on a business trip right now.
+CALLER: Okay. Can you point me in the right direction? Is there any relevant contact which you can share?
+PROSPECT: See, we are a very diversified company. So I don't know what area you are trying to look at, because there are a lot of different things, a lot of different people.
+CALLER: We basically want to speak to someone in a leadership position who understands the business, and together figure out the obstacle which is coming in the way of your growth.
+PROSPECT: See, look, but there is a slight situation here. Because we are an MNC, we already have such consultants at a global level. We don't go with any separate local counterpart, because it's all driven through a global single contract agreement. That's why.
+CALLER: Okay. So you're saying the decision maker is at the global level?
+PROSPECT: Yeah, it's at the global level, and the assessment agencies and all that are also global. That's why.
+CALLER: Okay. But we approach things in a different way. We don't replace anyone existing. We work on top of them.
+PROSPECT: It's not about replacing, I understand. But the thing is, there has to be a business case made first, to have someone in addition to a function or a piece of work which is already being done by someone, right?
+CALLER: Yeah, but that's what I'm trying to say. We don't work as a generic consulting company. We approach things completely differently. I can give you a quick explanation, if you don't mind.
+PROSPECT: Yeah, tell me.
+CALLER: So what we do differently from a consulting company is, first, we find the obstacle which is there. You might have set clear goals of where you want your business to be, and we find that one obstacle: is it relevant to your goal, and is it the only obstacle stopping your growth? And then, we believe you know your business best, so we discuss it with you together, find the solution with you, and lay down an execution path on how to solve this one problem. We've helped many clients over many years. And what is different from a consulting company is, we don't give you ideas, because anyone can come up with ideas. We give you execution-ready solutions. Instead of coming up with strategy, we focus on the practical, and that takes your expertise. That's why we call it a shared discovery of solutions. And apart from that, our founder, Vikram, would like to have a discussion with you. That would give you an entire overview of what we do and how we can help.
+PROSPECT: Okay, so I understand. But something on very similar lines is what the global agencies are doing for us on a long-term basis. So it wouldn't get justified or approved. It happens with a lot of different things, because it's an MNC and it's all guided through central contracts and central agreements. Those central agreements with our consulting partners also have a local presence. So we work with them. It's not like it's only global.
+CALLER: Yeah, we've had similar cases where we worked with companies which have existing consultants. Because we first provide management consulting, then we figure out the obstacle, and if the obstacle can be solved with software, we build tools for it as well. We build tools and automate based on the problem. If that is not the case, then we come into the picture the other way.
+PROSPECT: Yeah, no, no. We are a very different kind of organisation, Arjun. We are not into IT services. It's a very core manufacturing kind of company. The software part, we are already exploring a lot of things, but it's very limited in terms of native integration. So I understand where you're coming from. It's definitely applicable to some other corporate houses maybe, but not us, because of the way we are set up.
+CALLER: Okay. Okay. I can share the company deck with you once. You can go through it. If there's any value or merit, we can connect later.
+PROSPECT: Sure, sure, sure. Yeah, sure.
+CALLER: Yeah.
+PROSPECT: Okay, thank you. Thank you.

@@ -1,0 +1,29 @@
+# T047
+duration_seconds: 90
+outcome: interested
+prospect_role: Chief Operations Officer
+company_kind: listed Indian company
+company: Sangeet Textiles (fictional)
+caller: Anjali, Meridian Growth Partners (fictional)
+
+PROSPECT: Hello.
+CALLER: Hello sir, this is Anjali calling from Meridian Growth Partners. Can I take two minutes of your time?
+PROSPECT: Calling from where?
+CALLER: Meridian Growth Partners.
+PROSPECT: Meridian?
+CALLER: Yes sir.
+PROSPECT: Yes, regarding what?
+CALLER: So we are working on a research series where we feature companies that are building unique products, solving interesting problems and creating a meaningful impact, and Sangeet Textiles came up during our research. We'd like to prepare a research profile on your company as part of the series.
+PROSPECT: Okay.
+CALLER: So in this profile, we do an independent study which covers what makes the company distinctive, the market and the opportunities around the company, the key strengths that we observe, a few growth opportunities from our research, and an outside view of how the business operates. I wanted to check whether your company would be interested in receiving a profile like this if we prepare one.
+PROSPECT: What are the charges for that?
+CALLER: It is free of cost, sir.
+PROSPECT: Then where do you publish it?
+CALLER: After your approval, we publish it on our website and on LinkedIn.
+PROSPECT: Okay. Send me the details, let's have a look.
+CALLER: Sure sir. Would you like me to send the details to your WhatsApp or to your mail?
+PROSPECT: WhatsApp on this number.
+CALLER: Okay, sure sir. I'll send you the details.
+PROSPECT: Okay.
+CALLER: Thank you, sir.
+PROSPECT: Thank you.

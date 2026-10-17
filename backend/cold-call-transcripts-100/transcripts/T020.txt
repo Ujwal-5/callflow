@@ -1,0 +1,19 @@
+# T020
+duration_seconds: 33
+outcome: do_not_call
+prospect_role: Co-Founder
+company_kind: startup
+company: Tilak Components (fictional)
+caller: Vidya, Meridian Growth Partners (fictional)
+
+CALLER: Hello? Hello? Am I speaking to Mr. Joshi?
+PROSPECT: Yeah.
+CALLER: Hi, I'm Vidya and I'm calling from Meridian Growth Partners, sir.
+PROSPECT: Mhm.
+CALLER: So sir, we are making a research series on mid-sized manufacturing companies that are growing faster than the big listed companies, but very few people know about them.
+PROSPECT: I'm listening.
+CALLER: Huh? Sorry?
+PROSPECT: I said I'm listening.
+CALLER: Okay, thank you. Uh, so we would like to make a full profile on your company. Can I take two minutes of your time to explain this?
+PROSPECT: Uh, not really. I'm not interested in this at this point of time. Thank you for asking, though.
+CALLER: Okay. Thank you for your time. Thank you.

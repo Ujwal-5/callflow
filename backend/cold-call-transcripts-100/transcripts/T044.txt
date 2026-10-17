@@ -1,0 +1,18 @@
+# T044
+duration_seconds: 91
+outcome: not_interested
+prospect_role: Director, Business Development, Defence and Government
+company_kind: India arm of a multinational
+company: Trident Navigation India (fictional)
+caller: Arjun, Meridian Growth Partners (fictional)
+
+RECEPTION: Name and reason for calling. I'll see if this person is available.
+CALLER: Uh, my name is Arjun and I wanted to speak to Mr. Menon about Trident Navigation India.
+RECEPTION: Thanks, Arjun, please stay on the line.
+CALLER: Hello. Hello? Uh, am I speaking to Mr. Menon?
+PROSPECT: That's right.
+CALLER: Uh, hi Menon ji, this is Arjun calling from Meridian Growth Partners. I wanted to talk about Trident Navigation India. Is this the right time?
+PROSPECT: What is this regarding?
+CALLER: Uh, I'll quickly tell you what we do as a company first. We at Meridian work with growing organisations and help them solve the bottlenecks or obstacles which are coming in the way of their growth. But before that, we would like to understand your company's side of growth and provide you with some value.
+PROSPECT: So, beta, I don't think I can help you out, because all those decisions are taken somewhere else, at corporate in the US. Those decisions aren't taken here locally. Okay? So do keep that in mind. I don't think there's a viable discussion opportunity here.
+CALLER: Yeah, yeah, got it. Okay. Thank you, Menon ji.

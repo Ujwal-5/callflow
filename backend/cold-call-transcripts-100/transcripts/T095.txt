@@ -1,0 +1,39 @@
+# T095
+duration_seconds: 282
+outcome: next_step_agreed
+prospect_role: Director
+company_kind: mid-size private manufacturer
+company: Dhanchand Chemicals (fictional)
+caller: Arjun, Meridian Growth Partners (fictional)
+
+CALLER: Hello.
+PROSPECT: Yes.
+CALLER: Am I speaking to Mr. Dhanchand?
+PROSPECT: Yes.
+CALLER: Hi Dhanchand ji, this is Arjun calling from Meridian Growth Partners. Is this the right time to speak?
+PROSPECT: Yeah yeah, sure.
+CALLER: So I wanted to speak about Dhanchand Chemicals. I'll quickly tell you about my company first. Meridian works with growing organisations in solving the operational bottlenecks that come in the way of growth. But before that, we wanted to understand your company's idea of growth and give you some value. Can I ask you a few yes or no questions so that we understand?
+PROSPECT: Please. Yeah, please go ahead.
+CALLER: Okay. So do you think regular review is a key part of growth?
+PROSPECT: Review discipline? Yes, yes. These are all corporate words. We are a small-scale company, sir.
+CALLER: Yes, yes. Doesn't matter, right? Reviewing...
+PROSPECT: Yeah, it does. Yes.
+CALLER: Okay. And do you think trying new things is also important?
+PROSPECT: Yes.
+CALLER: Okay. And do you think your people's growth is your business's growth?
+PROSPECT: Yeah, absolutely, yes.
+CALLER: Okay. Perfect. Thank you for answering. I'll do one thing, Dhanchand ji. We'll create a few growth ideas for your company. I'll briefly give you an overview. Some of these would be on how you can improve your margin, the others on how you can do more sales volume.
+PROSPECT: Right. So, let me stop you right there. The thing is, our company majorly works on a job work basis. We are into chemical manufacturing, and we majorly work on job work. So the margin and all the things you just mentioned, technically there is hardly any. I won't be able to do anything. As soon as I increase my margins or do anything about it, it's just job work; the people who are my customers will go to some other job worker. End of story. So currently I'm not looking for such models. Probably I'm looking for people who can help me with some new products. Not discovering, but getting into new products, with our facility.
+CALLER: With your facility. Okay. Then I'll do one thing. I'll make the ideas based on that. We'll do our own research. We have a research team.
+PROSPECT: I don't want to spend any money on this, no. I'll be very, very specific.
+CALLER: Yeah, yeah. You don't have to spend a single penny. We'll do this research, we'll give you the report. You can go through it. If you see value in it and any merit, we can connect again and discuss how you can move forward.
+PROSPECT: Chalega. Chalega, chalega. No problem. Done, done.
+CALLER: Okay. How would you want me to send the report? Over email, or WhatsApp is fine?
+PROSPECT: I have no idea what this is, because this is the first time I'm even having this kind of conversation and I have no idea where we are heading.
+CALLER: Okay, I'll do one thing. I'll share our customer deck right now on WhatsApp.
+PROSPECT: Nahi, your customer details vagera mat bhejiye. Kya karenge exactly, and what am I going to expect? I mean, what is your product? I failed to understand that particular part. What is your product and what do you want to do?
+CALLER: Okay. In short, Meridian works with organisations. We understand the business, we understand their people. Then we bring both together, we sit with the team, and we discover what the constraint is that is stopping you from growing. And then we work and decide on solutions, on how you can tackle those problems. They could be operational problems, system problems, process problems...
+PROSPECT: I know my problems. Currently I have been working on this particular process you just mentioned, by myself. Okay. So I will do a favour: aap na mujhe bhej dijiye, aapka jo bhi hoga, let me first go through it. Let me see if there is any potential or merit to it, and we'll talk.
+CALLER: Yeah, I'll send it by Monday. Can I call you on Wednesday?
+PROSPECT: Yeah, aaram se, take your time. Yeah, sure, sure.
+CALLER: Okay, around this time. All right. Thank you. Thank you.

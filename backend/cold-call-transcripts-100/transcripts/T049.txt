@@ -1,0 +1,24 @@
+# T049
+duration_seconds: 90
+outcome: do_not_call
+prospect_role: Senior Vice President, Sustainability
+company_kind: listed Indian company
+company: Marudhar Motors (fictional)
+caller: Neha, Meridian Growth Partners (fictional)
+
+CALLER: Hello.
+PROSPECT: Hello.
+CALLER: Uh, am I speaking with Mr. Ravi?
+PROSPECT: Yes.
+CALLER: Uh, hi, this is Neha from Meridian Growth Partners. Is this the right time to speak with you?
+PROSPECT: What is Meridian?
+CALLER: Yeah, so at Meridian we work with companies that are heavy on research and innovation, to help them grow their profit by finding better customers. Right now we are doing a research series, and through that we are making growth reports for manufacturing companies heavy on innovation. We would like to make a report for Marudhar Motors as well. So is this the right time? Can I explain?
+PROSPECT: What kind of report?
+CALLER: Yeah, so the report will contain some growth analysis. It has two parts. The first one is how the company makes its money: why customers choose you, and how to increase customer retention.
+PROSPECT: Madam, all these things Marudhar already has. It is a 40, 45 year old company, a very big organisation, and I don't handle all these things. I handle only the sustainability part. What you are telling me about is looked after by different verticals in the company. One looks after customers, finance is a different person, likewise.
+CALLER: Hm, hm, yeah.
+PROSPECT: So I am not the right person for this kind of thing, no?
+CALLER: Yeah, yeah, I understand. Can you refer me to someone I can connect with?
+PROSPECT: There will not be one, there will be many. And all these things, the software, the digital thing, are already there, I think.
+CALLER: Okay, okay. Okay, thank you for your time.
+PROSPECT: Okay, thank you.

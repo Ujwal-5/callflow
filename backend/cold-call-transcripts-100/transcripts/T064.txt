@@ -1,0 +1,21 @@
+# T064
+duration_seconds: 110
+outcome: follow_up
+prospect_role: Chief Executive Officer
+company_kind: mid-size private manufacturer
+company: Nav Jyoti Chemicals (fictional)
+caller: Neha, Meridian Growth Partners (fictional)
+
+CALLER: Hello.
+PROSPECT: Yeah.
+CALLER: Hello Ashok ji, this is Neha from Meridian Growth Partners. Is this the right time to speak with you?
+PROSPECT: Yeah, yeah, tell me.
+CALLER: Yeah, so I'm calling because we are making a research series about companies that are heavy on research and innovation but very few people know about them, and we would like to make a report on your company as well. Can I take two minutes of your time?
+PROSPECT: Yeah, yeah, go ahead.
+CALLER: Okay, so Meridian is a Hyderabad based company, running for many years, and we work with manufacturers strong in R&D and innovation. Our work is simple: we help them increase their profit by finding higher margin customers for them, in India and in exports. Our research team keeps studying good manufacturing companies, so we are making a series out of it, and that is how we found your company. Now, about the report. It has three parts. First, your growth and margin numbers compared with similar companies. Second, your market, how big it is and where it is going. Third, the places where our team feels your growth is getting stuck, or could grow more. We map all of it from outside, send it to you for your consent and corrections, and only after that do we publish it on our website. So are you okay with this? Can we go ahead?
+PROSPECT: What is the cost?
+CALLER: There is no cost. We are not charging for this.
+PROSPECT: Can I see a sample of what you've done for another company?
+CALLER: Yeah, I'll send it to you. WhatsApp or email, which one? Okay, so I'll send it to you and I'll give you a follow-up call in a few days, if that's okay.
+PROSPECT: Yeah, sure. That would be fine.
+CALLER: Okay. Thank you for your time.

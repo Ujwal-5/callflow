@@ -1,0 +1,26 @@
+# T043
+duration_seconds: 114
+outcome: not_interested
+prospect_role: Sales Director
+company_kind: mid-size private company
+company: Sunrise Dye-Chem (fictional)
+caller: Neha, Meridian Growth Partners (fictional)
+
+CALLER: Hello.
+PROSPECT: Hello.
+CALLER: Uh, am I speaking with Mr. Prithvi?
+PROSPECT: Yes.
+CALLER: Uh, hi Prithvi ji, this is Neha from Meridian Growth Partners, and this call is regarding your company, Sunrise Dye-Chem. So is this the right time to speak with you?
+PROSPECT: Uh, what is your company providing?
+CALLER: Yeah, so we work with fast-growing companies to understand the operational bottlenecks in their growth and solve them. That is it, in one line.
+PROSPECT: You can share your company profile and things on my WhatsApp. This is my WhatsApp number. I will reach out to you if I need anything regarding that.
+CALLER: Sure, Prithvi ji. If you have two minutes, can I understand your point of view on growth, so that I can share a message that is relevant to you?
+PROSPECT: Actually, I'm not an exporter anymore. I'm currently dealing in India only, and the clients I work with are very old relations. Otherwise, I don't have any particular need to find new customers or anything, because my line is very different from others and my work ethic is also different.
+CALLER: Hm, hm. So do you try new things in the business? Is that a positive for you?
+PROSPECT: In this line we don't believe in experiments, we don't believe in any kind of this, and we don't want any new customers. We are fine with our current business, which is really good.
+CALLER: Perfect, perfect. So your team might be delivering the plans, making the products in time and delivering in time, but the plan is made by the leadership team, right?
+PROSPECT: Yeah, we are personally handling that, so we manage on our own terms.
+CALLER: Okay, okay, I understand. So currently you are in a stable state and you are not looking for any expansion or growth, am I right?
+PROSPECT: Yes, yes, 100%.
+CALLER: Okay, okay. Sure, then we might not be the right choice for you, because we work with companies to grow their profit and revenue. So thank you for your time, then.
+PROSPECT: Thank you. Thank you.

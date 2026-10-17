@@ -1,0 +1,21 @@
+# T006
+duration_seconds: 42
+outcome: next_step_agreed
+prospect_role: Chief Executive Officer
+company_kind: mid-size private manufacturer
+company: Kaveri Electric Motors (fictional)
+caller: Anjali, Meridian Growth Partners (fictional)
+
+CALLER: Hello.
+PROSPECT: Hello.
+CALLER: Hello sir, I'm Anjali calling from Meridian Growth Partners. I'm calling regarding the company profile we prepared for your company. You had agreed to it last week.
+PROSPECT: Can you send the mail, please?
+CALLER: Yes, yes sir. I shared the mail with you. So whenever you get a chance, could you please go through the profile and...
+PROSPECT: I've already done it, huh? Can you bump it up for me? I think it got lost.
+CALLER: Uh, I sent it to you yesterday, day before yesterday, sir.
+PROSPECT: Where would it have come from?
+CALLER: Uh, it is on your mail, sir, your company address.
+PROSPECT: I'm not able to hear what you're saying clearly. You'll have to help me. Anjali, Meridian. Yes, I got it. Okay.
+CALLER: Yes, sir.
+PROSPECT: I'll have a look at it, yeah. And I'll reply to that mail. Thank you.
+CALLER: Sure, sure sir. Thank you.

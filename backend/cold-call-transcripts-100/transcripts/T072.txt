@@ -1,0 +1,27 @@
+# T072
+duration_seconds: 107
+outcome: next_step_agreed
+prospect_role: Co-Founder and Director
+company_kind: mid-size private company
+company: TechnoFit Sportswear (fictional)
+caller: Anjali, Meridian Growth Partners (fictional)
+
+CALLER: Hello sir.
+PROSPECT: Hello.
+CALLER: Hello sir, is this Mr. Sunil from TechnoFit?
+PROSPECT: Yeah.
+CALLER: I am Anjali calling from Meridian Growth Partners. Can I take two minutes of your time, sir?
+PROSPECT: Calling from Meridian. What is it about?
+CALLER: So we are working on a research initiative where we feature companies that are building interesting products, and during our research TechnoFit stood out to us. We'd like to prepare a research profile on your company as part of this initiative. The profile is prepared independently, using publicly available information and our research. It covers what makes your company distinctive, the market you operate in, the key strengths of the company that we observe, and the potential growth opportunities.
+PROSPECT: And what is the proposal for that?
+CALLER: Sir, it is free of cost, and before anything is published we share a draft with you so that you can review it and let us know if anything has to be corrected or updated.
+PROSPECT: Okay. Can you send an email on this, and any of your previous such profiles, whatever case studies you have done and published?
+CALLER: This is a new series that we started, so right now we haven't published many companies yet. All of them are in the review process. If you want, I will make a profile for your company and share it with you, sir.
+PROSPECT: Yeah, sure.
+CALLER: Okay sir, thank you. Could you please confirm your mail ID? Is it your first name at the company domain?
+PROSPECT: Sorry?
+CALLER: Sir, is your mail ID your first name, with a T, at the company domain?
+PROSPECT: Yes, first name at the company domain.
+CALLER: Yes sir. I will send it to your mail ID once the profile is created.
+PROSPECT: All set.
+CALLER: Thank you, sir.

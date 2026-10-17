@@ -1,0 +1,25 @@
+# T038
+duration_seconds: 72
+outcome: moved_company
+prospect_role: Director, Projects (former)
+company_kind: India arm of a multinational
+company: Fairline Electronics (fictional)
+caller: Sameer, Meridian Growth Partners (fictional)
+
+PROSPECT: Hello?
+CALLER: Hello, am I talking to Mr. Pradeep?
+PROSPECT: Speaking.
+CALLER: Yes. Hello Pradeep ji. I'm Sameer calling from Meridian Growth Partners.
+PROSPECT: From where?
+CALLER: I am Sameer calling from Meridian Growth Partners, a company based out of Hyderabad.
+PROSPECT: Okay.
+CALLER: Is this a good time to speak with you?
+PROSPECT: Yeah, please go ahead.
+CALLER: Yes, so this call is regarding Fairline Electronics, and we would like to make a short growth report for your company highlighting the higher margin growth opportunities and the key workflows. So can I go ahead and share what our company does, or would you like to know more about the report?
+PROSPECT: Basically, I'm no more with Fairline. I hope you know this, if I'm not wrong.
+CALLER: Okay, so you are not in Fairline anymore.
+PROSPECT: I am not in Fairline anymore. I left last year.
+CALLER: Okay, got it. So which company are you with? If you would like to keep it confidential you can, but...
+PROSPECT: I am with a wind energy company now.
+CALLER: Okay. Okay, thank you.
+PROSPECT: Okay, all right, thanks. Bye.

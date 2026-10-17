@@ -1,0 +1,32 @@
+# T058
+duration_seconds: 162
+outcome: agreed_to_receive_report
+prospect_role: Senior Director, Finance
+company_kind: India arm of a multinational
+company: Tektra Instruments India (fictional)
+caller: Rohit, Meridian Growth Partners (fictional)
+
+PROSPECT: Hello.
+CALLER: Hello. Am I talking to Mr. Srikanth?
+PROSPECT: Yeah.
+CALLER: Hi sir. This is Rohit from Meridian Growth Partners. I just want to talk to you about Tektra. Is it a good time?
+PROSPECT: From where did you say you are from?
+CALLER: Meridian Growth Partners.
+PROSPECT: Okay.
+CALLER: Okay, I'll quickly brief you on what our company does. We work with fast-growing companies around growth, and we help with the operational problems which come up during growth, the bottlenecks which are stalling it. So if you don't mind, can I ask you a few quick questions, yes or no, so that I get a better perspective of your growth?
+PROSPECT: Go ahead. Yeah, go ahead.
+CALLER: Okay. So is reviewing the numbers regularly a key part of your growth?
+PROSPECT: Absolutely.
+CALLER: Okay, fantastic. And what do you think about trying new approaches? In your part of the industry, is it a good thing or a negative thing?
+PROSPECT: It's always good, never bad.
+CALLER: Fantastic, sir. So can I ask you a bit about Tektra? Where are you now, and where are you aiming to be?
+PROSPECT: I think we are going well ahead of where I thought this would end. Let me tell you, we've got a robust process internally. Tektra is a large multinational company with a billion dollars of sales, so there is a proper process, and it's been there for eight years. We are part of a larger industrial group, so there is a lot of focus on delivering growth and profitability. We have internal processes across our regions and the product company to track, monitor, execute, and deliver growth.
+CALLER: I see. Do you see any potential challenges that you are facing right now?
+PROSPECT: No. Even if we have any, we have a robust process internally which we use for problem solving.
+CALLER: I see, sir. Okay, I'll do one thing. Your answers are fantastic. I'll make a report for Tektra, and if it seems useful or insightful in any way, you could check it out or forward it to your higher-ups. Then we could set up a meeting to discuss it. Does that sound good?
+PROSPECT: Fair, of course. Let me take a look at it.
+CALLER: Yeah, okay. Should I send it to you by mail or WhatsApp? Which is convenient for you?
+PROSPECT: Whatever works for you.
+CALLER: Okay, I'll send it to you on WhatsApp. So you could check it out and reach out, yeah.
+PROSPECT: Yeah. Perfect, thank you.
+CALLER: Thank you.

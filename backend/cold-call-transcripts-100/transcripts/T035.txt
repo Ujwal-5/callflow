@@ -1,0 +1,28 @@
+# T035
+duration_seconds: 65
+outcome: interested
+prospect_role: Chief Executive Officer
+company_kind: startup
+company: Elektra Motors (fictional)
+caller: Neha, Meridian Growth Partners (fictional)
+
+PROSPECT: Hello?
+CALLER: Hello, am I speaking with Ritika ji?
+PROSPECT: Yeah, who is this?
+CALLER: This is Neha from Meridian Growth Partners. Is this the right time to speak with you?
+PROSPECT: Related to?
+CALLER: Yeah. So we are making a research series on companies that are heavy on research and innovation but very few people know about them. We would like to make a full report on your company as well. So can I take two minutes of your time?
+PROSPECT: Where is this going to be published?
+CALLER: Yeah, so it will be published on Meridian's website. That is the publication place.
+PROSPECT: Can you call me tomorrow?
+CALLER: Okay, okay, I can give you a call tomorrow. Thank you.
+PROSPECT: Yeah. Your good name once again?
+CALLER: I didn't get you.
+PROSPECT: Your good name once again? Can you repeat it?
+CALLER: Neha. Yeah, Neha.
+PROSPECT: Neha? Yes, yes. Okay. So if you can call me anytime after around 3 PM, I'll be able to give you a few minutes, where I'll explain to you what R&D we have done in our company. Would love to.
+CALLER: Okay. Okay. Is it okay if I give you a call at 5 PM?
+PROSPECT: Tomorrow?
+CALLER: Yes.
+PROSPECT: Um, okay, fine, works. Okay. Thank you.
+CALLER: Thank you. You're welcome.

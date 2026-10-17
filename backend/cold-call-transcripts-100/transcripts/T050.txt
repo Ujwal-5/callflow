@@ -1,0 +1,26 @@
+# T050
+duration_seconds: 118
+outcome: not_logged
+prospect_role: Director
+company_kind: mid-size private manufacturer
+company: Annapurna Kitchen Equipment (fictional)
+caller: Sana, Meridian Growth Partners (fictional)
+
+CALLER: Hello.
+PROSPECT: Hello.
+CALLER: Am I talking to Ajay Kumar?
+PROSPECT: Yeah, tell me, boliye.
+CALLER: Hello, this is Sana. I'm calling from Meridian Growth Partners.
+PROSPECT: From?
+CALLER: I'm calling from Meridian Growth Partners.
+PROSPECT: Yeah, tell me.
+CALLER: Actually, sir, we are making a research series on mid-sized companies which are heavy on research and innovation, but very few people know about them. We would like to make a profile, a report, on Annapurna Kitchen Equipment. Can I take two minutes of your time?
+PROSPECT: Right, tell me, ma'am.
+CALLER: Thank you, sir. Meridian is a Hyderabad based company which has been running for many years, and we work with manufacturers who are strong in research and innovation. Our research team keeps studying such companies, which is this series, and that is how we found your company. The report would have three parts. First, your growth and margin numbers compared with a list of peers. Second, your market, how big it is and where it is going. Third, where our team thinks your growth could get stuck, or could come from next. Right?
+PROSPECT: Right.
+CALLER: Yes, sir.
+PROSPECT: I will share a number with you, right? I want you to connect with Mr. Naik. He handles our entire company operations. You just speak with him, give all these details to him, and we can take a call on this. Okay?
+CALLER: Okay, sir. Can you please share his details?
+PROSPECT: Yeah, yeah. I will text your number on this.
+CALLER: Okay, sir. Sure. Thank you for your time.
+PROSPECT: Thank you.

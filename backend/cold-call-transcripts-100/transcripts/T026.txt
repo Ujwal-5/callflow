@@ -1,0 +1,22 @@
+# T026
+duration_seconds: 51
+outcome: next_step_agreed
+prospect_role: Vice President and Head, People and Organisation
+company_kind: India arm of a multinational
+company: Sigma Technologies India (fictional)
+caller: Neha, Meridian Growth Partners (fictional)
+
+CALLER: Hello.
+PROSPECT: Hello, yes, please.
+CALLER: Yeah, hi Gaurav ji, this is Neha from Meridian Growth Partners.
+PROSPECT: Yeah.
+CALLER: Yeah, I tried reaching out to you. Is this the right time to speak with you?
+PROSPECT: Yeah, yeah. Please tell me. I am driving, but I can speak to you. No problem.
+CALLER: Okay. Sure. So this call is about your company, Sigma Technologies India. We are currently connecting with companies that are heavy on innovation and research, so we want to make a short growth report for Sigma as well. It has been on our list for a long time; we keep a list of companies that we see have the potential to grow faster than they already are. So is it okay if I share the growth report with you on WhatsApp or email, or would you like to know a little more in detail?
+PROSPECT: You send it on WhatsApp to me. Let me have a look at it and come back to you.
+CALLER: Oh, okay. WhatsApp or mail? I didn't get you.
+PROSPECT: WhatsApp. WhatsApp on the same number.
+CALLER: WhatsApp. Sure, sure. I'll do that. And after I send it, can I connect with you next week?
+PROSPECT: Yeah, no problem.
+CALLER: Okay. Sure. Thank you for it.
+PROSPECT: Thank you.

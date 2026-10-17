@@ -1,0 +1,27 @@
+# T073
+duration_seconds: 98
+outcome: agreed_to_receive_report
+prospect_role: Founder and CEO
+company_kind: mid-size private company
+company: MediaPlus Group (fictional)
+caller: Divya, Meridian Growth Partners (fictional)
+
+CALLER: Hello.
+PROSPECT: Hello.
+CALLER: Am I speaking with Ms. Rao?
+PROSPECT: Yeah.
+CALLER: Hi ma'am. I'm Divya, calling from Meridian Growth Partners. Is this the right time to speak with you?
+PROSPECT: It's regarding what?
+CALLER: Yeah, this call is regarding MediaPlus Group. We would like to explore potential opportunities for your company and share what we find with you. Is it okay if I explain the report in two minutes?
+PROSPECT: You are calling from which company?
+CALLER: I'm calling from Meridian. M-E-R-I-D-I-A-N.
+PROSPECT: Meridian? Okay. And what kind of opportunity are you talking about?
+CALLER: Yeah, it's a growth opportunity, ma'am. We create a short growth report for your company, where we look at your company and identify its opportunities for growth. We look at why customers choose you, where there could be more market opportunity, and which parts of the business could be improved to support growth. That is basically what the report consists of, ma'am.
+PROSPECT: Oh, we are ourselves in the same business, because you are a media house.
+CALLER: No, we are not a media house, ma'am. We help companies grow their profit through the technical side.
+PROSPECT: I think then you drop an email first, to my address at the company domain, and let me go through it. If anything is matching, if we are looking at something like this, then of course we will come back to you.
+CALLER: Okay, sure. Can we send the draft only, so you can look at it? It's a five minute read. If you like it, you can connect with us over a call again.
+PROSPECT: Sure, sure.
+CALLER: Sure, ma'am. Your address at the company domain.
+PROSPECT: Yeah, okay. Thank you.
+CALLER: Thank you so much. All right.

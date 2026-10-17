@@ -1,0 +1,43 @@
+# T081
+duration_seconds: 444
+outcome: interested
+prospect_role: Chief Executive Officer
+company_kind: mid-size private manufacturer
+company: Cyra Pharma (fictional)
+caller: Neha, Meridian Growth Partners (fictional)
+
+CALLER: Hello. Hello? Uh, hello, madam. This is Neha from Meridian Growth Partners. Is this the right time to speak with you?
+PROSPECT: Yes.
+CALLER: Okay. So I called you because we make a research series about companies that are heavy on research and innovation, but very few people know about them. We would like to make a full report on your company as well. Can I take two minutes of your time?
+PROSPECT: Uh, madam, we are not into research. And I'm not sure where you got my number from.
+CALLER: Uh, you are currently in Cyra Pharma, right?
+PROSPECT: Correct. Correct. How did you get my number? I mean, from where did you get the connection?
+CALLER: Yeah. So we found that Cyra Pharma is not just a manufacturing company, so we thought there has to be a research team involved, so our data team...
+PROSPECT: We are only manufacturing. We do only manufacturing. But what do you do, by the way?
+CALLER: Yeah, I'll tell you. Meridian is based in Hyderabad, running for many years, and we work with manufacturers who are strong in R&D and innovation, but we have also worked with manufacturers without an R&D team. Our work is simple: we help them increase their profit, by finding higher-margin customers for them in India and in exports. Our research team keeps studying good manufacturing companies. That is the series, and that is how we found your company. So the report I was talking about...
+PROSPECT: So you work only on pharma companies?
+CALLER: No, no. We work with any kind of manufacturing company. Mostly we prefer ones with an R&D team, but we reach out to normal manufacturing companies also.
+PROSPECT: Okay. All right. But at this moment we do not have an R&D team. We are just a manufacturing unit.
+CALLER: Okay. So let me just tell you what this report includes, and you can tell me if you are interested after that. Is that okay? It has three parts. First, how your company makes its money: your growth and margin numbers compared with some companies like yours. Second, your market, how big it is and where it is going. Third, the places where our team feels your growth is getting stuck, or could get stuck. After that we send the profile to you and get aligned. If there are any mistakes, you correct them, and then we publish it on our website. So this is what we are reaching out for.
+PROSPECT: Okay. So you will be taking all the information from me, compiling it, and giving it back to me? Is that what you are saying?
+CALLER: Not all the information. We research your company in depth and make a profile. If we have doubts, or we see that some information is confusing or vague, we might reach out to you, and after making the profile we ask you to correct it, because there might be wrong information about the company out there. We will not ask you every question, but you will correct any wrong information.
+PROSPECT: Okay. So what is in it for you?
+CALLER: I told you we work with companies to increase their profit. Side by side we are doing this publishing, because there are many companies we spoke with which have the potential to grow, but people don't know about them. So basically for recognition and awareness.
+PROSPECT: I understood, but what charges do you take? That is my question.
+CALLER: No, no. This profile does not charge you anything.
+PROSPECT: Okay. So how do you work? What is your revenue out of this? What do you get out of this?
+CALLER: With this we get to understand and study different companies. I will not be doing the profiling personally, other people will, so they get to understand how different companies work. We don't charge, and we are not expecting revenue from this. It is focused on publishing and awareness.
+PROSPECT: What's your company name, by the way?
+CALLER: Meridian. Meridian Growth Partners.
+PROSPECT: Meridian. Okay. So, I'm not sure how I can be helpful here. You have explained it in detail. But my clientele at this moment is government only. We work with the government purely. So I'm not sure how well you can research that and give us information. Let me go through your website first, and see how your input can add value for me. I also do not want you to invest your time in me where I know that...
+CALLER: I get it. So, I mentioned the places where growth gets stuck, right? For a start, you will get to know how we analyse businesses and how we find those. You will be able to see if we think the same way you think about the company, or after reading it you might see some new ones. That is what you get out of it, for a start. And if after going through the website you are interested, then definitely we can get on a call.
+PROSPECT: Okay. All right, sure. And I can also refer two people. Your service might benefit them. They are both startups, so I don't know if you are looking for well established...
+CALLER: Yeah, we are actually looking for mid and big size companies. We are not working with startups right now.
+PROSPECT: Mid and big size, aapka kya range rehta hai?
+CALLER: 100 to 500 crore plus. Revenue 100 to 500 crore.
+PROSPECT: Okay. Theek hai. All right. Then let me go through your website and see if it is helpful for me, and I don't want you to invest time if it is not helpful for me.
+CALLER: Okay, okay. You can go through it. Should I reach out to you after two or three days?
+PROSPECT: Yeah, sure. No problem. By the way, whatever you have explained to me, where do I find it on your website? I am checking your website right now and I am seeing something else, a hiring model.
+CALLER: I'll send you the website link on WhatsApp. There is one more page for the growth work. That is where you will see what I told you just now. The hiring page you are looking at is a sister business, for structuring critical roles inside a company.
+PROSPECT: Okay. The growth page. Okay, scientific execution and margin and customers. Theek hai, main dekhti hoon isme. Okay, thank you for your time.
+CALLER: Thank you.

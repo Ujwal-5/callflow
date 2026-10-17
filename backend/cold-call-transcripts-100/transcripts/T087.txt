@@ -1,0 +1,45 @@
+# T087
+duration_seconds: 281
+outcome: follow_up
+prospect_role: listed as Chief Executive Officer; says he is not a decision maker
+company_kind: listed Indian company
+company: Bhagwati Automotive (fictional)
+caller: Sana, Meridian Growth Partners (fictional)
+
+CALLER: Hello.
+PROSPECT: Hello.
+CALLER: Yes, am I talking to Mr. Sharma?
+PROSPECT: Yeah, speaking.
+CALLER: Hello sir, this is Sana. I am calling from Meridian Growth Partners.
+PROSPECT: Tell me, please.
+CALLER: Actually sir, we are making a research series about mid-size companies who are heavy on research and innovation, but few people know about them. We would like to make a full report on Bhagwati Automotive. Can I please ask for two minutes of your time?
+PROSPECT: Actually, I am driving right now. So how much time will you take?
+CALLER: Two minutes, sir.
+PROSPECT: Okay, tell me.
+CALLER: Okay, thank you sir. So Meridian is based in Hyderabad and has been running for many years. We work with manufacturers who are strong in R&D and innovation, and our work is simple: we help them increase their profit, by finding higher-margin customers for them in India and in exports. Our research team keeps studying good manufacturing companies, and this is how we found Bhagwati Automotive. The report would be simple. It has three parts. First, your growth and margin numbers compared with a list of peers. Second, more about the market, how big it is and where it is going. Third, the places where our team feels your growth is getting stuck, or could come from. If you want, I could send you the report, if I get your consent.
+PROSPECT: No, this report would be about Bhagwati Automotive?
+CALLER: Yes.
+PROSPECT: So you have already done the research and everything?
+CALLER: We have the research. We just have to convert it into a report.
+PROSPECT: And this research has been done for the international market?
+CALLER: Sir, all those details will be in the report. Once I have more clarity on that, I would be able to assist you.
+PROSPECT: So presently, what do you have in your report?
+CALLER: Presently our team just has the basic information. We have not gathered more until we get your consent for this, so that we don't publish some false information.
+PROSPECT: So basically this is a vendor project you are telling me about. If we want to do it, we'll have to pay you some money and get this done, right?
+CALLER: For the profile, no sir. For the profile you just need to give your consent.
+PROSPECT: Profile means what?
+CALLER: Profile means the report, everything I told you about.
+PROSPECT: And what would be the usefulness of this? Why would someone go and get a profile created by you?
+CALLER: Because sir, as I mentioned, we have been running for many years, and we help companies increase their profit, and we have worked with other companies.
+PROSPECT: But I am not at that decision making level. I don't know where you got my number from, but I am not the decision maker in all these things. Company level profit is not my KRA. I am not very clear how I'll be able to help you in this.
+CALLER: Okay sir, could I please know what your KRA is?
+PROSPECT: Before going into that, which companies have you worked with? Have you worked with any other established OEMs?
+CALLER: All of that information I will have to get from my team and get back to you.
+PROSPECT: Till now, have you done this profiling and research for increasing profit for any other company?
+CALLER: Yes. One which is going on is a textile company. It's another industry.
+PROSPECT: Okay. May I know your good name?
+CALLER: Yes, it's Sana.
+PROSPECT: Sana, if you have my email ID, you can share this with me, because I'm not very clear, and I cannot help you with anything in this regard.
+CALLER: I actually do not have your email. Could you please share it?
+PROSPECT: [He gives his email address.]
+CALLER: Okay, thank you sir. Thank you for your time.

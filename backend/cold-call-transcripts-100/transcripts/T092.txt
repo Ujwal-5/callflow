@@ -1,0 +1,26 @@
+# T092
+duration_seconds: 251
+outcome: agreed_to_receive_report
+prospect_role: Joint Managing Director
+company_kind: mid-size private manufacturer
+company: Agrovel Industries (fictional)
+caller: Neha, Meridian Growth Partners (fictional)
+
+CALLER: Hello.
+PROSPECT: Uh.
+CALLER: Hello, Harsh ji, this is Neha from Meridian Growth Partners. We spoke on the 13th. Is this the right time to speak with you?
+PROSPECT: Yeah.
+CALLER: Yeah. So I was speaking about a research series we are doing, and we would like to make a short growth report for Agrovel Industries. Can I explain what the report will contain, or would you like to know more about our company first?
+PROSPECT: I think tell me about your company first, and then we can get into the report.
+CALLER: Okay, sure. So what we do at Meridian is, we work with companies heavy on research and innovation, and if they are seeing some challenge in growing, something they can't figure out, why the growth is getting stuck, we go in there. People generally think we are a consulting company, but we stick with the company till we get the results we promise. We understand the processes and the constraints, and we run some experiments. We take two or three hypotheses, test them, and see which one is working. Then we go deeper on that one, and we place one of our own engineers inside the company. We also have a software platform, which the teams use to put in their daily plans and reports. So suppose there is a CEO and a factory worker. The CEO does not have time to go to the factory floor to understand what's going on. But since the workers put their daily plans and challenges into the platform, when the CEO asks why a certain thing is stuck, the platform can look across everyone's plans and workflows and give an answer. So that's what we do. Now, the report we are making has two parts. First, how your company makes its money: the fit between your product and the market that wants it, your innovations, how to increase customer retention, and the market potential, compared with similar companies. After that, you can get on a 15-minute Google Meet with us and discuss anything you are interested in. After that we give you a personalised set of workflows and opportunities and customers you can go after. And then, if you are willing to work with us, we run a three-day workshop for your company, and we take it further. Till that stage we are not charging anything. After that, if you still trust us and think we can grow your company, then we go ahead and work with you.
+PROSPECT: Right, got it. Honestly, we've already engaged a consultant to do pretty much exactly what you've described. So this, at least for this year, doesn't make any sense.
+CALLER: Okay, okay. So are they giving you the results they promised?
+PROSPECT: We just started the engagement around last month, and it's going to take another couple of months for us to start seeing results. But some of the results are already starting to become visible.
+CALLER: Okay, that's great. I'm really glad you are working with a good consulting company. But is it okay if I still send you the draft of the report, so that you can see how we function? If later you feel you would like to work with us, you can refer to it and connect with us.
+PROSPECT: Okay, you can send it to me.
+CALLER: Okay. Would you prefer WhatsApp or email?
+PROSPECT: Email.
+CALLER: Email at your first name at the company domain?
+PROSPECT: Yes.
+CALLER: Okay, sure. I'll do that. Thank you for your time.
+PROSPECT: Yeah, thank you.

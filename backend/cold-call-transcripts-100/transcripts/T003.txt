@@ -1,0 +1,18 @@
+# T003
+duration_seconds: 34
+outcome: do_not_call
+prospect_role: Associate Director
+company_kind: India office of a multinational
+company: Novara Foods India (fictional)
+caller: Priya, Meridian Growth Partners (fictional)
+
+PROSPECT: Haan ji?
+CALLER: Am I speaking with Manpreet ji?
+PROSPECT: Yes, tell me.
+CALLER: Hi Manpreet ji, this is Priya calling from Meridian Growth Partners, aur ye Novara Foods ke regarding hai. Kya ye sahi time hai aapse baat karne ka?
+PROSPECT: Haan, boliye.
+CALLER: So what we do as a company is, we work with fast growing companies and help with the operational problems that come up during growth. For that we wanted to understand how Novara Foods thinks about growth.
+PROSPECT: No ma'am, no no ma'am. Yahan se aisa kuch nahi hota. It's a back office, so nothing of that sort happens here.
+CALLER: Okay, I understand. So we have made a short growth report on Novara Foods. Is it fine if I share the document with you?
+PROSPECT: No, no, no point ma'am. I am not the relevant person.
+CALLER: Okay, I understand. Thank you, Manpreet ji.

@@ -1,0 +1,23 @@
+# T067
+duration_seconds: 90
+outcome: agreed_to_receive_report
+prospect_role: Director, South India
+company_kind: large private company
+company: Pavitra Waters (fictional)
+caller: Priya, Meridian Growth Partners (fictional)
+
+CALLER: Hello.
+PROSPECT: Hello.
+CALLER: Am I speaking with Sanjay ji?
+PROSPECT: Yeah, I am speaking.
+CALLER: Hi Sanjay ji, this is Priya calling from Meridian Growth Partners, Hyderabad, and this call is regarding Pavitra Waters. Is this the right time to speak?
+PROSPECT: Anyway, now that you have called, go on.
+CALLER: Achha, so what we do as a company is, we work with fast-growing companies and understand the operational problems which arise during growth. For that, we wanted to understand how Pavitra thinks about growth. So is it fine if I ask you some quick questions on that?
+PROSPECT: You can, but it is better that you come to the plant, the one plant in Hyderabad, and talk to them directly.
+CALLER: Matlab, abhi right now we are just trying to make a short growth report and share it as an initial stage. We do talk to the team at different stages. We do that after the director or someone in that position talks to our founder, then we talk to the people. So initially it is just to show the value of our work through a growth report. So is it fine if I share that report with you through WhatsApp or mail, if that's comfortable?
+PROSPECT: Okay, yes. Share it through mail.
+CALLER: Okay. Which mail should I share it to?
+PROSPECT: [He gives a personal email address.]
+CALLER: Theek hai, thank you Sanjay ji. I will share the report.
+PROSPECT: Yeah, yeah.
+CALLER: Thank you.

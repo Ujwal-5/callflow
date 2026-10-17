@@ -1,0 +1,31 @@
+# T097
+duration_seconds: 286
+outcome: not_interested
+prospect_role: Senior Director, Supply Chain IT
+company_kind: India arm of a multinational
+company: Novara Foods India (fictional)
+caller: Arjun, Meridian Growth Partners (fictional)
+
+CALLER: Hello?
+PROSPECT: Hello.
+CALLER: Am I speaking to Mr. Vinay?
+PROSPECT: Yeah.
+CALLER: Hi Vinay ji, this is Arjun calling from Meridian Growth Partners. Is this the right time to speak?
+PROSPECT: Calling from?
+CALLER: Meridian Growth Partners. It's a company based in Hyderabad.
+PROSPECT: Okay.
+CALLER: I wanted to have a quick chat about Novara. I'll quickly tell you what we do as a company first. We at Meridian work with businesses and help them solve the operational challenges that are in the way of growth. But before that, we'd like to understand what your idea of growth is and provide you with some value. So is it fine if I ask you a few simple yes or no questions?
+PROSPECT: No, no, but which area does it focus on?
+CALLER: Basically, we first diagnose where the problem is, what the obstacle is. Then we check whether that obstacle is relevant to the goal you've set, whether it is the only one, and if so, whether there are more. If it's in operations, it could be there. If it's a people problem, it could be that. If it's a system problem, it could be that. We assess, identify, and then put execution-ready solutions in place.
+PROSPECT: But which team will you start talking to? Then you'll have to talk to the general manager, right? The head of Novara India.
+CALLER: First we talk to one leadership person. If they see value in us, we set up a meeting with our founder. If you see value, we'll set up a meeting with him.
+PROSPECT: Then for Novara India you should be reaching out to the India president, right? I will not be able to help.
+CALLER: Yeah, but first we assess one leadership person in Novara. Then we move to a consensus, over a longer run.
+PROSPECT: See, that's what I'm saying. I'm not the right person. You know who can help. You're basically talking about a complete company, and I take care of a particular solution area. If your approach is this, then you should be starting your discussion with the people who are in the leadership of Novara India. Then it's in the right direction. But if you say no, it's in the commercial area, the sales area, the supply chain area, the IT area, then it's a different thing.
+CALLER: Yeah, that's what I'm saying. We reach out to you because you are the senior director of supply chain, right? You could be facing an issue in your department, and we would assess that first, because consensus with the whole team is on a longer run.
+PROSPECT: Then, if it's the supply chain area, it's a different thing. But you are talking about starting at a company level. Now, growth: supply chain might contribute, but we don't know, right? If you have the right products in the market, if your pricing is right or not. Supply chain comes only at a very later stage.
+CALLER: Okay, we'll do one thing then, Vinay ji. You can tell me the one challenge you're facing in your department right now, and I'll send you some growth ideas.
+PROSPECT: No, no, no. That's what I'm saying. You need to be clear about what you want to really focus on. When you say growth ideas, it can be anything. For example, your commodity pricing has gone up, or people are moving from salty snacks or cola to other things. That might be the thing the leadership is trying to solve. How will supply chain help with that? Every department has a lot of initiatives going on. But at a company level, that's what I'm saying: it's a different thing when you're talking to a small company or a department, but when you talk at a bigger company level, it will be different.
+CALLER: Okay.
+PROSPECT: Okay? Yeah, thank you.
+CALLER: Thank you.

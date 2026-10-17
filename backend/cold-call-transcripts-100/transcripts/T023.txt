@@ -1,0 +1,20 @@
+# T023
+duration_seconds: 33
+outcome: not_logged
+prospect_role: not known
+company_kind: mid-size private company
+company: not named on the call
+caller: Sana, Meridian Growth Partners (fictional)
+
+CALLER: Hello.
+PROSPECT: Hello.
+CALLER: Hello.
+PROSPECT: Yes, please.
+CALLER: Yes, sir. I'm Sana, calling from Meridian Growth Partners. We spoke yesterday.
+PROSPECT: Okay.
+CALLER: Actually, sir, we are making a research series on mid-size companies which are heavy on research and development and innovation, but very few people actually know about them.
+PROSPECT: Can you send me? I mean, I told you, send me a WhatsApp or an email on this one.
+CALLER: Oh, all right. All right. I will respond there, okay?
+PROSPECT: Sure.
+CALLER: Thank you.
+PROSPECT: Thank you for your time.

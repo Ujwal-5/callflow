@@ -1,0 +1,26 @@
+# T041
+duration_seconds: 108
+outcome: do_not_call
+prospect_role: Associate Director
+company_kind: India arm of a multinational
+company: Panorama Electronics India (fictional)
+caller: Sameer, Meridian Growth Partners (fictional)
+
+CALLER: Hello.
+PROSPECT: Hello.
+CALLER: Am I talking with Mr. Saxena?
+PROSPECT: Yes.
+CALLER: Yes, hello Mr. Saxena. This is Sameer calling from Meridian Growth Partners.
+PROSPECT: From?
+CALLER: Meridian Growth Partners.
+PROSPECT: Okay.
+CALLER: So this call is regarding Panorama Electronics India. Is this a good time to speak with you?
+PROSPECT: Please tell me.
+CALLER: So I will keep it very short, it will take 10 to 20 seconds. Right now we are working on a research series where we study how leading companies create and sustain growth, and the operational challenges that come with that growth. Before discussing anything further, we wanted to show you some value first. As part of our research we have prepared a completely free growth report specifically for Panorama. If you are interested, I can send it to you by WhatsApp or email, and you can reply whenever you feel like. There is no time limit, and it is completely free.
+PROSPECT: So Sameer, for this thing you will have to speak to somebody at the head office. I am not the right person, because I will not be able to add value to this. The people sitting at the head office are the deciding factors. You will have to connect with somebody there, not me.
+CALLER: Okay, okay. So where can I get their contact?
+PROSPECT: First you will have to connect with the head office landline number, and there you can probably find somebody in the product team. Ask for somebody in the product team and they will probably be able to help you.
+CALLER: Okay. So do you have any number, or...?
+PROSPECT: No, I cannot share the number. Sorry. Thanks.
+CALLER: Okay. Thank you.
+PROSPECT: Yeah. Bye.

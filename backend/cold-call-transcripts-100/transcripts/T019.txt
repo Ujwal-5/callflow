@@ -1,0 +1,19 @@
+# T019
+duration_seconds: 65
+outcome: not_logged
+prospect_role: not known
+company_kind: mid-size private company
+company: Circuit Drive Automation (fictional)
+caller: Kavya, Meridian Growth Partners (fictional)
+
+CALLER: Uh, ji, am I speaking with Ankit ji from Circuit Drive Automation?
+PROSPECT: Yes.
+CALLER: Uh, hello Ankit ji, this is Kavya and I'm calling from Meridian Growth Partners. Is this a right time to speak with you?
+PROSPECT: Yeah, tell me.
+CALLER: Yeah. So this is regarding Circuit Drive Automation, sir. Right now at Meridian we are trying to reach different companies and understand their idea of growth of the business, and based on that we prepare a short growth report on the company, and we can send that report to you if you say okay. To prepare that report we need to understand your idea of growth. So is it okay if I ask you three quick questions?
+PROSPECT: It would be better if you can send me on WhatsApp. I will reply to you on WhatsApp.
+CALLER: Okay, should I send you the report? Or...
+PROSPECT: Yeah, you send me. Then I will see what I can do.
+CALLER: Okay. So sir, basically to send this report we need to give you a bit of a gist of it, what the report contains, what it is about. Then we can prepare it. What if I do one thing, sir, I'll send you those questions and our company profile on WhatsApp, then we can connect. That would be better.
+PROSPECT: Then you send me. Then if required, if I feel it is good for me, I will connect.
+CALLER: Yeah, yeah, sure. Okay.

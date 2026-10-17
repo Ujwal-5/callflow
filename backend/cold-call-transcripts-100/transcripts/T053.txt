@@ -1,0 +1,23 @@
+# T053
+duration_seconds: 94
+outcome: not_interested
+prospect_role: Director
+company_kind: India arm of a multinational
+company: Kessler Endoscopy India (fictional)
+caller: Sameer, Meridian Growth Partners (fictional)
+
+CALLER: Hello, am I talking with Mr. Kapoor?
+PROSPECT: Yes, who is this?
+CALLER: Yes, hello Kapoor ji. I'm Sameer, calling from Meridian Growth Partners. Is this a good time to connect?
+PROSPECT: Calling from?
+CALLER: Meridian Growth Partners. A company based in Hyderabad.
+PROSPECT: Okay, what is the company doing?
+CALLER: So this call is regarding Kessler Endoscopy India. We would like to make a short growth report for your company, highlighting the higher margin growth opportunities and the key workflows. If I take two seconds to explain what it is, and if you would like it, good; if not, I will not disturb you again. It's a simple report that gives you a quick sense of why customers choose you, retention, innovation, market potential, all these things. And...
+PROSPECT: What do you want from me? Why should I provide these details?
+CALLER: I just need your approval. May I send you this report?
+PROSPECT: What is that report?
+CALLER: It's a growth report for your company.
+PROSPECT: And what will I do with that report?
+CALLER: If you like the report, you can connect with us over a call and discuss what you liked, because we work with many companies, right? So we wanted to...
+PROSPECT: No, I don't have time for such work. You should call somebody else. Thank you.
+CALLER: Okay then. Thank you.

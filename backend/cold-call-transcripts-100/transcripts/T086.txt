@@ -1,0 +1,37 @@
+# T086
+duration_seconds: 242
+outcome: next_step_agreed
+prospect_role: Chief Executive Officer
+company_kind: mid-size private company
+company: Swadesh Home (fictional)
+caller: Anjali, Meridian Growth Partners (fictional)
+
+CALLER: Hello, sir. I am Anjali calling from Meridian Growth Partners. Can I take a minute of your time?
+PROSPECT: Okay.
+CALLER: So we are working on a research series where we feature companies that are building unique products but aren't widely known. Swadesh Home came up during our research, and we'd like to prepare a research profile on your company as part of the series, sir.
+PROSPECT: Okay.
+CALLER: As part of the series we prepare an in-depth profile of the company, covering what makes the company distinctive, the market and opportunities around it, the key strengths we observe, a few growth opportunities, and an external view of how the business operates. I just wanted to...
+PROSPECT: Where are you based?
+CALLER: We are based in Hyderabad, sir. We work with companies that are strong in R&D and innovation and help them improve their profit by finding high-value customers.
+PROSPECT: So you are a professional company, and you provide this as a service, or what?
+CALLER: No sir, this is not a service. This is research that we are doing, and the profiling is done completely free of cost. I just wanted to check whether you would be interested in receiving a profile like this if we prepare one for you.
+PROSPECT: That's okay. I don't see any negative in this. You can do that.
+CALLER: Okay, thank you, sir.
+PROSPECT: But who suggested our name to you? And is there any way it will harm us, or this report will go to our competitors and affect us in a negative way?
+CALLER: I don't think it will affect you in a negative way at all, sir. First we make the profile, then we share it with you. If you have any suggestions or corrections, you tell us over a call and we implement them. Only after your approval is it...
+PROSPECT: We are based in Gurgaon.
+CALLER: Yes, sir.
+PROSPECT: That's not a problem for you?
+CALLER: No, sir, it is not a problem at all. We make the profile from here, we send it to you online, and you can suggest corrections through a Google Meet.
+PROSPECT: Madam, to know our strengths and our USPs, somebody needs to visit our factory, our showrooms, somebody needs to see our product line, somebody needs to meet the product manager, the merchants, the people who are...
+CALLER: Yes, sir. I understand what you're saying. You're saying that to create a profile, we should understand how the inside of your company works and then do the profiling.
+PROSPECT: If you ask us to give you a profile on the telephone, we would only be telling you our side of the story. It is only when you do it at the premises and do thorough research that the research gives you a lot of things. When you speak to the ground people, when you speak to the customer, then you find that these are the strengths of the company and these are the weaknesses, and how it stands out. Everybody will say that I provide excellent customer service. It is only when you speak to a customer that they would be able to say that.
+CALLER: Yes, sir, I absolutely agree with that. Right now what we do is, we conduct the research independently, outside the company, and once the report is ready, we give it to you first.
+PROSPECT: Fair enough. So long as you're doing it independently, I will not get into the methodology. Let's see how the report comes out, and then we would like to go through it and give you our inputs.
+CALLER: Yes, sir. We can talk about the report after it is done, and then if required we will come to your company to make things better.
+PROSPECT: Okay. Okay.
+CALLER: Thank you, sir. It was great speaking with you. I'll send you the report. Can you confirm your mail ID, the one that I have...
+PROSPECT: Mail ID is my first name at the company domain.
+CALLER: Okay, sir. I'll be sending the report to you by tomorrow.
+PROSPECT: Once you send the report, do let me know about it.
+CALLER: Yes, sir. I'll definitely call you. Thank you, sir. It was great speaking with you.

@@ -1,0 +1,21 @@
+# T009
+duration_seconds: 38
+outcome: not_interested
+prospect_role: Vice President, Human Resources
+company_kind: India arm of a multinational
+company: Idris Fluidics India (fictional)
+caller: Rachel, Meridian Growth Partners (fictional)
+
+CALLER: Hello. Am I speaking to Mr. Rathi?
+PROSPECT: Yeah. Rathi.
+CALLER: Yeah. I am Rachel and I am calling from Meridian Growth Partners. Is this a good moment to speak?
+PROSPECT: For what?
+CALLER: Actually, this call is regarding Idris Fluidics and we would like to make a short growth report on it. Would you like me to explain it right now?
+PROSPECT: No, not really. We are not looking.
+CALLER: Okay. Can I ask you a question, if you don't mind?
+PROSPECT: Yeah, sure.
+CALLER: Are you looking to expand your business as of now?
+PROSPECT: No.
+CALLER: No. Okay. All right.
+PROSPECT: We have an internal business model, actually, and we are following it. Definitely.
+CALLER: Okay. Okay. All right. Thank you.

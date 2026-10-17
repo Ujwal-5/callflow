@@ -1,0 +1,45 @@
+# T100
+duration_seconds: 280
+outcome: agreed_to_receive_report
+prospect_role: Director, Safety Data Management
+company_kind: India arm of a multinational
+company: Vocis Life Sciences (fictional)
+caller: Arjun, Meridian Growth Partners (fictional)
+
+CALLER: Hello?
+PROSPECT: Hello.
+CALLER: Hi Abhinav, I am Arjun calling from Meridian Growth Partners. Is this the right time?
+PROSPECT: Yeah, a little bit.
+CALLER: I called you on Monday, right? You said you were on leave, so I am calling you back.
+PROSPECT: Yeah, yeah.
+CALLER: So I'll quickly brief you on what we spoke on Monday. Meridian helps organisations which are facing operational bottlenecks that stop them from growing: we identify them and help in solving them. But before that, we like to understand what the company's idea of growth is. To do that, we wanted to ask you a few yes or no questions. Is it fine if I ask them now?
+PROSPECT: Yeah, go ahead.
+CALLER: Okay. Do you think regular review is a key part of growth?
+PROSPECT: Yes.
+CALLER: Okay, amazing. Is trying new things a positive or a negative word for you?
+PROSPECT: It's positive.
+CALLER: Okay, and do you think your people's growth is your business's growth?
+PROSPECT: Oh, yeah, of course. Professionally. It's professional.
+CALLER: Yes, yes. Fantastic. Since you answered these questions, we'd like to send you a small gift, a report with a few growth ideas. Some would be on how you can do more sales volume, the others on how you can improve your margins. We do a small study: we research your company, your industry, the top players in the industry, we study the processes they use and how you could apply them. This would be on our research; you don't have to tell us anything. If you see value or merit in it, we can discuss later how you can actually implement these in your work.
+PROSPECT: Okay.
+CALLER: Do you have any doubts or questions?
+PROSPECT: No, go ahead.
+CALLER: Okay, so I'll send you this report. But I'd like to ask you a few more questions, if you don't mind.
+PROSPECT: Yep.
+CALLER: So are you looking to grow your EBITDA right now?
+PROSPECT: Yeah. I think the company is on that side. It's doing a lot of changes for EBITDA growth.
+CALLER: Okay, and have you set clear goals, like you're at A right now and you want to go to B?
+PROSPECT: Yeah.
+CALLER: Okay. And can I know why you want this growth now?
+PROSPECT: There was a drop, a dip, in the last two years. So the organisation has made some changes. It was in negative the last two years.
+CALLER: Okay, understood. And what challenges are you facing currently to achieve this goal? What are the obstacles in your way right now?
+PROSPECT: I think I'm not able to answer this.
+CALLER: Okay, okay. Understood. So what we do with organisations is, we first understand your people, we understand the business, then...
+PROSPECT: One thing. You just share me the details. Let me go through your organisation, what you do, and I'll see how you would fit to help us.
+CALLER: Sure, sure. When can I call you back? Can you give me a date or time when you'll be free?
+PROSPECT: You can call me next week.
+CALLER: Okay, next Monday.
+PROSPECT: Cool. Next Monday.
+CALLER: Okay. Would you prefer a Google Meet or a phone call?
+PROSPECT: Let's connect on phone. First you share the details. I'll have to see how it would be helpful.
+CALLER: Yeah, sure. Thank you. Thanks.

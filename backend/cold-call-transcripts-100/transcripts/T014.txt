@@ -1,0 +1,17 @@
+# T014
+duration_seconds: 34
+outcome: follow_up
+prospect_role: Director, Program Management
+company_kind: India arm of a multinational
+company: Loram Automotive India (fictional)
+caller: Divya, Meridian Growth Partners (fictional)
+
+CALLER: Hello.
+PROSPECT: Yes.
+CALLER: Am I speaking with Harish ji?
+PROSPECT: Yes. Regarding?
+CALLER: This call is regarding Loram Automotive. We wanted to ask you about your growth perspective on the company.
+PROSPECT: Sorry, I didn't get you. You are calling from where?
+CALLER: I am calling from Meridian Growth Partners, sir. We are looking to connect with fast growing companies like Loram to explore how they are approaching their next stage of growth. So can I ask you?
+PROSPECT: No, I don't think I am the right person to talk about this. You will have to connect with somebody else. Call me in the evening. I'll tell you the right person. Okay? Thank you.
+CALLER: Evening. Yeah, sure sir. Thank you.

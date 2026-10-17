@@ -1,0 +1,54 @@
+# T082
+duration_seconds: 425
+outcome: not_logged
+prospect_role: Owner
+company_kind: mid-size private manufacturer
+company: Kiran Lighting (fictional)
+caller: Kavya, Meridian Growth Partners (fictional)
+
+PROSPECT: Hello.
+CALLER: Ji. Am I speaking with Mr. Umar?
+PROSPECT: Yes.
+CALLER: Hi, sir. This is Kavya and I am calling from Meridian Growth Partners, Hyderabad. Is this a right time to speak with you?
+PROSPECT: About what exactly?
+CALLER: This is regarding Kiran Lighting, sir. Currently at Meridian we are trying to reach different companies and understand their idea of growth. Regarding that we also reached Kiran Lighting, so that we can understand your perspective on the growth of the business, and prepare a short growth report on it. So is it okay if I ask you three simple yes or no questions, so that we get an idea of the growth of your business?
+PROSPECT: Sure.
+CALLER: All right. The first question: in your perspective, do you think your people's growth is your business's growth?
+PROSPECT: Yes, obviously.
+CALLER: All right, that's great. The next question: is regular review a key part of your growth?
+PROSPECT: Review, I understand. Yeah, I review. Both go hand in hand, or is there a difference?
+CALLER: So you agree to both. All right, that's good to hear. And the last question: is trying new things a positive or a negative for you?
+PROSPECT: Trying new things? Like innovative ideas, coming up with new... I would say positive, yeah.
+CALLER: All right, great to hear, sir. These are the questions we wanted to ask so that we understand your idea of growth. And sir, do you measure the growth of the business through revenue or through profit?
+PROSPECT: In the current stage I am in, I would say revenue.
+CALLER: Okay. Based on the goods you sold, before deducting the costs. Okay, I understood. And do you have anything like a journey from point A to point B, a target you have set?
+PROSPECT: Yeah, currently we do have a plan, yes.
+CALLER: Okay. And what exactly, sir? I know your company is Kiran Lighting, so is it something related to...
+PROSPECT: I am not really comfortable sharing my plan with you.
+CALLER: No, no. Not the plan. About the company.
+PROSPECT: We are a manufacturing unit. We manufacture outdoor light housings. Basically we deal in all kinds of outdoor light products.
+CALLER: Okay. Outdoor light products, like gate lights, the pole lights that you see in resorts and hotels? Does it also include decoration, like the lights people keep as decoration outside?
+PROSPECT: Yeah, exactly. It's a decorative element in your space. We make the decorative pieces and the lighting product as well.
+CALLER: Okay. So you manufacture those lights.
+PROSPECT: We manufacture the housing. The metal part of it.
+CALLER: Okay. The metal part of the light. I understood that. I think your target customers would mostly be hotels and restaurants and cafes, right?
+PROSPECT: On the B2B side, yes. But on the B2C side we also target homeowners and people who rent houses and so on.
+CALLER: Okay, I see. So is there any challenge, you know, where there were targets you thought you would reach and didn't quite reach? Any challenges like that in the manufacturing process?
+PROSPECT: No. Thankfully we are on the right track.
+CALLER: Okay, that's good to hear. You have a plan that is executing right now, and everything is going fine. Okay. So, coming to the point, sir, I think somebody from Meridian has talked to you before?
+PROSPECT: Once, yes, I think. But I'm not sure. Did they send any report or something? They did say they would, but I don't think I've ever received one.
+CALLER: Okay. Do you want to receive it once, sir? Because that is the reason I have called you again.
+PROSPECT: Yeah, I can gauge that from this conversation. Yeah, just send me that report.
+CALLER: Before sending, sir, can I give you a gist of it, so that you have a clear idea of what you are looking at?
+PROSPECT: I do know what you guys do. I think I am quite aware. You help businesses understand what the industry is about, how to grow, how to acquire new clients, and also help with execution problems, operational and digital aspects of the business.
+CALLER: I see that you have remembered quite well, sir.
+PROSPECT: Now I remember. I did ask your team member to send me a link to your website and a portfolio of sorts. If you can send it to me, that would be great. I can look at it and see what you are all about, and then if I require your services I can contact you.
+CALLER: Yeah, sure. Along with the report I'll send you the company profile. We have a customer deck as well. Would you prefer mail or WhatsApp?
+PROSPECT: Anything is fine. WhatsApp, same number? No, not this number. Write down my other WhatsApp number. [He gives a number.]
+CALLER: Yeah, I'm noting it down, sir. Can I repeat it for confirmation? [She repeats it.]
+PROSPECT: Yeah, perfect.
+CALLER: So I'll send the report along with the company website to this number. And for a quick discussion of the report, sir, do you think we can have that over a Google Meet or something?
+PROSPECT: Let me look at the report first, and then I can answer that question.
+CALLER: All right. Sure. I'll send you the report through WhatsApp.
+PROSPECT: Sure. Thank you.
+CALLER: Thank you so much. Thanks.

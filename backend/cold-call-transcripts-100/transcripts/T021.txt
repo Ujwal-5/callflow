@@ -1,0 +1,23 @@
+# T021
+duration_seconds: 54
+outcome: do_not_call
+prospect_role: CEO and Founder
+company_kind: mid-size private company
+company: Pure Harvest Organics (fictional)
+caller: Neha, Meridian Growth Partners (fictional)
+
+CALLER: Hello.
+PROSPECT: Hello. Hmm.
+CALLER: Hello Rakesh ji, this is Neha from Meridian Growth Partners. Is this the right time to speak with you?
+PROSPECT: Meridian?
+CALLER: Meridian Growth Partners.
+PROSPECT: Hmm, boliye na, kya hua?
+CALLER: Yeah, this call is about your company, Pure Harvest. Is this the right time to speak with you?
+PROSPECT: Kya karna hai? Bolo na.
+CALLER: Actually, we are making a short growth report for companies such as yours.
+PROSPECT: Nahin, nahin, nahin. Sorry. Meri internal team hai, to hum log nahi karte abhi.
+CALLER: Okay, okay. So can I ask you one last question?
+PROSPECT: Haan, boliye.
+CALLER: Yeah, so currently are you looking to expand or grow your company, or are you working on, like...
+PROSPECT: No, no, no. Hamara chal hi raha hai, par abhi woh sab internal hi. Hum log outsource nahi kar rahe kuch bhi.
+CALLER: Okay, but, uh, like...

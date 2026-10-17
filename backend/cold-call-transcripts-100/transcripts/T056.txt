@@ -1,0 +1,26 @@
+# T056
+duration_seconds: 90
+outcome: not_logged
+prospect_role: Co-founder
+company_kind: startup
+company: Gyan AI (fictional)
+caller: Divya, Meridian Growth Partners (fictional)
+
+CALLER: Hello.
+PROSPECT: Hello.
+CALLER: Am I speaking with Pranav?
+PROSPECT: Yes, this is Pranav, yeah.
+CALLER: Hi sir. I'm Divya calling from Meridian Growth Partners, Hyderabad. Is this the right time to speak with you?
+PROSPECT: Sure. What is this regarding?
+CALLER: Yeah, this call is regarding Gyan AI. We would like to create a short growth report for Gyan AI. Is it okay if I explain the report in two minutes?
+PROSPECT: Uh, ma'am, will it be okay if we have this call after one hour? I think it will take at least five to ten minutes, and I am just going into another meeting.
+CALLER: It will just take two minutes, sir.
+PROSPECT: Okay, can you make it a little fast, please?
+CALLER: Yeah, sure. So basically it's a report where we look at your company and identify potential opportunities for growth. We look at why customers choose you, where there could be more opportunity, and how different parts of the business could be improved to support growth. This is what the report contains. Do you have any doubts about this?
+PROSPECT: No. If you have any reading material that I can work with, please share it. I will have a look and then I can come back with pointed questions.
+CALLER: Okay, sir. So should I send the draft report to you on WhatsApp or email?
+PROSPECT: Yeah, you can send it over WhatsApp, no problem.
+CALLER: Okay. Can we connect again over a call to discuss the report, next week maybe?
+PROSPECT: You send me the WhatsApp, then we can have a discussion a little later. I'm really sorry, I need to get into...
+CALLER: Yeah, yeah, I understand. We can discuss later. Thank you.
+PROSPECT: Thank you. Thank you.

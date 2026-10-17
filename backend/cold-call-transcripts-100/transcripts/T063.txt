@@ -1,0 +1,36 @@
+# T063
+duration_seconds: 135
+outcome: follow_up
+prospect_role: Managing Director
+company_kind: mid-size private company
+company: Mode Apparel Consulting (fictional)
+caller: Divya, Meridian Growth Partners (fictional)
+
+PROSPECT: Hello?
+CALLER: Hello.
+PROSPECT: Hello.
+CALLER: Hello, can you hear me?
+PROSPECT: Yes, I can hear you.
+CALLER: Yeah, am I speaking with Ms. Kaur?
+PROSPECT: Yes, you are speaking to her.
+CALLER: Hi ma'am, I am Divya, calling from Meridian Growth Partners.
+PROSPECT: Okay.
+CALLER: So I wanted to check if you would be open to receiving a complimentary company-specific report that could highlight some potential opportunities for your business?
+PROSPECT: Sorry. Open to receive what?
+CALLER: Yeah. Basically, we are creating a short growth report for Mode Apparel Consulting.
+PROSPECT: Why are you creating it?
+CALLER: We are creating it as brand promotion, ma'am. It's a complimentary report that we want to give you.
+PROSPECT: What is this report? Wait, what is this? Is it like SEO?
+CALLER: No, no. It's a report where we look at your company and identify potential opportunities for growth. We look at why customers choose you, where there could be more market opportunity, and how different parts of the business could be improved to support growth.
+PROSPECT: What do you do after that? Once you give me the report, what do you do after that?
+CALLER: Once we give you the report, we have a second call. In that we discuss the way you work, and if there are any mistakes in the report we ask you about them. After that we give you an execution plan that can help you grow your business.
+PROSPECT: Which, sorry?
+CALLER: Execution plan.
+PROSPECT: Execution plan. And that's when you start charging?
+CALLER: Yeah, for the execution part we may charge. That is not confirmed yet, but we may charge at that point.
+PROSPECT: Where are you based? First send me an introductory mail about your services, the scope, your website, your clients. Then I'll tell you.
+CALLER: Okay, ma'am. Can you give me your email ID?
+PROSPECT: Where did you get my contact from?
+CALLER: Is it your first name at the company domain?
+PROSPECT: That's also one of them. Okay, that email ID we have, you can send it on that.
+CALLER: Okay, sure, ma'am. Thank you. Thank you so much for your time.

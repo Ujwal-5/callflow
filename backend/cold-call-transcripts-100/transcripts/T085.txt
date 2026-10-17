@@ -1,0 +1,42 @@
+# T085
+duration_seconds: 255
+outcome: next_step_agreed
+prospect_role: Director, Product and Training
+company_kind: India arm of a multinational
+company: Terra Equipment India (fictional)
+caller: Arjun, Meridian Growth Partners (fictional)
+
+CALLER: Hello. Am I speaking to Mr. Anand?
+PROSPECT: Yes.
+CALLER: Hello, this is Arjun calling from Meridian Growth Partners. It's a company based in Hyderabad.
+PROSPECT: Okay.
+CALLER: I wanted to have a quick chat about Terra Equipment. Is this the right time?
+PROSPECT: Go ahead.
+CALLER: Yeah, so I'll quickly tell you what we do as a company. We act as growth partners and we help companies identify and solve the operational problems that are in the way of their growth. But before that, we wanted to understand what your idea of growth is, and ask you three growth-related questions.
+PROSPECT: Okay. So my idea of growth would be increasing profitability, increasing revenue.
+CALLER: Okay. And what is your idea of trying new things? Is that positive or negative towards growth?
+PROSPECT: Subjective. Because since we are a US company, we have a lot of compliance to meet and approvals which need to come from the US. So there is a limit to what we can try. Trying things is encouraged, but with proper due diligence and subject to approvals from corporate.
+CALLER: Got it. And what do you think about regular review? Do you think that's a key part of growth?
+PROSPECT: Yes.
+CALLER: And would you say that your people's growth contributes to your business's growth?
+PROSPECT: Yes.
+CALLER: Okay, perfect. Listening to your answers and some initial research we did on your company, we got the idea that you have set some clear goals of where you want to be. Am I correct in that?
+PROSPECT: Yes, yes, yeah.
+CALLER: Okay. So the main reason I'm reaching out to you is, we've been researching, and our founder wanted to have a quick Google Meet about Terra with you. It would be a small call. I can explain to you what you'll get out of the meeting. We first look at the existing steps you and your team are following...
+PROSPECT: And this pertains to which function? Production, or sales, or HR, or what kind of...
+CALLER: We like to look at it this way: you are the director for product and training, right? So in your department, you have set some goal of where you want to be. What is that one constraint or problem you're facing which is in the way of that? We spot that, and we try to give you an execution path towards how you can overcome it.
+PROSPECT: So I understood, it pertains to my own function, not the whole company, since I don't take care of production or any other function. It's only product management.
+CALLER: Initially we reach out to people in the leadership team, and then slowly, over the longer run, if our interests are aligned, we bring in the other team members.
+PROSPECT: Other team, got it. Yeah, fine. Go ahead.
+CALLER: So would you be free this week or maybe next week, to set it up?
+PROSPECT: I'm on vacation from today evening, and I will be back on Wednesday.
+CALLER: Okay, so would you prefer today evening, or Wednesday?
+PROSPECT: I would not prefer Wednesday, or today evening. Something after that.
+CALLER: Okay. So, Thursday. Then I'll call you on Thursday morning.
+PROSPECT: Yes, yes.
+CALLER: And can I get a confirmation of your email?
+PROSPECT: Yeah, it is first name dot surname at the company domain.
+CALLER: Okay, perfect. And which time would you prefer on Thursday?
+PROSPECT: I think you call, and then we can decide on the time, because it will depend on the meetings.
+CALLER: Okay. Yeah, sure, perfect. I'll call you on Thursday.
+PROSPECT: Thank you.

@@ -1,0 +1,25 @@
+# T069
+duration_seconds: 94
+outcome: follow_up
+prospect_role: Associate Director, Biostatistics
+company_kind: India arm of a multinational
+company: Ace Digital Services (fictional)
+caller: Priya, Meridian Growth Partners (fictional)
+
+CALLER: Hello. Am I speaking with Nisha ji?
+PROSPECT: Yes, please.
+CALLER: Hi Nisha ji, this is Priya calling from Meridian Growth Partners, Hyderabad, and this call is regarding Ace Digital. Is this the right time to speak?
+PROSPECT: Okay, what about Ace Digital?
+CALLER: So what we do as a company is, we work with fast-growing companies and understand the operational challenges which arise during growth and solve them. Regarding that, we wanted you to connect with our founder, so that he can explain our work and our approach better. So this call is regarding that.
+PROSPECT: I am already working in Ace Digital, so what's the issue? I didn't get it.
+CALLER: No. So, at Ace Digital we are trying to understand some growth opportunities which might help the company. Regarding that, we wanted you to connect with our...
+PROSPECT: Wait, listen, I'm already working here, so what should I say?
+CALLER: No, like we wanted to work with you so that we can find some growth opportunities for Ace Digital. We work around growth opportunities and growth potential...
+PROSPECT: The problem is I am already working in Ace. So what's the use of me?
+CALLER: I didn't get you, sorry.
+PROSPECT: I am an employee of Ace Digital already.
+CALLER: Okay, no, it's not about you being an employee. We are trying to talk about the business, from a business perspective: how Ace Digital can grow more, or the operational problems which might arise while growing. So this call is regarding that.
+PROSPECT: That's the thing, I am busy now. Can you call me later, because I have a deliverable today and I'm working on that presentation. My deadline is...
+CALLER: Okay, okay. I understand. When can we connect again?
+PROSPECT: The day after tomorrow is fine. Tomorrow is also okay. Just call me.
+CALLER: Okay, okay. I understand. Thank you, Nisha ji.

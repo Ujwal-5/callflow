@@ -1,0 +1,34 @@
+# T004
+duration_seconds: 71
+outcome: wrong_person
+prospect_role: listed as Director, Strategic Marketing
+company_kind: mid-size private company
+company: Aerolink Signal Systems (fictional)
+caller: Meera, Meridian Growth Partners (fictional)
+
+PROSPECT: Hello.
+CALLER: Hello.
+PROSPECT: Yeah, hello.
+CALLER: Am I speaking to Mr. Rajan Iyer?
+PROSPECT: Ha, yes.
+CALLER: Hi Rajan ji, this is Meera, calling from Meridian Growth Partners.
+PROSPECT: Ha?
+CALLER: Uh, it's Meera, calling from Meridian Growth Partners. It's a Hyderabad based company.
+PROSPECT: Uh.
+CALLER: Yeah. So is it the right time to speak now?
+PROSPECT: No, no. Regarding what is it, madam?
+CALLER: Yeah, it's regarding your company, Aerolink Signal Systems.
+PROSPECT: Uh.
+CALLER: So I will tell you in short what we do as a company. We work with fast growing companies and help them with the growth and operational bottlenecks, the kind of unusual problems that come up when a company is growing very fast and doing well.
+PROSPECT: No, I am not in that line, madam, if you are talking about that.
+CALLER: Okay. It is showing that you are the Director of Strategic Marketing in the business.
+PROSPECT: No, we are not into those things.
+CALLER: Okay. Are you working in Aerolink Signal Systems?
+PROSPECT: No, no, no, no. I am not working with Aerolink.
+CALLER: Okay, okay. Then can I know where you are working currently?
+PROSPECT: No, I am Bangalore based.
+CALLER: Okay.
+PROSPECT: Okay, maybe I think you have got the wrong number.
+CALLER: Yeah, yeah. Thank you for the clarification, and sorry for the inconvenience.
+PROSPECT: Thank you.
+CALLER: Thank you.

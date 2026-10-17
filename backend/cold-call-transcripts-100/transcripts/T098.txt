@@ -1,0 +1,34 @@
+# T098
+duration_seconds: 293
+outcome: follow_up
+prospect_role: Director, Software Quality Engineering
+company_kind: India arm of a multinational
+company: Stellar Motors India (fictional)
+caller: Arjun, Meridian Growth Partners (fictional)
+
+CALLER: Hello. May I speak to Mr. Mukesh?
+PROSPECT: Yes.
+CALLER: Hi Mukesh, this is Arjun calling from Meridian Growth Partners. Is this the right time to speak?
+PROSPECT: Yeah, tell me.
+CALLER: So I wanted to have a quick chat about Stellar Motors. But I'll quickly tell you what we do as a company first. We at Meridian work with growing businesses and help them solve the operational bottlenecks that are coming in the way of their growth. But before that, we'd like to understand what your company's idea of growth is and provide you with some value first. So is it fine if I ask you a few simple yes or no questions?
+PROSPECT: Okay, but let it be quick. I have others.
+CALLER: Okay, okay. So do you think trying new things is a key part of growth?
+PROSPECT: Yeah.
+CALLER: And do you think your people's growth contributes to your business's growth?
+PROSPECT: Of course, yes.
+CALLER: Okay, and regular review, is that also a key part of growth?
+PROSPECT: Yeah.
+CALLER: Okay. Listening to your answers, I have the idea that you must have set some clear goals for your company. Is that right?
+PROSPECT: Hm.
+CALLER: And if I had to ask, what is that one challenge you are currently facing that is coming in the way of the goal you have set?
+PROSPECT: See, the thing is, right now Stellar's situation is not very good. There are a lot of frequent re-orgs and the sales are not well. That's the challenging part: due to the reorganisation, every time we have to change the goals.
+CALLER: Okay. You don't have to tell me numbers, but you said you have set a goal, right? I'd like to know what that is.
+PROSPECT: No, it's all about KPIs, quality KPIs, but now I am moving into another department, so I'm not able to contribute on that. Something like that.
+CALLER: Okay, okay. Actually, you've been on our list for a while, and I've reached out to you because you're in a leadership position. Our founder, Vikram, wanted to set up a quick Google Meet with you. Can I quickly tell you what you'll get out of this meeting?
+PROSPECT: Uh-huh.
+CALLER: So we've worked with many clients over many years. We help companies find that one obstacle which is in the way of their growth. We look at the existing steps your teams are following, the workflows you're already doing, find that obstacle, and see if it is the only one and if it is actually stopping your growth. We provide execution-ready solutions, because anyone can give ideas, but practical solutions are what's needed for growth. And we figure this out along with you, because you know your business best. So it's like a shared discovery. You'll get a glimpse of this in the Google Meet, a quick 15 to 30 minutes where we'll give you some value.
+PROSPECT: See, right now is probably not a good time, and I'm not in a position to give direction on where the company has to move. So it might not be the right time, but let's see in future. Right now I don't see myself in a position where I can influence a decision.
+CALLER: You don't have to influence any decision. Right now what we're saying is, we'd first like to have an initial meeting, and then your team and our team can discuss later.
+PROSPECT: Yeah, I understood. But as I mentioned, due to the re-orgs, I'm not very clear on what role I'll be taking. So now it's not a good time. I will see sometime next year, probably.
+CALLER: Okay, okay, sure, no problem. Thank you.
+PROSPECT: Okay, thank you.

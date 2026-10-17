@@ -1,0 +1,26 @@
+# T075
+duration_seconds: 92
+outcome: do_not_call
+prospect_role: Director of Hardware Engineering
+company_kind: India arm of a multinational
+company: Intellect Semiconductors India (fictional)
+caller: Meera, Meridian Growth Partners (fictional)
+
+CALLER: Hello.
+PROSPECT: Hello.
+CALLER: Am I speaking to Mr. Shekhar?
+PROSPECT: Yeah.
+CALLER: Hi Shekhar ji, this is Meera calling from Meridian Growth Partners. Is it the right time? Sorry?
+PROSPECT: From where? From where?
+CALLER: Meridian, Meridian Growth Partners. It's a Hyderabad based company.
+PROSPECT: Uh-huh.
+CALLER: Yeah. So is it the right time to speak now?
+PROSPECT: Regarding what?
+CALLER: Yeah, it's regarding your company, Intellect Semiconductors. I will tell you quickly what we do as a company. We work with fast-growing companies and help them find solutions for their growth and operational obstacles, the peculiar challenges which arise especially when a company is growing very fast and doing great. We solve these kinds of problems with a structured method. So Shekhar ji, before discussing anything serious with you, we really wanted to show you some value, and for that we also need to understand your perspective of growth for Intellect. So will it be fine if I ask you three quick questions, if you have a couple of minutes now?
+PROSPECT: No, no. First of all, I don't know if I am the right person to even talk about it. I am a very small person here, so I don't know what exactly...
+CALLER: Okay. It's showing that you are the Director of Hardware Engineering. So you feel that you're not the right person to talk regarding this?
+PROSPECT: I don't think so.
+CALLER: Yeah, it's okay. So can I get the right contact then, if it's possible for you to share?
+PROSPECT: I don't think I would like to share that.
+CALLER: Yeah, that is okay. I understand. Okay then, Shekhar ji. Thank you for the clarification, and thank you.
+PROSPECT: Thank you.

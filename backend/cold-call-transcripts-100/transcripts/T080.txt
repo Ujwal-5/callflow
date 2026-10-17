@@ -1,0 +1,33 @@
+# T080
+duration_seconds: 157
+outcome: interested
+prospect_role: Chief Executive Officer
+company_kind: mid-size private manufacturer
+company: Namaha Industries (fictional)
+caller: Manish, Meridian Growth Partners (fictional)
+
+CALLER: Okay.
+PROSPECT: Yes.
+CALLER: Yes, sir. Sir, this is Manish and I'm calling from Meridian Growth Partners, Hyderabad.
+PROSPECT: Okay.
+CALLER: Sir, is this a good time to talk to you for a minute or two?
+PROSPECT: Yeah.
+CALLER: Sir, the call is regarding a research series we are making, about mid-sized companies that are heavy on research and innovation, but in reality very few people know about them.
+PROSPECT: Okay.
+CALLER: So we would like to make a full profile on your company.
+PROSPECT: Okay.
+CALLER: About Meridian, if I tell you: Meridian is a Hyderabad company which has been running for many years. We work with manufacturers who are strong in R&D and innovation. Our work is simple: we help them increase their profit by finding higher margin customers for them, in India as well as in exports.
+PROSPECT: Okay.
+CALLER: So in your profile, the sample which we will send you, there are three parts. First, your growth and margin numbers compared with the listed peers. Second, your market, how big it is, where it is going. Third, the places where our team feels your growth is stuck, or where there is a possibility of growth.
+PROSPECT: So you are a research company, basically?
+CALLER: No. Meridian is a company which helps manufacturers who are strong in R&D and innovation to increase their profit and revenue, the top line and the bottom line, by finding the constraints and helping them figure them out. This profile is just a full report of your company, with three sections. We provide you a sample of it so that you can verify and rectify it. If you give your consent, we send it to you, and if something important is missing or there are any discrepancies, we rectify it. Then we post it on our social media and our website, so people get to know how your company is helping India build its economy, because there are not many companies which are research heavy and innovation heavy. We want people to know about the ones that are.
+PROSPECT: So what is the cost of this service?
+CALLER: Sir, this is free. There is no cost.
+PROSPECT: Okay.
+CALLER: Yes, sir. So if I have your consent, I will send it to my research team and they will prepare a report on your company. Should I tell them?
+PROSPECT: Yeah, yeah.
+CALLER: Sure, sir. I will send it to you in a day or two. Then you can tell me what rectifications you need.
+PROSPECT: Okay.
+CALLER: Okay, sir. Thank you.
+PROSPECT: Have a good day.
+CALLER: Yeah, same to you.

@@ -1,0 +1,32 @@
+# T090
+duration_seconds: 242
+outcome: interested
+prospect_role: Director
+company_kind: mid-size private manufacturer
+company: Radiant Hydraulics (fictional)
+caller: Sana, Meridian Growth Partners (fictional)
+
+PROSPECT: Yes.
+CALLER: Am I talking to Mr. Mehra?
+PROSPECT: Yes. Why, is this the bank?
+CALLER: No. This is not the bank. This is Sana. I am calling from Meridian Growth Partners, Hyderabad.
+PROSPECT: Okay.
+CALLER: Actually, sir, we are making a research series about mid-size companies that are heavy on research and innovation, but in real life very few people know about them. We would like to make a full profile on Radiant Hydraulics. Could I have two minutes of your time?
+PROSPECT: I did not understand what exactly this is about.
+CALLER: Yes, sir. We would like to make a profile on Radiant Hydraulics, and the reason we are doing this is that our research team keeps studying good manufacturing companies which would be part of this series. That's how we found Radiant in the first place. If you would like to know what your profile would consist of, I could tell you.
+PROSPECT: Yeah, yeah, go ahead.
+CALLER: Yeah. So the profile has three parts. First, your growth and margin numbers compared with a list of peers which our team curates. Second, your market, how big it is and where it's going. Third, the places where our team feels your growth is getting stuck, or could come from.
+PROSPECT: Okay, okay. And who are you working for today? Who are your clients?
+CALLER: That I could send details of over WhatsApp or email.
+PROSPECT: Okay. So send it to me. Let me go and check what exactly you guys do. And if you can send me a sample report of some random company, just for my understanding, I think it would be valuable for me to recognise what exactly you are doing. Technically, at the end of the day, this is like a business analysis.
+CALLER: Yes, kind of. So a sample report you want, right?
+PROSPECT: Yeah, a sample report. Which industry? We cater more to the steel industry: steel, cement, hydro power, wind. And then we have other units where we are into healthcare, syringes, medical devices, and gas. These are our sectors. So related to these sectors, if you have something as a demo for me, I would like to review it. Because it is a good time, actually, that you are calling me. We are already using somebody for our business analysis, and at the end of the day we are interested in somebody to guide us on the way ahead. Where should we hire from, what other markets should we look at, all these things.
+CALLER: Yeah.
+PROSPECT: And by the way, Radiant Hydraulics is not the only company I am with. I am also a shareholder and the CEO of an Italian company's Indian arm. So we are looking out for that company too. So it is a good time that you called me.
+CALLER: Yes, sir, I will send it to you as soon as possible. Within a span of one or two days, maximum. I could send it to you by tomorrow.
+PROSPECT: Yeah. And how many people do you have in your team?
+CALLER: The main person you would be working with would be our founder, and under him we have a team of around 20 people.
+PROSPECT: Roughly?
+CALLER: Yes, roughly.
+PROSPECT: Okay, no problem. Thank you for your time, and I'll wait for the report.
+CALLER: Yes, sir. Thank you for your time.

@@ -1,0 +1,17 @@
+# T027
+duration_seconds: 42
+outcome: follow_up
+prospect_role: Director
+company_kind: mid-size private company
+company: Bharat Exim (fictional)
+caller: Rohit, Meridian Growth Partners (fictional)
+
+RECEPTION: Record your name and reason for calling. I'll see if this person is available.
+CALLER: My name is Rohit, I am calling from Meridian Growth Partners. I wanted to talk to Mr. Raghav regarding Bharat Exim.
+RECEPTION: Thanks, Rohit. Please stay on the line.
+PROSPECT: Hello.
+CALLER: Hello. Ha ji. Hello Raghav, this is Rohit from Meridian Growth Partners. I just wanted to have a small conversation about Bharat Exim. Is it a good time?
+PROSPECT: You are calling from where? Sorry, Rohit?
+CALLER: Meridian Growth Partners. I can't hear you. Is it audible now?
+PROSPECT: I am just getting into a school event. Can we speak at 1:30, Rohit?
+CALLER: 1:30? Yeah, yeah, that is fine. So let's speak at 1:30. Bye. Yeah.

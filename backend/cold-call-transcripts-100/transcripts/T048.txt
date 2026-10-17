@@ -1,0 +1,27 @@
+# T048
+duration_seconds: 132
+outcome: follow_up
+prospect_role: Senior Director, Marketing, South Asia
+company_kind: India arm of a multinational
+company: Averline Labels (fictional)
+caller: Sameer, Meridian Growth Partners (fictional)
+
+CALLER: Hello?
+PROSPECT: Haan ji.
+CALLER: Hello, am I talking to Rajat ji?
+PROSPECT: Haan ji.
+CALLER: Yes, hello Rajat ji, I'm Sameer calling from Meridian Growth Partners.
+PROSPECT: From?
+CALLER: From Meridian Growth Partners. May I have two minutes?
+PROSPECT: Tell me.
+CALLER: So we run a free research series where we study companies that are growing faster than their market leaders. As part of this research, we'd like to prepare a completely free growth report for your company, and there is no...
+PROSPECT: Our company is the market leader. So it doesn't fall in the category of growing faster than the market leader.
+CALLER: Oh, okay. But if we create a profile for you, would you be able to review it? Five to ten minutes?
+PROSPECT: Let me see. I cannot be sure about that.
+CALLER: Yeah, not right now. If you prefer, we will send it on email or WhatsApp, wherever you like.
+PROSPECT: What is this? Can you just elaborate?
+CALLER: So what happens is, we build a profile for companies based on how they are growing and how they are improving, and from that we create a report. We first send it to you for approval, so that no confidential data gets out. You can review it, edit it...
+PROSPECT: What is the objective?
+CALLER: The objective is to connect with different companies and build a relationship with them.
+PROSPECT: Hold on one second.
+(The prospect puts the caller on hold. The call does not resume.)

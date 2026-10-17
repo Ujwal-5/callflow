@@ -1,0 +1,35 @@
+# T091
+duration_seconds: 242
+outcome: agreed_to_receive_report
+prospect_role: Director, Partner Engineering
+company_kind: India arm of a multinational
+company: Crestline Electronics (fictional)
+caller: Arjun, Meridian Growth Partners (fictional)
+
+CALLER: Hello.
+PROSPECT: Yes.
+CALLER: Hello, am I speaking to Mr. Nair?
+PROSPECT: Yeah, speaking.
+CALLER: Hello, this is Arjun. I'm calling from Meridian Growth Partners. Is this the right time to speak?
+PROSPECT: Sorry, from where?
+CALLER: Meridian Growth Partners. It's a company based in Hyderabad.
+PROSPECT: Okay. What do you guys do?
+CALLER: So I wanted to have a quick chat about Crestline Electronics. We at Meridian work with growing companies and help them solve the operational problems that are in the way of their growth. But before that, we wanted to understand what your idea of growth is and provide you with some value. For that I have three growth-related questions I wanted to ask you.
+PROSPECT: No, I would like to understand what you guys do.
+CALLER: Okay. So we essentially act as growth partners. Our focus is on increasing your profit, and we do that by following a structured method and focusing on solving your problems.
+PROSPECT: I still don't understand what you guys do.
+CALLER: Okay, I'll use an example. One of our clients had an issue with not being able to deliver products on time. We understood the root cause of the problem, we did the analysis, we ran a set of quick experiments, and eventually we gave an execution path on how to solve that problem. His main goal was to deliver products faster, and we helped with that. So we understand what your pain point is, what's stopping you from growth, and we help in solving that.
+PROSPECT: Okay. So you're a consulting company.
+CALLER: I wouldn't call us consulting, because we don't just advise. We also focus on executing the solution. Usually consultants give you a process or a framework, but we do that as well as focus on implementing it practically.
+PROSPECT: Okay. So are you into engineering services? Is that correct? Or sales channel partnerships? What is it that you...
+CALLER: How we work over the longer run, after our interests align, is: we look at the problem you have. What is that one problem? If it needs something new, our whole team gets into the problem and we design a custom system for it, because these problems can be peculiar. We build software tools where that helps. If it is a standard problem which other companies have gone through, we already have systems for that.
+PROSPECT: Okay. Can you repeat the name of the company again?
+CALLER: Meridian Growth Partners.
+PROSPECT: Yeah, you can just send me an email. At this point we are not looking for any new partners. So there's probably very little interest in engaging with new partners. But I'll go through your company profile, and if there's something interesting, I can reach out.
+CALLER: Okay. My main purpose for this call was, we've been doing some initial research before we reached out, and looking at your leadership position, the purpose was to set up a meeting with our founder, so you understand what we can do for you and what value we can provide. But first you can check the profile. If you see value, we can set the meeting up later.
+PROSPECT: All right, sure. I'll do that.
+CALLER: Yeah. And is your email the one on your profile?
+PROSPECT: Yes.
+CALLER: Okay. I'll share it there.
+PROSPECT: All right. Thank you.
+CALLER: Thank you.

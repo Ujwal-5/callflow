@@ -1,0 +1,38 @@
+# T094
+duration_seconds: 339
+outcome: not_logged
+prospect_role: Managing Director
+company_kind: mid-size private manufacturer
+company: Suryodaya Manufacturing (fictional)
+caller: Pallavi, Meridian Growth Partners (fictional)
+
+PROSPECT: Haan ji.
+CALLER: Am I speaking to Mr. Tripathi?
+PROSPECT: Yes, please.
+CALLER: Hello, this is Pallavi calling from Meridian Growth Partners, Hyderabad.
+PROSPECT: Which company?
+CALLER: Meridian Growth Partners.
+PROSPECT: Meridian. Okay, so this call is regarding?
+CALLER: We are working on a research initiative where we feature companies that are building unique products, solving pressing problems or creating manufacturing impact, but aren't yet widely known. During our research your company stood out to us, and we'd like to prepare a research profile on Suryodaya Manufacturing as part of this initiative.
+PROSPECT: Okay.
+CALLER: The profile is prepared independently, using publicly available information and our research. We don't require any information from you at this stage. It typically covers what makes your company distinctive, the market you operate in, key strengths we observe, potential growth opportunities based on our research, and an external view of how the business operates. Before anything is published, we share the draft with you so you can review it and tell us if anything needs to be corrected, updated or added. So I just wanted to check whether your company would be interested in receiving a profile like this if we prepare one.
+PROSPECT: What is your good name?
+CALLER: Pallavi.
+PROSPECT: Pallavi, can you tell me, how is this going to help us? What I understand is that Meridian is a kind of company which provides tech news to the market about what various companies are doing. So it's a kind of media company, or what?
+CALLER: No, it's a consulting firm, but it has its own website and we have a lot of customers. Your profile will be published on our website, which gives you publicity, and we can also provide you consulting on the constraints your company has and help you figure out what the solutions can be.
+PROSPECT: But as of now, with God's grace and the efforts of our team, I don't have any constraint in developing our tech part. So I could not figure out how you are going to help us. If you publish our news with respect to technology, what kind of tech work we are doing, that part is clear. But what else? You said you are a kind of consulting company. So what kind of consulting support are you going to give? If we don't have any tech challenge as of now, then how are you going to help us?
+CALLER: In increasing the company's revenue.
+PROSPECT: Revenue, I mean, you will increase our revenue, fine, but how?
+CALLER: Sir, that's the company's motto. There is a process, and our software platform, which we use to increase the revenue of a company. There is a lot of process in it.
+PROSPECT: No, no, process is there. But can you brief us? What would be the stages, the steps involved in increasing our revenue? See, revenue increases only when a customer is onboarded. So what I understand is, you will help us onboard customers, or what?
+CALLER: No, we help you build a scientific way of thinking, to make your execution better.
+PROSPECT: Hmm. Do you have any testimonials? Have you done this kind of thing, experimented with any other company?
+CALLER: Yes, we have, and it's on our website. We can share our website and a sample profile if you're interested. You can review it and later let us know.
+PROSPECT: It doesn't sound useful for me as of now. Let me put it this way. Our working process is entirely different. We are a full-fledged tech-enabled manufacturing company. What I understand is, you must be helping companies working as service companies, design companies or technology companies. But we are beyond that. We are not only a tech company, we are a manufacturing company also. The tech is sometimes developed by us, sometimes in collaboration, then we assimilate the technology for our use, we manufacture the product, and finally we sell the tech-developed product to our customer. So I think there is a certain mismatch between what you offer and what we do.
+CALLER: Okay, sure. Your company's work sounds very interesting, genuinely. But would you like to at least review the resources I share with you, like the website and the testimonials?
+PROSPECT: Theek hai, aap bhejiye. Aap bhejiye, and then we'll go through it, and we'll get back to you if it sounds relevant to us.
+CALLER: Yeah. On what platform, WhatsApp or email?
+PROSPECT: You can note it down. [He spells out his email address.]
+CALLER: Okay. I hope it turns out to be good for both of us.
+PROSPECT: Yeah, I hope so too. Thank you.
+CALLER: Thank you.

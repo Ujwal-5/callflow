@@ -1,0 +1,33 @@
+# T089
+duration_seconds: 244
+outcome: follow_up
+prospect_role: Owner
+company_kind: mid-size private manufacturer
+company: NextGen Robotics (fictional)
+caller: Arjun, Meridian Growth Partners (fictional)
+
+CALLER: Hello.
+PROSPECT: Hello.
+CALLER: Yes, hello. Hi Rajeev ji. This is Arjun, I am calling from Meridian Growth Partners. Is this the right time to speak?
+PROSPECT: Yeah, tell me.
+CALLER: So we spoke a little while ago about NextGen Robotics. I'll give you a brief overview about our company again. We at Meridian work with organisations and help them solve the obstacles which are coming in the way of their growth. And I think we sent you a report on NextGen. Did you get time to go through it?
+PROSPECT: No.
+CALLER: Okay, no problem. I have a few yes or no questions for you. Is it fine if I ask them now?
+PROSPECT: Yeah, tell me.
+CALLER: Yeah, so after reflecting on the call we had last time, I got the idea that you have set clear goals for your company. You don't have to tell me any numbers, but you must have set a clear goal on where you want to be in the future. Am I correct?
+PROSPECT: Yes.
+CALLER: Okay. And I had one question on this. What is that one challenge which is coming in the way of this goal for you?
+PROSPECT: The biggest challenge is manpower requirement. Skilled manpower.
+CALLER: Okay. Skilled manpower. Do you think that's the only obstacle, or one part of it?
+PROSPECT: Yeah.
+CALLER: Okay. And would you say the bottleneck is in reaching better agencies, or there is a lack of skilled manpower itself?
+PROSPECT: Hello? Can you hear me?
+CALLER: Yes. Do you think the bottleneck is in reaching more agencies, or the lack of skilled manpower?
+PROSPECT: I will go with the lack of skilled manpower.
+CALLER: Okay. Interesting. We would love to set up a meeting with our founder, Vikram. He has experience in this field for many years. In this meeting what you'll get is: what are these obstacles which are coming in the way of your growth. You have a clear goal, you told me one obstacle. We can sit with you, because you know your business best, and map out which of these obstacles are actually getting in your way, and if they are, are they the only ones, and figure out a path for the solutions. I can set up this meeting. This is what you'll get from it. Do you have any questions or doubts regarding us?
+PROSPECT: Hello?
+CALLER: Hello.
+PROSPECT: Yes, yes. Am I not audible? I'm travelling right now, and would be travelling up to next week. So you can call me later.
+CALLER: Okay, okay. When will you be back?
+PROSPECT: The 20th.
+CALLER: Okay, the 20th. Fine, fine. I'll call you back.

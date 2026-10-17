@@ -1,0 +1,26 @@
+# T010
+duration_seconds: 81
+outcome: agreed_to_receive_report
+prospect_role: Director
+company_kind: mid-size private manufacturer
+company: ChromaChem India (fictional)
+caller: Arjun, Meridian Growth Partners (fictional)
+
+CALLER: Hello?
+PROSPECT: Hello?
+CALLER: Ha ji. Hi Vinod ji. This is Arjun calling from Meridian Growth Partners. Is this the right time to speak?
+PROSPECT: Can you please come again? From where are you calling?
+CALLER: Meridian Growth Partners. It's a company based in Hyderabad.
+PROSPECT: Okay. Regarding?
+CALLER: So this call is regarding ChromaChem India. I'll quickly explain about my company first. Meridian works with growing organisations to solve the operational problems that come in the way of growth. These could be problems in processes, people, sourcing, or operations. We identify the concern and help you find the right solution. But before discussing this, we wanted to give you some value. To do that, can I ask a few questions so that I can understand?
+PROSPECT: I'll just let you know the concerned person. You can call that person directly. Just hold for a second. I'll give you his number. One minute.
+PROSPECT: Okay.
+PROSPECT: So, note it down. [number]
+CALLER: [number]
+PROSPECT: And the rest. [number]
+CALLER: Got it. And his name?
+PROSPECT: Mr. Suresh.
+CALLER: Mr. Suresh. Okay.
+PROSPECT: Yeah. Yeah.
+CALLER: Great. Thank you.
+PROSPECT: Thank you.

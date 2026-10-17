@@ -1,0 +1,43 @@
+# T060
+duration_seconds: 167
+outcome: next_step_agreed
+prospect_role: Founder and CEO
+company_kind: startup
+company: Nexus Systems (fictional)
+caller: Divya, Meridian Growth Partners (fictional)
+
+CALLER: Hello.
+PROSPECT: Yes.
+CALLER: Am I speaking with Mr. Arif?
+PROSPECT: Who is this?
+CALLER: Hi sir, I am Divya calling from Meridian Growth Partners, Hyderabad. Is this the right time to speak?
+PROSPECT: What is this regarding? Tell me now.
+CALLER: Yeah, this call is regarding Nexus Systems. We would like to create a short growth report for Nexus. So is it okay if I explain the report on the call?
+PROSPECT: I have not asked for a growth report.
+CALLER: Yeah, you have not asked, I didn't say that, sir. Basically we are creating this report as brand promotion. We don't charge anything for it.
+PROSPECT: Okay.
+CALLER: So it's a report where we look at your company and identify potential opportunities for growth. We look at why customers choose you, where there could be more market opportunity, and how different parts of the business could be improved to support growth.
+PROSPECT: What are your charges?
+CALLER: We don't charge anything for this report, sir.
+PROSPECT: Then why are you doing this? I am not just going into the thing.
+CALLER: Yeah, as I said, it's brand promotion for us. We are Meridian, working from Hyderabad. We help organisations grow their profit by finding better customers. That is what we do.
+PROSPECT: Are you an NGO, or an organisation working for profit?
+CALLER: An organisation working for profit.
+PROSPECT: Then why are you doing this free?
+CALLER: Right now we don't charge for it, because we want to study more companies and do research on them. That's why we are doing it for free now.
+PROSPECT: After that, you basically do some AI research and give a report.
+CALLER: Yeah, we do the research and give the report.
+PROSPECT: Okay, see, right now I am not able to talk. Maybe you can call sometime next week.
+CALLER: Okay sir. Can I send the draft report on WhatsApp or email? We can discuss it later, next week.
+PROSPECT: You can send it. A draft report, without any input from my side, you have already prepared?
+CALLER: Yeah, we independently research your company, and after that we send the report. You can look at it, and if there are any mistakes or any perspective we didn't cover, you can let us know on the second call.
+PROSPECT: Okay.
+CALLER: Yeah. Should I send it on WhatsApp or email?
+PROSPECT: Send it on WhatsApp.
+CALLER: Okay sir. Can we connect again next week to discuss?
+PROSPECT: Sometime next week.
+CALLER: Any particular date?
+PROSPECT: No, I cannot give you a time. I am not in front of my PC now. But give me a call sometime on Tuesday morning.
+CALLER: Tuesday, okay. A Google Meet or a call, whichever is fine?
+PROSPECT: Call is fine.
+CALLER: Call is fine, okay. Thank you.

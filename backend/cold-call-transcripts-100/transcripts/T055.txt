@@ -1,0 +1,25 @@
+# T055
+duration_seconds: 93
+outcome: follow_up
+prospect_role: Director
+company_kind: mid-size private manufacturer
+company: Conquer Engineering (fictional)
+caller: Arjun, Meridian Growth Partners (fictional)
+
+RECEPTION: State your name and reason for calling. I'll see if this person is available.
+CALLER: My name is Arjun. I wanted to speak to the Director of Conquer Engineering.
+RECEPTION: Thanks. Please stay on the line.
+PROSPECT: Hello?
+CALLER: Hello. Hi Suresh ji. I spoke with you yesterday, right? You told me to call back. Arjun, from Meridian Growth Partners.
+PROSPECT: Meridian?
+CALLER: Uh, Meridian, it's a company based in Hyderabad.
+PROSPECT: Okay.
+CALLER: Uh, so I wanted to talk about Conquer Engineering. Is it the right time?
+PROSPECT: Regarding what?
+CALLER: Uh, so I'll tell you about my company quickly. Meridian helps growing organisations in solving the operational challenges that come in the way of growth. But before that, we wanted to show you some value and understand your company's idea of growth.
+PROSPECT: See, actually I am on another call. So do one thing, just drop one mail to me regarding your company, your operations, and everything. Let me discuss with my team, then I will revert to you.
+CALLER: Okay, okay. Is it your name at the company domain?
+PROSPECT: Yeah, right, right.
+CALLER: Okay.
+PROSPECT: Okay, bye.
+CALLER: Thank you.

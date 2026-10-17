@@ -1,0 +1,29 @@
+# T076
+duration_seconds: 147
+outcome: not_interested
+prospect_role: Vice President, APAC and International Accounts
+company_kind: India arm of a multinational
+company: Cura Surgical International (fictional)
+caller: Divya, Meridian Growth Partners (fictional)
+
+PROSPECT: Hello.
+CALLER: Hello.
+PROSPECT: Yes.
+CALLER: Am I speaking with Mr. Bhatt?
+PROSPECT: Yeah, speaking.
+CALLER: Hi sir. I'm Divya calling from Meridian Growth Partners. Is this the right time to speak with you?
+PROSPECT: Yeah, this is regarding?
+CALLER: This call is regarding Cura Surgical. We would like to create a short growth report for Cura. Would you like me to explain over the call, or would you like me to send a draft on WhatsApp or email?
+PROSPECT: Growth report?
+CALLER: Yeah, a growth analysis report. Basically, we look at your company and identify where the potential opportunities for growth could be. We look at why customers choose you, how you can grow further, and areas where the company can improve. We put these into a report specifically for your company. So would you like me to send that report?
+PROSPECT: Just send me the details. We do have such kind of details from... yeah, I understand. But I am unable to understand how you get that understanding when you don't know the segment.
+CALLER: Yeah, I understand sir. Just so I understand, is there any particular reason you prefer to keep it internal?
+PROSPECT: Sorry?
+CALLER: Like, we do this for our brand promotion, sir.
+PROSPECT: No, but ma'am, how much do you know about Cura Surgical?
+CALLER: Uh, yeah, our research team has experts. Our research team identifies these things. Whatever is in the report will be about your company. It's external research, from an outsider's perspective.
+PROSPECT: How is this different from the other companies who are doing and submitting reports? Is anything new going to come? Because we do have a lot of reports.
+CALLER: Yeah, this would be different because we compare your business sector with the same sector elsewhere, and we show that analysis, how you can grow like them. That would be the different part. The other part, how the company makes its money, might be similar, but this will be different. I'm sure about that.
+PROSPECT: Yeah. Ma'am, you need to ask your analytics person to get in touch with us. I'm not able to get how you are going to create a different report. We have so many reports. If you ask your analytics person to get in touch with me, then I can have a further discussion.
+CALLER: Okay, I understand, sir.
+PROSPECT: Yeah. Thank you.

@@ -1,0 +1,26 @@
+# T077
+duration_seconds: 104
+outcome: call_again
+prospect_role: Assistant Vice President
+company_kind: listed Indian company
+company: RK Cables (fictional)
+caller: Neha, Meridian Growth Partners (fictional)
+
+PROSPECT: Hello?
+CALLER: Hello. Hello Manoj ji, this is Neha from Meridian Growth Partners.
+PROSPECT: Pardon?
+CALLER: This is Neha from Meridian Growth Partners. Is this the right time to speak with you?
+PROSPECT: Yeah. May I know for what?
+CALLER: Yeah. This call is regarding RK Cables. We are doing a research series where we connect with companies where we see the potential to grow more. So we want to make a short growth report for RK Cables and send it over to you. Can I discuss, it'll just take one minute, what the report will contain? It will be beneficial for RK Cables to increase its profit.
+PROSPECT: Yeah, please go ahead.
+CALLER: Okay. So the report has two parts. The first part is how your company makes its profit and grows its revenue, why customers choose you, and how you...
+PROSPECT: But you are a third party, no? So I can't reveal all these.
+CALLER: Okay, okay. I'm not asking you to reveal anything. We do the research externally. We make the report with some growth pointers, some ways of working which you can look at and work on to see if they help grow your revenue.
+PROSPECT: No, we are working with consultants actually, so we don't require anything.
+CALLER: Okay. Okay. So, may I ask... I just have one last question.
+PROSPECT: Yeah.
+CALLER: Are the consultants you are working with right now bridging the gap between what is planned and what is the reality?
+PROSPECT: Yeah. They are the number one, number two consultants globally.
+CALLER: Okay, that's great to hear. Is it okay if I share our website, so in future if you are looking to hire somebody...
+PROSPECT: Okay, no problem. You can always.
+CALLER: Okay, okay. Sure. Thank you for your time.

@@ -1,0 +1,25 @@
+# T008
+duration_seconds: 77
+outcome: next_step_agreed
+prospect_role: Founder and CEO
+company_kind: startup
+company: OneWave Digital (fictional)
+caller: Divya, Meridian Growth Partners (fictional)
+
+CALLER: Hello.
+PROSPECT: Hello.
+CALLER: Am I talking with Sandeep?
+PROSPECT: Yes, Sandeep.
+CALLER: Hi sir, I am Divya calling from Meridian Growth Partners. Is it the right time to speak with you?
+PROSPECT: Yes, please proceed.
+CALLER: Yeah, this call is regarding OneWave. We would like to create a short growth report for OneWave. Is it okay if I explain the report in two minutes?
+PROSPECT: Yes, please.
+CALLER: Yeah, basically it's a report where we look at your company and identify potential opportunities for growth. We look at why customers choose you, where there could be more market opportunity, and how different parts of the business could be improved to support growth. So this is basically what the report is.
+PROSPECT: Hm.
+CALLER: So we do this research independently. We don't need any information from you right now. We are just taking your consent so that we can send the report on WhatsApp or email. After that we can connect again on a call to discuss it, and if there are any mistakes in the report we can discuss them on that call.
+PROSPECT: Works. Let's do it.
+CALLER: Yeah, sure sir. Can you give me a date next week when we can discuss the report?
+PROSPECT: Next week?
+CALLER: Yeah, next week. Any particular date?
+PROSPECT: Today is... next week Thursday?
+CALLER: Next week Thursday. Okay, fine sir. Is it...

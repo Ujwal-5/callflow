@@ -1,0 +1,26 @@
+# T012
+duration_seconds: 76
+outcome: not_interested
+prospect_role: Founder
+company_kind: mid-size private company
+company: Alloy Research Labs (fictional)
+caller: Divya, Meridian Growth Partners (fictional)
+
+PROSPECT: Hello.
+CALLER: Hello.
+PROSPECT: Yes.
+CALLER: Hi, am I speaking with Mr. Narayan?
+PROSPECT: Yes, please. Tell me.
+CALLER: Hello sir. I am Divya calling from Meridian Growth Partners. Is this the right time to speak with you?
+PROSPECT: Yes, please. Tell me.
+CALLER: Yeah. This call is regarding Alloy Research Labs. We would like to create a short growth report for the company. Is it okay if I send you the draft on WhatsApp or email, or would you like me to explain over the call?
+PROSPECT: I am sorry. What is this regarding?
+CALLER: Yeah. This call is regarding a growth report. We would like to create the report for your company.
+PROSPECT: What does a growth report mean, actually?
+CALLER: Yeah, I would like to explain that, sir. The report covers how the company makes its money, the customers, the margin numbers and the growth numbers. And secondly, where your sector and your business are going for the next five years. It is growth analysis that the report will cover.
+PROSPECT: I am sorry. I am not interested in this at the moment.
+CALLER: Yeah, I understand, sir. Is it that you are not familiar with the report, or...
+PROSPECT: I am not interested in the report, yeah.
+CALLER: Okay. I understand.
+PROSPECT: Okay. Thank you.
+CALLER: Thank you.

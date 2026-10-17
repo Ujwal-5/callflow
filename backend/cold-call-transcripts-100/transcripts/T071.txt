@@ -1,0 +1,20 @@
+# T071
+duration_seconds: 107
+outcome: not_interested
+prospect_role: Associate Director, Nutrition Business
+company_kind: listed Indian company
+company: Jubilee Ingredients (fictional)
+caller: Priya, Meridian Growth Partners (fictional)
+
+CALLER: So, am I speaking with Sandeep ji?
+PROSPECT: Yes.
+CALLER: Hi Sandeep ji, this is Priya calling from Meridian Growth Partners, and this call is regarding Jubilee Ingredients. Is this the right time to speak?
+PROSPECT: Yeah, tell me.
+CALLER: So what we do as a company is, we work with fast growing companies and help with the operational problems which arise during growth. Regarding that, we wanted you to connect with our founder, so that you get a better understanding of our business and the value of our work. So this call is regarding that.
+PROSPECT: Okay, but what kind of scope of work are you looking at? Because Jubilee has its own support system and a detailed team. If you can elaborate on what kind of support you are looking at?
+CALLER: So initially we try to understand your business, and you get an external view of your business. We understand your business, we understand your people, we sit with your people, and we understand what operational problems or growth opportunities you have.
+PROSPECT: So you are a kind of business consulting firm, correct?
+CALLER: Not exactly a consulting firm. Consulting is a part of our work. We mainly focus on understanding your business. We don't give you a ready-made solution which we already have. We try to analyse where exactly your business is facing a challenge, by sitting with you, and then come up with a solution.
+PROSPECT: So Priya, actually we have global tie-ups with the big four consulting firms. All four are involved. So I don't think there is a scope of work of the kind you are looking at, at least with Jubilee.
+CALLER: Okay, I understand. I understand, Sandeep ji. Thank you for talking with me.
+PROSPECT: Thank you.

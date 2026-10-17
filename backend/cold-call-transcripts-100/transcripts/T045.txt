@@ -1,0 +1,25 @@
+# T045
+duration_seconds: 131
+outcome: not_logged
+prospect_role: Owner (former dealership)
+company_kind: small private company, since acquired
+company: Rathi Motors (fictional)
+caller: Manish, Meridian Growth Partners (fictional)
+
+PROSPECT: Hello?
+CALLER: Uh, yes sir. Sir, this is Manish, and I am calling from Meridian Growth Partners, Hyderabad.
+PROSPECT: Okay.
+CALLER: Uh, sir, is this a good time to talk to you, like for two minutes?
+PROSPECT: Yeah, please go ahead.
+CALLER: Yes, sir. Our company is making a research series about companies which are heavy on research and innovation and are actually driving the country's economy, but in reality very few people know about them. So we would like to make a full profile on your company, sir. For that I will send you a report on your company, and if you find any discrepancies in that report you can contact us, I will take your reviews, and after that we will publish it on our website and on our LinkedIn page.
+PROSPECT: Which company are you talking about?
+CALLER: Uh, what, sir?
+PROSPECT: Which company are you talking about?
+CALLER: Like, uh, our company, or your company?
+PROSPECT: My company. Rathi Motors.
+CALLER: Yes, sir, Rathi Motors. When our team was researching, they gave me this company and your number for it.
+PROSPECT: No, no. Rathi Motors is no longer there. Rathi Motors has been acquired by a larger group.
+CALLER: Okay. Okay, so I do not know what the relevance of this report is anymore. No issues, sir. Maybe there was a problem on our side. I will tell my team.
+PROSPECT: Okay, thank you.
+CALLER: Sorry to disturb you.
+PROSPECT: No problem. Thank you.

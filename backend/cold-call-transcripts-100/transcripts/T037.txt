@@ -1,0 +1,25 @@
+# T037
+duration_seconds: 59
+outcome: not_interested
+prospect_role: Chairman and Co-Founder
+company_kind: mid-size private manufacturer
+company: Ashwin Automation (fictional)
+caller: Kiran, Meridian Growth Partners (fictional)
+
+CALLER: Is this Vinit ji?
+PROSPECT: Hello, hello.
+CALLER: Hello?
+PROSPECT: Hello.
+CALLER: Ah, hi sir. I am calling from Meridian Growth Partners. This is a call regarding your company. We would like to make a free growth report. We run a research series where we highlight companies that are growing fast. The report is completely free. Can I send it to you on WhatsApp on this number?
+PROSPECT: Hello.
+CALLER: Hello.
+PROSPECT: Ah.
+CALLER: Could you hear me, sir?
+PROSPECT: Marathi, Marathi.
+CALLER: Sir, Marathi madhe bolto. Mi Meridian varun call kartoy tumhala. Awaaz yetoy?
+PROSPECT: Ho, yetoy yetoy.
+CALLER: Ha sir, aamchi company tumchyasathi ek free growth report banvnar. Mi tumhala ha report ya WhatsApp number var pathvu shakto ka?
+PROSPECT: Kashasathi aahe sir he?
+CALLER: Sir, ha growth analysis sathi ek report aahe, business grow karnyasaathi, profit vadhvnyasaathi. Completely free aahe sir.
+PROSPECT: Naka sir, punha naka pathvu.
+CALLER: Okay, theek aahe.

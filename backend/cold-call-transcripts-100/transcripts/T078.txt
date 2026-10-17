@@ -1,0 +1,25 @@
+# T078
+duration_seconds: 145
+outcome: interested
+prospect_role: Marketing Director
+company_kind: mid-size private company
+company: Genera Healthcare (fictional)
+caller: Arjun, Meridian Growth Partners (fictional)
+
+CALLER: Hello.
+PROSPECT: Yes.
+CALLER: Am I speaking to Mr. Thomas?
+PROSPECT: Yeah, hi. How can I help you?
+CALLER: Hi, I'm Arjun calling from Meridian Growth Partners. I wanted to talk about Genera Healthcare. Is this the right time?
+PROSPECT: What is this about? I'm sorry.
+CALLER: So I'll quickly tell you about our company. Meridian helps other organisations solve the operational problems that come up during growth. We found your organisation very interesting, and we had two or three yes or no questions, so that we can understand your idea of growth. Is that fine?
+PROSPECT: Uh, so, I'm not able to quite get what sort of services or solution you're trying to provide.
+CALLER: Basically we understand an organisation's business, we understand its people, and we come up with solutions for the operational problems which are stopping it from growing.
+PROSPECT: So something like a consulting firm?
+CALLER: I wouldn't say we are consulting, because consultants come with pre-defined frameworks and ready-made solutions. We understand the business, we find the constraints, we come up with the solutions along with you, and then we help in execution. So I wouldn't call us consulting. We are basically growth partners. But before discussing anything serious, we first wanted to show you value. That's why we called. I have a few yes or no questions, that's it. And if you see value in us, we'll send you a few growth ideas based on a study of your competitors and the top players: some on how you can improve your margin, some on how you can drive higher sales volume.
+PROSPECT: Mhm.
+CALLER: If you see value and merit, we can discuss in another call how you can actually implement these in your work.
+PROSPECT: So, I would suggest you send your portfolio, your company profile and other details, the clients you have worked with, or whatever you have.
+CALLER: Sure, sure.
+PROSPECT: We'll have a look at it and then we'll see if we can work together.
+CALLER: Okay. Got it. Right. Yeah. Thank you. Thank you, sir.

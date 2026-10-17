@@ -1,0 +1,27 @@
+# T018
+duration_seconds: 63
+outcome: not_interested
+prospect_role: Associate Director, Statistical Programming
+company_kind: India arm of a multinational
+company: Astrella Pharma India (fictional)
+caller: Arjun, Meridian Growth Partners (fictional)
+
+CALLER: Hello?
+PROSPECT: Yes, hello.
+CALLER: Uh, hi Ramesh ji. I'm Arjun calling from Meridian Growth Partners. Is this the right time to speak?
+PROSPECT: From where?
+CALLER: Uh, Meridian Growth Partners. It's a company based in Hyderabad.
+PROSPECT: For what?
+CALLER: Uh, so we wanted to speak about Astrella Pharma India.
+PROSPECT: No, no. Uh, yeah, just tell me.
+CALLER: Uh, so I'll quickly tell you about our company. Meridian helps other organisations in solving the operational problems which come up during growth. But before discussing anything, we wanted to ask you a few questions so that we can understand.
+PROSPECT: Regarding Astrella, I can't reveal any answers to anyone outside.
+CALLER: No, uh, we won't ask anything like that. We only have yes or no questions.
+PROSPECT: No, no. That's fine.
+CALLER: Only to understand.
+PROSPECT: No.
+CALLER: Okay, uh, okay. We can do another thing. We can make a complimentary growth report for your company.
+PROSPECT: Not interested. I am not on the line manager side.
+CALLER: Okay, okay.
+PROSPECT: Yeah. Okay.
+CALLER: Thank you.

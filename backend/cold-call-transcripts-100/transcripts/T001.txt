@@ -1,0 +1,26 @@
+# T001
+duration_seconds: 75
+outcome: next_step_agreed
+prospect_role: Technical Services Director
+company_kind: mid-size private company
+company: Kalpana Chem Supplies (fictional)
+caller: Priya, Meridian Growth Partners (fictional)
+
+PROSPECT: Hello.
+CALLER: Hi, Dev ji. This is Priya calling from Meridian Growth Partners.
+PROSPECT: Aha, Priya ji.
+CALLER: Yeah. So a few days ago I had shared the report with you. This is a follow-up call regarding that. Is this the right time to speak with you?
+PROSPECT: Ah, yes. Go ahead.
+CALLER: Yeah. So what we wanted to tell you through this call is, our founder, Vikram, he really wants to connect with you to discuss the report and the growth opportunities for Kalpana Chem. So is it fine if I schedule a meeting with you this week or next week with him, whenever you are free?
+PROSPECT: Perhaps next week would be better. We would have a clearer idea of our products and where to push them.
+CALLER: Yeah, sure. Next week, when can we connect with him?
+PROSPECT: Tuesday is a good day.
+CALLER: Okay, Tuesday. And the time?
+PROSPECT: After 2 PM. Call us in the afternoon and then we can perhaps have a working session.
+CALLER: Yeah, sure. Then we can discuss further. So this will be a Google Meet, if that is okay with you.
+PROSPECT: What?
+CALLER: The call will be a Google Meet. Our founder and we will connect with you next Tuesday.
+PROSPECT: Right. Got it.
+CALLER: Okay. Okay.
+PROSPECT: Thank you.
+CALLER: Thank you, Dev ji.

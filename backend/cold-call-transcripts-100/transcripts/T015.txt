@@ -1,0 +1,22 @@
+# T015
+duration_seconds: 43
+outcome: do_not_call
+prospect_role: not the person on the list
+company_kind: India arm of a multinational
+company: Camber Engines India (fictional)
+caller: Arjun, Meridian Growth Partners (fictional)
+
+PROSPECT: Hello.
+CALLER: Ah, am I speaking to Mr. Prakash Rao?
+PROSPECT: Arre, Prakash Rao ka to 14 saal se ye number nahi hai.
+CALLER: Achha.
+PROSPECT: 14 years back Prakash Rao ka number hua karta tha. Uska matlab 14 years se Prakash Rao is connect mein nahi hai.
+CALLER: Okay okay. Official number tha unka?
+PROSPECT: Haan.
+CALLER: Communication ke liye abhi wo kisi aur jagah pe hain, to unka number aapko malum nahi hai?
+PROSPECT: Nahi.
+CALLER: Achha. I wanted to speak to anyone from Camber Engines.
+PROSPECT: Kisliye baat kar rahe hain?
+CALLER: Uh, so basically we have been researching and we found your company interesting. Our company helps organisations solve the operational problems which come up during growth.
+PROSPECT: Main to junior level ka aadmi hoon. Main nahi bata paunga.
+CALLER: Okay okay.

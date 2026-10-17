@@ -1,0 +1,27 @@
+# T034
+duration_seconds: 71
+outcome: moved_company
+prospect_role: Director
+company_kind: mid-size private manufacturer
+company: Osprey Rubber Products (fictional)
+caller: Arjun, Meridian Growth Partners (fictional)
+
+PROSPECT: Hello.
+CALLER: Am I speaking to Mr. Anil Kumar?
+PROSPECT: Yes.
+CALLER: Hi, this is Arjun calling from Meridian Growth Partners. This call is regarding Osprey Rubber. Is this the right time?
+PROSPECT: Regarding?
+CALLER: Osprey Rubber Products.
+PROSPECT: Yeah. Tell me.
+CALLER: Yeah. So I'll quickly tell you about my company. Meridian helps growing organisations in solving the operational challenges which come up in the way of growth. But before that, I wanted to understand your company's side of growth. And the purpose...
+PROSPECT: Hello.
+CALLER: Hello.
+PROSPECT: Purpose?
+CALLER: As I said, we wanted to understand your company's side of growth.
+PROSPECT: Regarding what?
+CALLER: Samajh... samajhne ke liye.
+PROSPECT: Ah.
+CALLER: Company kya kar rahi hai?
+PROSPECT: So... we work with organisations and we solve... no, sorry. Sorry, sir.
+CALLER: Okay.
+PROSPECT: Okay. Okay.

@@ -1,0 +1,36 @@
+# T083
+duration_seconds: 290
+outcome: agreed_to_receive_report
+prospect_role: Director of Software
+company_kind: large private company
+company: Vyom Technologies (fictional)
+caller: Meera, Meridian Growth Partners (fictional)
+
+CALLER: Hello.
+PROSPECT: Yes.
+CALLER: Am I speaking to Mr. Dinesh?
+PROSPECT: Yes.
+CALLER: Hi Dinesh ji, this is Meera calling from Meridian Growth Partners. Is it the right time to speak now?
+PROSPECT: From where are you talking?
+CALLER: I am calling from Meridian Growth Partners. It's a Hyderabad based company.
+PROSPECT: Mm-hmm.
+CALLER: Yeah. So this is regarding your company, Vyom Technologies. I will tell you quickly what we do as a company. We work with fast-growing companies and help them solve their growth and operational bottlenecks, the peculiar problems which arise especially when a company is growing very fast. We solve these with a structured method. So Dinesh ji, before discussing anything serious with you, we really wanted to show you some value, and for that we also need to understand your idea of growth for Vyom. So will it be okay if I ask you three quick questions, so that I understand your perspective of growth for the company?
+PROSPECT: Mm-hmm.
+CALLER: Yeah, so my first question is, do you believe that your people's growth is your business's growth?
+PROSPECT: Definitely, yeah.
+CALLER: Yeah. My second question: do you take trying new things as a positive or a negative? Do you believe experiments are an important part of your growth?
+PROSPECT: I think experimenting is good whenever it is adding value, but it has to be thought through.
+CALLER: Yeah, great. Okay. The third and last question: do you believe regular review is a key part of your growth?
+PROSPECT: Yes, yeah. We do a lot of reviews, yeah.
+CALLER: All right. That's fantastic, and thank you for answering all three questions and being patient with me. So the thing is, Dinesh ji, our founder, Vikram, really wants to connect with you, as we understand Vyom is doing very well currently and has a lot more potential, and listening to the way you answered the questions, it seems it would be great working with you. So before our founder connects with you, I wanted to know about your plans for the company. We have a couple of questions about your growth plans. Would it be okay if I ask them now?
+PROSPECT: What is your intention? Because, you know, I want to understand what your intention is and what you are trying to sell.
+CALLER: Yeah. So we work as growth partners to companies who are very good in research, development and innovation, and Vyom was on our list. That's why I'm reaching out to you. What we do is, we solve growth obstacles in businesses. A growth obstacle can be any problem related to your own employees, or the product, or the workflow of any department, or even the customers. You must be having multiple KPIs in your business: cutting cost, quality, turnaround time, customer satisfaction, anything. If there is a constraint in the workflow behind one of those KPIs, we map the steps, we spot the constraint, and we design experiments. Through those experiments we come up with the solution for that particular constraint.
+PROSPECT: Ma'am, as of now, I don't think so. I mean, he would be interested, because a lot of R&D we are doing internally. But I'm not sure, from a business perspective, where I may find more business for you, because it's a bumpy state for everyone, right? With the same market, we are also having the same kind of bumpy stages, but internally, and we are doing a lot of R&D as well. So what I can do is, I can save your number, and if I need your further help, or I find any business use case, I can definitely contact you back. But as of now, if you ask me, okay, this is a particular problem, I may not be able to state the answer up front, right?
+CALLER: I understand. Yeah, that is okay. That is also okay. I totally understand. And one more thing: we have prepared a short growth report specifically for Vyom. As you say that right now you are not in a position to talk about the business or any challenges, until the time you feel comfortable sharing anything, or joining a meeting where our founder also comes in, we can share this report with you. It has solid growth analysis on Vyom, the ways by which profit could grow. So would it be okay if I send the draft of this report directly to your WhatsApp?
+PROSPECT: You can send, yeah. That you can send, yeah.
+CALLER: Yeah, you can just go through the report. If you find it useful, or if you believe after reading it that we can provide you any value, then surely we can connect later.
+PROSPECT: Hmm. Okay, okay. That will be fine.
+CALLER: All right, then. Shall I send it over WhatsApp or email?
+PROSPECT: Yeah, WhatsApp will be fine.
+CALLER: Okay, then I'll send it. Thank you for your time.
+PROSPECT: Thank you. Thank you so much.

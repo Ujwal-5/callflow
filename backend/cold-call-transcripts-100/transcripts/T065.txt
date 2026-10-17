@@ -1,0 +1,25 @@
+# T065
+duration_seconds: 90
+outcome: agreed_to_receive_report
+prospect_role: Associate Director, Operations
+company_kind: large private company
+company: Fresh Cuts Foods (fictional)
+caller: Meera, Meridian Growth Partners (fictional)
+
+PROSPECT: Hello.
+CALLER: Hello. Am I speaking to Mr. Girish?
+PROSPECT: Yes.
+CALLER: Hi Girish ji. This is Meera calling from Meridian Growth Partners. Is it the right time to speak now?
+PROSPECT: Yes. Tell me.
+CALLER: Yeah. It is regarding your company, Fresh Cuts. I will tell you quickly what we do as a company. We work with fast-growing companies and help them solve their operational bottlenecks, the unusual problems that come up especially when a company is growing very fast. We solve them with a structured method. So before discussing anything serious with you, we wanted to show you some value first, and for that we also need to understand your approach to such problems at Fresh Cuts. So would it be okay if I ask you a few quick questions now?
+PROSPECT: Actually, I'm not into growth. I take care of another domain.
+CALLER: Oh, sorry, I didn't get you. Your voice is not clearly audible.
+PROSPECT: I'm not into growth. I take care of another domain.
+CALLER: Okay.
+PROSPECT: All right. If you drop an email, I'll add the relevant person.
+CALLER: Actually, Girish ji, we have prepared a short growth report specifically for Fresh Cuts. If you want, I can send the draft. By reading it you get an idea of how we approach companies, and there is good growth analysis on Fresh Cuts in it, the ways by which profit could grow.
+PROSPECT: Yeah, drop me an email. I'll add the relevant person.
+CALLER: All right then. I'll send you the report on your email. Can you please confirm your email ID?
+PROSPECT: Yes, it's my first name dot surname at the company domain.
+CALLER: All right, thank you for the confirmation. I'll send it.
+PROSPECT: Thank you.

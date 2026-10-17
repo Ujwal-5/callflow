@@ -1,0 +1,19 @@
+# T017
+duration_seconds: 70
+outcome: not_interested
+prospect_role: Director
+company_kind: India arm of a multinational
+company: Nexora Semiconductors India (fictional)
+caller: Priya, Meridian Growth Partners (fictional)
+
+CALLER: Hello.
+PROSPECT: Yes.
+CALLER: Am I speaking with Subhash ji?
+PROSPECT: Haan, boliye.
+CALLER: Hi Subhash ji. This is Priya calling from Meridian Growth Partners, and this call is regarding Nexora. Is this the right time to speak?
+PROSPECT: Tell me.
+CALLER: So what we do as a company is, we work with fast growing companies and help with the operational problems which arise during growth. These are very specific problems which come up mainly when a company is growing really fast. We try to solve them with a structured method. So regarding that, we wanted you to connect with our founder, Vikram. Is it fine if I explain quickly what value you get from the meeting?
+PROSPECT: Yeah, tell me quickly. Short.
+CALLER: Yeah, so basically our approach is, we don't come with a ready-made solution. We understand your business, we sit with your people, we understand the operational problems and the workflows, and then come up with a solution which would suit you. So this call would be about discovering the business and operational problems which might be stopping the growth. So, yeah.
+PROSPECT: No, no. I don't think this is for me. Thanks.
+CALLER: Yeah, I understand. Thank you.

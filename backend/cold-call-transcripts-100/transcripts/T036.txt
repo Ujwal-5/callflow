@@ -1,0 +1,21 @@
+# T036
+duration_seconds: 67
+outcome: not_logged
+prospect_role: Chief Executive Officer
+company_kind: mid-size private manufacturer
+company: JK Electronica (fictional)
+caller: Manish, Meridian Growth Partners (fictional)
+
+CALLER: Hello, am I talking to Kulbir ji?
+PROSPECT: Haan ji, boliye.
+CALLER: Sir, main Manish baat kar raha hoon Meridian Growth Partners se.
+PROSPECT: Haan ji, boliye.
+CALLER: Sir, humari company ek research series bana rahi hai, jis mein hum aisi companies ko lete hain jo research aur innovation mein kaafi heavy hoti hain, but actual mein unko kaafi log jaante nahi hain. To hum like, we would like to make a profile on your company.
+PROSPECT: Hmm.
+CALLER: So the profile will have three parts: your growth and margin numbers compared with listed peers, your market and where it is going, and where our team feels your growth could come from next. So if you give your consent, we will send you a sample of the profile...
+PROSPECT: Manish ji, I am travelling today.
+CALLER: Okay, sir.
+PROSPECT: I am not in my workplace or city. I'll be back on Tuesday. If you can send me some details by mail, it will be helpful.
+CALLER: Okay, sir.
+PROSPECT: Yeah, thank you.
+CALLER: Thank you.

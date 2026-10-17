@@ -1,0 +1,18 @@
+# T013
+duration_seconds: 75
+outcome: do_not_call
+prospect_role: former Independent Director
+company_kind: listed Indian company
+company: Arunodaya Specialty Chemicals (fictional)
+caller: Divya, Meridian Growth Partners (fictional)
+
+CALLER: Hello.
+PROSPECT: Yes.
+CALLER: Am I speaking with Vinay?
+PROSPECT: Yes.
+CALLER: Hi sir, I am Divya calling from Meridian Growth Partners. Is this the right... Meridian Growth Partners?
+PROSPECT: Sorry?
+CALLER: Yeah, this call is regarding Arunodaya Specialty Chemicals. We would like to explore potential growth opportunities for your company and share what we find with you. Is it okay if I explain what it is exactly?
+PROSPECT: No ma'am, you are speaking to the wrong person. I was only an independent director, if you understand what an independent director is, on the Arunodaya board. I had nothing to do with the day-to-day operations of the company, even when I was an independent director for five years. As an independent director we are just supposed to be present on the board to take care of the minority shareholders' interests. We may have a role in making sure the plans of the company are in the interest of the minority shareholders. That is the limited role of an independent director. That is what I was for five years, until two years ago. Then I retired from the board because I had finished two terms, and we can't continue beyond two terms. So basically I am no more on the board. I have nothing to do with Arunodaya anymore.
+CALLER: Yeah, okay, I understand sir. Sorry to disturb you.
+PROSPECT: No problem.

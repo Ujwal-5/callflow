@@ -1,0 +1,16 @@
+# T033
+duration_seconds: 57
+outcome: interested
+prospect_role: Chief Operating Officer
+company_kind: mid-size private manufacturer
+company: Metro Rubber Technologies (fictional)
+caller: Anjali, Meridian Growth Partners (fictional)
+
+PROSPECT: Hello.
+CALLER: Hello sir. Is this Mr. Balaji from Metro Rubber Technologies?
+PROSPECT: Yes. May I know who's this?
+CALLER: Yes sir. I am Anjali calling from Meridian Growth Partners. We are working on a research series where we feature companies that are building unique products and creating meaningful impact. Metro Rubber came up during our research, and we'd like to prepare a research profile on your company as part of the series.
+PROSPECT: Okay. Actually, I'm not the right person, because I joined here only one month ago. So I'm not the right person to give any feedback.
+CALLER: Okay. Uh, it is not about feedback, sir. I just need your permission, in order to...
+PROSPECT: Actually, right now I'm in a meeting with a customer. So can I call you after?
+CALLER: Yes sir, yes sir, sure sir.

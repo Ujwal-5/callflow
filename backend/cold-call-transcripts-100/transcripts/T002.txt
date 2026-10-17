@@ -1,0 +1,23 @@
+# T002
+duration_seconds: 54
+outcome: not_logged
+prospect_role: CEO and CTO
+company_kind: startup
+company: Orbit Automation (fictional)
+caller: Divya, Meridian Growth Partners (fictional)
+
+CALLER: Hello.
+PROSPECT: Hello.
+CALLER: Hello.
+PROSPECT: Yes.
+CALLER: Am I speaking with, uh, Leonard sir?
+PROSPECT: Yes, yes, Leonard. Yeah.
+CALLER: Hi sir. I'm Divya, calling from Meridian Growth Partners. Is it the right time to speak?
+PROSPECT: Uh, from where? Can you say it again?
+CALLER: Meridian Growth Partners.
+PROSPECT: Okay, okay, okay. Let me know. Yeah, you can talk.
+CALLER: Yeah. It is regarding a short growth report for Orbit Automation that looks beyond current performance to where the next growth could come from. So would you be interested to hear what is in the report?
+PROSPECT: Uh, not right now, because we are still a startup. So we don't require that now.
+CALLER: Yeah, it will be useful to grow your business, sir.
+PROSPECT: Yeah. Maybe can you call after 30 minutes, because I was in a call actually. So after 30 minutes we can talk.
+CALLER: Yeah, yeah, sure. Thank you.

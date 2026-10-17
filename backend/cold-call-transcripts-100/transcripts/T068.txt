@@ -1,0 +1,29 @@
+# T068
+duration_seconds: 100
+outcome: follow_up
+prospect_role: not the person on the list; a service desk at a different company
+company_kind: not known
+company: listed as Ingram Industrial India (fictional)
+caller: Meera, Meridian Growth Partners (fictional)
+
+CALLER: Hello.
+PROSPECT: Hello.
+CALLER: Yes ma'am. Am I speaking to Mr. Kaushik?
+PROSPECT: Not Kaushik. Nikita this side, ma'am. Sorry.
+CALLER: Your voice is not audible, ma'am. Could you please repeat?
+PROSPECT: I am telling you, Nikita this side, not Kaushik. Kaushik has already left the organisation, and this is the service number of an asset management company.
+CALLER: Okay. Okay. So you are saying that he has left the company.
+PROSPECT: Haan, haan. But if you have any query regarding the asset management company, I can help you with that.
+CALLER: All right. May I know in which domain you are working currently?
+PROSPECT: The asset management company.
+CALLER: Okay. Is this the company Ingram Industrial, if I am pronouncing it right?
+PROSPECT: No. We are situated in Connaught Place.
+CALLER: All right. So, okay, my name is Meera and I am calling from Meridian Growth Partners. It's a Hyderabad based company. This call was regarding Ingram Industrial, and I will tell you quickly what we do as a company. We assist businesses in solving their growth and operational bottlenecks, the peculiar problems which arise especially when a company is growing very fast. So before discussing anything serious, we first wanted to show you some value, and for that we also need to understand your idea of growth for the company. So will it be okay if I ask you three questions right now?
+PROSPECT: Yeah, I'm actually stuck in some important job. Please connect after some time. Would it be possible?
+CALLER: I am really sorry, your voice is not audible properly. Could you please repeat?
+PROSPECT: I'm telling you, I am stuck with urgent work. So I cannot connect with you right away.
+CALLER: All right. Will it be okay if I call you back tomorrow, or today evening?
+PROSPECT: Okay. Haan. Okay, fine.
+CALLER: Anyway, tomorrow is a holiday. I can call you back the day after tomorrow.
+PROSPECT: Okay.
+CALLER: All right. Thank you.

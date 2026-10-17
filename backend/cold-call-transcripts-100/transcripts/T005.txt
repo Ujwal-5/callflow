@@ -1,0 +1,21 @@
+# T005
+duration_seconds: 36
+outcome: not_logged
+prospect_role: not known
+company_kind: not known
+company: Suvarna Microsystems (fictional)
+caller: Rohit, Meridian Growth Partners (fictional)
+
+CALLER: Hello.
+PROSPECT: Hello.
+CALLER: Am I talking to Preeti Bansal?
+PROSPECT: Yes, who's this?
+CALLER: Hello, ma'am. This is Rohit from Meridian Growth Partners. I just wanted to connect. The voice is breaking. Is it better now?
+CALLER: Hello?
+PROSPECT: Hello.
+PROSPECT: Yeah, go ahead. Yeah, go ahead.
+CALLER: Yeah, this is Rohit from Meridian Growth Partners. I just wanted to connect regarding Suvarna Microsystems.
+PROSPECT: Can you call me in an hour?
+CALLER: Call you in an hour? In an hour, okay. I will call you then.
+CALLER: All right.
+PROSPECT: Thank you.
