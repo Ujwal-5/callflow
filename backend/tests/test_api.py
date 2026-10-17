@@ -8,8 +8,15 @@ from backend.app.db import db
 class TestCallFlowAPI(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        cls._orig_force_sqlite = db._force_sqlite
+        db._force_sqlite = True
         db.init_db()
         cls.client = TestClient(app)
+
+    @classmethod
+    def tearDownClass(cls):
+        db._force_sqlite = cls._orig_force_sqlite
+        db.init_client()
 
     def test_01_health_check(self):
         """Test GET /health returns HTTP 200 with service status."""

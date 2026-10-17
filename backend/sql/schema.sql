@@ -53,11 +53,13 @@ CREATE INDEX IF NOT EXISTS idx_stage_results_call_stage ON call_stage_results (c
 ALTER TABLE calls ENABLE ROW LEVEL SECURITY;
 ALTER TABLE call_stage_results ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Allow service role full access to calls" ON calls;
 CREATE POLICY "Allow service role full access to calls" 
     ON calls FOR ALL 
     USING (true) 
     WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Allow service role full access to stage results" ON call_stage_results;
 CREATE POLICY "Allow service role full access to stage results" 
     ON call_stage_results FOR ALL 
     USING (true) 

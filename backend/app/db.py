@@ -18,12 +18,24 @@ def get_utc_now_iso() -> str:
 
 class DatabaseAdapter:
     def __init__(self):
-        self.use_supabase = settings.use_supabase
-        self.supabase_client: Optional[Client] = None
-        if self.use_supabase and create_client:
-            key = settings.SUPABASE_SERVICE_ROLE_KEY or settings.SUPABASE_KEY
-            self.supabase_client = create_client(settings.SUPABASE_URL, key)
         self.db_path = settings.SQLITE_DB_PATH
+        self.supabase_client: Optional[Client] = None
+        self.use_supabase = False
+        self._force_sqlite = False
+        self.init_client()
+
+    def init_client(self):
+        if self._force_sqlite:
+            self.use_supabase = False
+            self.supabase_client = None
+            return
+
+        self.use_supabase = settings.use_supabase
+        if self.use_supabase and create_client:
+            key = settings.supabase_key
+            self.supabase_client = create_client(settings.SUPABASE_URL, key)
+        else:
+            self.supabase_client = None
 
     def get_sqlite_conn(self) -> sqlite3.Connection:
         conn = sqlite3.connect(self.db_path)
@@ -32,6 +44,7 @@ class DatabaseAdapter:
         return conn
 
     def init_db(self):
+        self.init_client()
         if self.use_supabase and self.supabase_client:
             # Supabase schema is managed via SQL migrations / Supabase dashboard
             return
@@ -104,7 +117,7 @@ class DatabaseAdapter:
                 "updated_at": now,
             }
             res = self.supabase_client.table("calls").insert(payload).execute()
-            return res.data[0]
+            return self._format_call_dict(res.data[0])
 
         conn = self.get_sqlite_conn()
         cursor = conn.cursor()
@@ -133,7 +146,7 @@ class DatabaseAdapter:
         if self.use_supabase and self.supabase_client:
             query = self.supabase_client.table("calls").select("*").order("started_at", desc=True)
             if search:
-                query = query.ilike("company_name", f"%{search}%")
+                query = query.or_(f"company_name.ilike.%{search}%,contact_name.ilike.%{search}%")
             if outcome:
                 query = query.eq("final_outcome", outcome)
             if stage:

@@ -5,6 +5,7 @@ from typing import List
 
 class Settings(BaseSettings):
     SUPABASE_URL: str = ""
+    SUPABASE_SECRET_KEY: str = ""
     SUPABASE_SERVICE_ROLE_KEY: str = ""
     SUPABASE_KEY: str = ""
     DATABASE_URL: str = ""
@@ -14,7 +15,10 @@ class Settings(BaseSettings):
     PORT: int = 8000
 
     class Config:
-        env_file = ".env"
+        env_file = (
+            os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env"),
+            ".env",
+        )
         env_file_encoding = "utf-8"
         extra = "ignore"
 
@@ -29,8 +33,16 @@ class Settings(BaseSettings):
         return origins
 
     @property
+    def supabase_key(self) -> str:
+        return (
+            self.SUPABASE_SECRET_KEY
+            or self.SUPABASE_SERVICE_ROLE_KEY
+            or self.SUPABASE_KEY
+        ).strip()
+
+    @property
     def use_supabase(self) -> bool:
-        return bool(self.SUPABASE_URL and (self.SUPABASE_SERVICE_ROLE_KEY or self.SUPABASE_KEY))
+        return bool(self.SUPABASE_URL.strip() and self.supabase_key)
 
 
 settings = Settings()

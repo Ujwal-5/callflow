@@ -181,8 +181,9 @@ Open `http://localhost:3000` in your web browser.
 | `PORT` | No | `8000` | Port for the uvicorn HTTP server |
 | `FRONTEND_ORIGIN` | No | `http://localhost:3000,http://127.0.0.1:3000` | Comma-separated allowed origins for CORS |
 | `GEMINI_API_KEY` | No | `""` | Google Gemini API key (server-side only, never shared with client) |
-| `SUPABASE_URL` | No | `""` | Supabase project URL (if omitted, SQLite is used) |
-| `SUPABASE_SERVICE_ROLE_KEY` | No | `""` | Supabase service role secret key |
+| `SUPABASE_URL` | No | `""` | Supabase project URL (e.g. `https://your-project.supabase.co`) |
+| `SUPABASE_SECRET_KEY` | No | `""` | Supabase backend secret key (preferred, server-side only) |
+| `SUPABASE_SERVICE_ROLE_KEY` | No | `""` | Alternative Supabase service role secret key |
 | `DATABASE_URL` | No | `""` | Optional direct PostgreSQL connection string |
 
 ### Frontend (`frontend/.env.local`)
@@ -196,7 +197,7 @@ Open `http://localhost:3000` in your web browser.
 ## 6. Database Schema Setup
 
 ### Supabase / PostgreSQL (Production)
-Run the script located at `backend/sql/schema.sql` directly inside the Supabase SQL Editor:
+Run the migration script located at `backend/sql/schema.sql` directly inside the **Supabase Dashboard > SQL Editor**:
 
 ```sql
 -- Creates calls and call_stage_results tables
@@ -204,8 +205,22 @@ Run the script located at `backend/sql/schema.sql` directly inside the Supabase 
 -- Sets up indexes for fast history search and RLS policies
 ```
 
+The migration creates:
+- `calls`: Stores call records, status (`in_progress`, `completed`), current and highest stages (1–8), final outcome, next action, follow-up timing, and JSONB AI summaries.
+- `call_stage_results`: Stores stage number (1–8), mutually exclusive outcome, verbatim prospect exact words (especially prominent in Stage 5), and notes.
+- Unique constraint `uq_call_stage UNIQUE (call_id, stage_number)` ensuring revisiting a stage updates rather than duplicates records.
+- Performance indexes on `started_at`, `company_name`, `status`, `final_outcome`, `highest_stage`, and `(call_id, stage_number)`.
+- Row Level Security (RLS) policies allowing full server-side backend operations.
+
+#### Verifying Live Supabase Connection
+After executing the SQL migration in Supabase, run the verification script:
+```bash
+./backend/.venv/bin/python backend/scripts/verify_supabase.py
+```
+This script validates table presence, tests call creation, stage outcome logging, verbatim note capture, stage revisit updates, call history retrieval, call completion, and cleanup.
+
 ### SQLite Fallback (Local Development)
-When `SUPABASE_URL` is omitted, CallFlow automatically creates and initializes `backend/callflow.db` with identical schemas and constraints upon startup. Zero configuration required.
+When `SUPABASE_URL` or `SUPABASE_SECRET_KEY` is omitted, CallFlow automatically creates and initializes `backend/callflow.db` with identical schemas and constraints upon startup. Zero configuration required.
 
 ---
 
@@ -251,8 +266,8 @@ Key Findings:
    - **Health Check Path**: `/health`
 4. Set Environment Variables:
    - `GEMINI_API_KEY`: Your Google Gen AI key.
-   - `SUPABASE_URL`: Your Supabase URL.
-   - `SUPABASE_SERVICE_ROLE_KEY`: Your Supabase key.
+   - `SUPABASE_URL`: Your Supabase URL (`https://your-project.supabase.co`).
+   - `SUPABASE_SECRET_KEY`: Your Supabase backend secret key.
    - `FRONTEND_ORIGIN`: Your deployed Vercel frontend URL.
 
 ### Frontend on Vercel
@@ -270,19 +285,27 @@ Key Findings:
 
 ## 10. Automated Tests
 
-Run the backend test suite:
+Run the full backend test suite:
 ```bash
+# Run API endpoint and SQLite fallback tests:
 ./backend/.venv/bin/python -m unittest backend/tests/test_api.py -v
+
+# Run Supabase database operations tests:
+./backend/.venv/bin/python -m unittest backend/tests/test_supabase_operations.py -v
+
+# Run live end-to-end Supabase verification (once SQL migration is applied):
+./backend/.venv/bin/python backend/scripts/verify_supabase.py
 ```
 
-All 10 tests verify:
+The test suites verify:
 - Service health check
 - Exact 8-stage sequence and metadata
 - Call session creation and validation
 - Upserting stage results without duplicating records
-- Preservation of verbatim Stage 5 quotes
+- Preservation of verbatim Stage 5 quotes and notes
 - Early call termination from any stage
 - Full call conclusion with follow-up timing
 - Call history search and filtering
 - Boundary validation (rejecting invalid stages 0 and 9)
 - Graceful Gemini summary fallback when unconfigured
+- Supabase create call, update stage, load history, and close call workflows
