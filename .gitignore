@@ -2,6 +2,9 @@
 backend/.venv/
 backend/__pycache__/
 *.py[cod]
+*.db
+*.sqlite3
+backend/callflow.db
 
 # Environment variables and secrets
 .env
