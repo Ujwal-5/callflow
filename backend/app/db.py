@@ -493,14 +493,17 @@ class DatabaseAdapter:
     def get_transcript(self, call_id: str) -> Optional[Dict[str, Any]]:
         """Return the transcript record for a call, or None if it does not exist."""
         if self.use_supabase and self.supabase_client:
-            res = (
-                self.supabase_client
-                .table("call_transcripts")
-                .select("*")
-                .eq("call_id", call_id)
-                .execute()
-            )
-            return self._format_transcript_dict(res.data[0]) if res.data else None
+            try:
+                res = (
+                    self.supabase_client
+                    .table("call_transcripts")
+                    .select("*")
+                    .eq("call_id", call_id)
+                    .execute()
+                )
+                return self._format_transcript_dict(res.data[0]) if res.data else None
+            except Exception:
+                return None
 
         conn = self.get_sqlite_conn()
         cursor = conn.cursor()

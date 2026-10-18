@@ -147,14 +147,15 @@ async def close_call(call_id: str, payload: CallClose):
         follow_up_channel=payload.follow_up_channel,
     )
 
-    # Trigger initial conversation gaps analysis if complete transcript is available
-    transcript_rec = db.get_transcript(call_id)
-    if transcript_rec and (transcript_rec.get("edited_transcript") or transcript_rec.get("raw_transcript")):
-        try:
+    # Trigger initial conversation gaps analysis if complete transcript is available.
+    # This is optional post-processing — errors here must never block the close response.
+    try:
+        transcript_rec = db.get_transcript(call_id)
+        if transcript_rec and (transcript_rec.get("edited_transcript") or transcript_rec.get("raw_transcript")):
             await analyze_conversation_gaps_endpoint(call_id)
             closed = db.get_call(call_id)
-        except Exception:
-            pass
+    except Exception:
+        pass
 
     return closed
 
