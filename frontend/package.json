@@ -6,9 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "prebuild": "node scripts/copy-moonshine.mjs",
+    "predev": "node scripts/copy-moonshine.mjs"
   },
   "dependencies": {
+    "@moonshine-ai/moonshine-wasm": "^0.1.5",
     "next": "16.4.2",
     "react": "19.3.0",
     "react-dom": "19.3.0"

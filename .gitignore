@@ -19,6 +19,10 @@ frontend/.env*
 frontend/node_modules/
 frontend/.next/
 frontend/out/
+# Copied from node_modules at build time by scripts/copy-moonshine.mjs
+frontend/public/moonshine-wasm/
+# Local test model files (downloaded once, not deployed)
+frontend/public/models/
 
 # Editors and operating systems
 .vscode/
