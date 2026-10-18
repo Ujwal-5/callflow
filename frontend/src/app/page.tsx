@@ -30,16 +30,20 @@ export default function Home() {
   // UI state
   const [isLoadingInitial, setIsLoadingInitial] = useState(true);
   const [isStartingCall, setIsStartingCall] = useState(false);
-  const [isSavingStage, setIsSavingStage] = useState(false);
   const [isEndingCallModalOpen, setIsEndingCallModalOpen] = useState(false);
   const [isSubmittingClose, setIsSubmittingClose] = useState(false);
   const [apiConnected, setApiConnected] = useState(true);
   const [globalError, setGlobalError] = useState<string | null>(null);
 
-  // Staged notes state for immediate responsiveness
-  const [currentExactWords, setCurrentExactWords] = useState("");
-  const [currentNotes, setCurrentNotes] = useState("");
-  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  /**
+   * stagePanelFlushRef holds a callback that CurrentStagePanel registers so the
+   * parent can read the latest local text state before navigating away.
+   * This avoids lifting exactWords/notes back up to the page (which would cause
+   * the whole page to re-render on every keystroke).
+   */
+  const stagePanelFlushRef = useRef<
+    (() => { exactWords: string; notes: string }) | null
+  >(null);
 
   // Initial data loading
   useEffect(() => {
@@ -62,13 +66,7 @@ export default function Home() {
             const callData = await api.getCall(savedCallId);
             if (!ignore && callData && callData.status === "in_progress") {
               setActiveCall(callData);
-              const stageNum = callData.current_stage || 1;
-              setCurrentStageNumber(stageNum);
-              const stageRes = (callData.stage_results || []).find(
-                (s) => s.stage_number === stageNum
-              );
-              setCurrentExactWords(stageRes?.prospect_exact_words || "");
-              setCurrentNotes(stageRes?.notes || "");
+              setCurrentStageNumber(callData.current_stage || 1);
             } else {
               localStorage.removeItem(ACTIVE_CALL_STORAGE_KEY);
             }
@@ -97,47 +95,50 @@ export default function Home() {
     };
   }, []);
 
-  // Helper to persist stage changes to backend with debouncing for text inputs
+  /**
+   * Persist stage data to backend.
+   * Fire-and-forget by default (no await) so that UI is never blocked.
+   * Returns a promise so callers that need to flush before navigating can await it.
+   */
   const persistStageData = useCallback(
-    async (
+    (
+      callId: string,
       stageNum: number,
       data: {
         selected_outcome?: string | null;
         prospect_exact_words?: string | null;
         notes?: string | null;
       }
-    ) => {
-      if (!activeCall) return;
-      setIsSavingStage(true);
-      try {
-        const updatedSr = await api.updateStageResult(activeCall.id, stageNum, data);
-
-        // Update local activeCall state
-        setActiveCall((prev) => {
-          if (!prev) return null;
-          const existingStages = prev.stage_results || [];
-          const idx = existingStages.findIndex((s) => s.stage_number === stageNum);
-          let newStages: StageResult[];
-          if (idx >= 0) {
-            newStages = [...existingStages];
-            newStages[idx] = updatedSr;
-          } else {
-            newStages = [...existingStages, updatedSr];
-          }
-          return {
-            ...prev,
-            current_stage: stageNum,
-            highest_stage: Math.max(prev.highest_stage, stageNum),
-            stage_results: newStages,
-          };
+    ): Promise<void> => {
+      return api
+        .updateStageResult(callId, stageNum, data)
+        .then((updatedSr) => {
+          setActiveCall((prev) => {
+            if (!prev) return null;
+            const existingStages = prev.stage_results || [];
+            const idx = existingStages.findIndex(
+              (s) => s.stage_number === stageNum
+            );
+            let newStages: StageResult[];
+            if (idx >= 0) {
+              newStages = [...existingStages];
+              newStages[idx] = updatedSr;
+            } else {
+              newStages = [...existingStages, updatedSr];
+            }
+            return {
+              ...prev,
+              current_stage: stageNum,
+              highest_stage: Math.max(prev.highest_stage, stageNum),
+              stage_results: newStages,
+            };
+          });
+        })
+        .catch((err: unknown) => {
+          console.error("Failed to save stage result:", err);
         });
-      } catch (err: unknown) {
-        console.error("Failed to save stage result:", err);
-      } finally {
-        setIsSavingStage(false);
-      }
     },
-    [activeCall]
+    []
   );
 
   // Start Call Handler
@@ -146,7 +147,7 @@ export default function Home() {
     setGlobalError(null);
     try {
       const newCall = await api.createCall(payload);
-      // Fetch full call with empty stage_results
+      // Fetch full call with stage_results
       const fullCall = await api.getCall(newCall.id);
       setActiveCall(fullCall);
       setCurrentStageNumber(1);
@@ -164,91 +165,102 @@ export default function Home() {
     }
   };
 
-  // Outcome selection handler
-  const handleSelectOutcome = (outcome: string) => {
-    if (!activeCall) return;
-    persistStageData(currentStageNumber, {
-      selected_outcome: outcome,
-      prospect_exact_words: currentExactWords,
-      notes: currentNotes,
-    });
-  };
+  /**
+   * Outcome selection: fire save in background — no await, no loading state.
+   * CurrentStagePanel already updated the button visually via local state.
+   */
+  const handleSelectOutcome = useCallback(
+    (outcome: string) => {
+      if (!activeCall) return;
+      persistStageData(activeCall.id, currentStageNumber, {
+        selected_outcome: outcome,
+      });
+    },
+    [activeCall, currentStageNumber, persistStageData]
+  );
 
-  // Debounced text changes
-  const handleExactWordsChange = (text: string) => {
-    setCurrentExactWords(text);
-    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-    saveTimeoutRef.current = setTimeout(() => {
-      persistStageData(currentStageNumber, {
+  /**
+   * Text changes: debounced save is initiated by CurrentStagePanel.
+   * The parent's job here is just to call the API — no state changes that
+   * would re-render siblings.
+   */
+  const handleExactWordsChange = useCallback(
+    (text: string) => {
+      if (!activeCall) return;
+      persistStageData(activeCall.id, currentStageNumber, {
         prospect_exact_words: text,
       });
-    }, 700);
-  };
+    },
+    [activeCall, currentStageNumber, persistStageData]
+  );
 
-  const handleNotesChange = (text: string) => {
-    setCurrentNotes(text);
-    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-    saveTimeoutRef.current = setTimeout(() => {
-      persistStageData(currentStageNumber, {
+  const handleNotesChange = useCallback(
+    (text: string) => {
+      if (!activeCall) return;
+      persistStageData(activeCall.id, currentStageNumber, {
         notes: text,
       });
-    }, 700);
-  };
+    },
+    [activeCall, currentStageNumber, persistStageData]
+  );
 
-  // Stage navigation
-  const handleSelectStage = useCallback((stageNum: number) => {
-    if (!activeCall) return;
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current);
-      persistStageData(currentStageNumber, {
-        prospect_exact_words: currentExactWords,
-        notes: currentNotes,
-      });
-    }
-    setCurrentStageNumber(stageNum);
-    const targetSr = (activeCall.stage_results || []).find(
-      (s) => s.stage_number === stageNum
-    );
-    setCurrentExactWords(targetSr?.prospect_exact_words || "");
-    setCurrentNotes(targetSr?.notes || "");
-  }, [activeCall, currentStageNumber, currentExactWords, currentNotes, persistStageData]);
+  /**
+   * Stage navigation: flush the panel's latest text before changing stage,
+   * then switch immediately without waiting for the network.
+   */
+  const handleSelectStage = useCallback(
+    (stageNum: number) => {
+      if (!activeCall) return;
+      // Flush latest local text from panel (non-blocking)
+      if (stagePanelFlushRef.current) {
+        const { exactWords, notes } = stagePanelFlushRef.current();
+        persistStageData(activeCall.id, currentStageNumber, {
+          prospect_exact_words: exactWords,
+          notes,
+        });
+      }
+      setCurrentStageNumber(stageNum);
+    },
+    [activeCall, currentStageNumber, persistStageData]
+  );
 
   // Next Stage navigation
-  const handleNextStage = async () => {
+  const handleNextStage = useCallback(async () => {
     if (!activeCall) return;
 
-    // Immediately flush any pending notes to backend
-    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-    await persistStageData(currentStageNumber, {
-      prospect_exact_words: currentExactWords,
-      notes: currentNotes,
-    });
+    // Flush the panel's current text (non-blocking fire-and-forget)
+    if (stagePanelFlushRef.current) {
+      const { exactWords, notes } = stagePanelFlushRef.current();
+      persistStageData(activeCall.id, currentStageNumber, {
+        prospect_exact_words: exactWords,
+        notes,
+      });
+    }
 
     if (currentStageNumber < stages.length) {
       const nextStage = currentStageNumber + 1;
       setCurrentStageNumber(nextStage);
-      const targetSr = (activeCall.stage_results || []).find(
-        (s) => s.stage_number === nextStage
-      );
-      setCurrentExactWords(targetSr?.prospect_exact_words || "");
-      setCurrentNotes(targetSr?.notes || "");
-      await api.advanceCallStage(activeCall.id, nextStage).catch(() => {});
+      // Advance call stage in background
+      api.advanceCallStage(activeCall.id, nextStage).catch(() => {});
     } else {
       // Reached Stage 8 finish action
       setIsEndingCallModalOpen(true);
     }
-  };
+  }, [activeCall, currentStageNumber, stages.length, persistStageData]);
 
   // End Call confirmation handler
   const handleConfirmEndCall = async (payload: CloseCallPayload) => {
     if (!activeCall) return;
     setIsSubmittingClose(true);
     try {
-      // Save current stage data first
-      await persistStageData(currentStageNumber, {
-        prospect_exact_words: currentExactWords,
-        notes: currentNotes,
-      });
+      // Flush the panel's current text before closing
+      if (stagePanelFlushRef.current) {
+        const { exactWords, notes } = stagePanelFlushRef.current();
+        await persistStageData(activeCall.id, currentStageNumber, {
+          prospect_exact_words: exactWords,
+          notes,
+        });
+      }
 
       const closedCall = await api.closeCall(activeCall.id, payload);
       localStorage.removeItem(ACTIVE_CALL_STORAGE_KEY);
@@ -425,6 +437,7 @@ export default function Home() {
                 <div className="mx-auto max-w-4xl p-4 sm:p-6">
                   {currentStageDef && (
                     <CurrentStagePanel
+                      key={currentStageNumber}
                       stage={currentStageDef}
                       totalStages={stages.length}
                       stageResult={currentStageResult}
@@ -433,8 +446,11 @@ export default function Home() {
                       onUpdateNotes={handleNotesChange}
                       onNextStage={handleNextStage}
                       onEndCall={() => setIsEndingCallModalOpen(true)}
-                      isSaving={isSavingStage}
+                      isSaving={false}
                       isLastStage={currentStageNumber === stages.length}
+                      onRegisterFlush={(fn) => {
+                        stagePanelFlushRef.current = fn;
+                      }}
                     />
                   )}
                 </div>

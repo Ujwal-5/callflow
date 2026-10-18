@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { StageDefinition, StageResult } from "@/types";
 import { OutcomeButtons } from "./OutcomeButtons";
 import { ProspectNotesField } from "./ProspectNotesField";
@@ -16,8 +16,23 @@ interface CurrentStagePanelProps {
   onEndCall: () => void;
   isSaving: boolean;
   isLastStage: boolean;
+  /** Called once on mount so the parent can read the panel's latest local text. */
+  onRegisterFlush?: (fn: () => { exactWords: string; notes: string }) => void;
 }
 
+/**
+ * CurrentStagePanel
+ *
+ * Performance notes:
+ * - exactWords and notes are kept in LOCAL state so that keystrokes only
+ *   re-render this component (and ProspectNotesField), not the whole page.
+ * - selectedOutcome is also kept locally for optimistic selection so the
+ *   button highlights immediately without waiting for the network.
+ * - The parent's onUpdate* callbacks are called for debounced persistence,
+ *   but they never control what is displayed here.
+ * - When the stage changes (new stageResult prop), local state is re-synced
+ *   from the incoming prop via the effect keyed on stage.stage_number.
+ */
 export const CurrentStagePanel: React.FC<CurrentStagePanelProps> = ({
   stage,
   totalStages,
@@ -29,10 +44,104 @@ export const CurrentStagePanel: React.FC<CurrentStagePanelProps> = ({
   onEndCall,
   isSaving,
   isLastStage,
+  onRegisterFlush,
 }) => {
-  const selectedOutcome = stageResult?.selected_outcome || null;
-  const exactWords = stageResult?.prospect_exact_words || "";
-  const notes = stageResult?.notes || "";
+  // Local optimistic state – decoupled from the server-owned stageResult prop.
+  const [localOutcome, setLocalOutcome] = useState<string | null>(
+    stageResult?.selected_outcome ?? null
+  );
+  const [localExactWords, setLocalExactWords] = useState(
+    stageResult?.prospect_exact_words ?? ""
+  );
+  const [localNotes, setLocalNotes] = useState(stageResult?.notes ?? "");
+  const [localSaving, setLocalSaving] = useState(false);
+
+  // Refs to hold latest values for the flush callback (avoids stale closures)
+  const localExactWordsRef = useRef(localExactWords);
+  const localNotesRef = useRef(localNotes);
+  useEffect(() => { localExactWordsRef.current = localExactWords; }, [localExactWords]);
+  useEffect(() => { localNotesRef.current = localNotes; }, [localNotes]);
+
+  // Register a flush function so the parent can read local text without lifting state.
+  useEffect(() => {
+    if (onRegisterFlush) {
+      onRegisterFlush(() => ({
+        exactWords: localExactWordsRef.current,
+        notes: localNotesRef.current,
+      }));
+    }
+    // Only run on mount (the ref values are always fresh via the refs above).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onRegisterFlush]);
+
+  const exactWordsDebounceRef = useRef<NodeJS.Timeout | null>(null);
+  const notesDebounceRef = useRef<NodeJS.Timeout | null>(null);
+
+
+  // Re-sync local state when switching stages (stage_number changes).
+  // This must NOT fire on every stageResult update (e.g. after a save) so we
+  // key the effect on the stage_number only.
+  useEffect(() => {
+    setLocalOutcome(stageResult?.selected_outcome ?? null);
+    setLocalExactWords(stageResult?.prospect_exact_words ?? "");
+    setLocalNotes(stageResult?.notes ?? "");
+    // Clean up any pending debounce timers when switching stages.
+    if (exactWordsDebounceRef.current) clearTimeout(exactWordsDebounceRef.current);
+    if (notesDebounceRef.current) clearTimeout(notesDebounceRef.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stage.stage_number]);
+
+  // Also sync if the server gives us a new outcome (e.g. after a save completes
+  // for outcomes), but only if local doesn't already have the value to avoid
+  // fighting with optimistic state while typing is happening.
+  useEffect(() => {
+    if (
+      stageResult?.selected_outcome !== undefined &&
+      stageResult.selected_outcome !== localOutcome
+    ) {
+      // Only sync if user hasn't picked something else since we fired the save.
+      setLocalOutcome(stageResult.selected_outcome);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stageResult?.selected_outcome]);
+
+  const handleOutcomeClick = useCallback(
+    (outcome: string) => {
+      // Update local state immediately — no waiting for network.
+      setLocalOutcome(outcome);
+      // Fire the persist in background via the parent handler.
+      onUpdateOutcome(outcome);
+    },
+    [onUpdateOutcome]
+  );
+
+  const handleExactWordsChange = useCallback(
+    (text: string) => {
+      setLocalExactWords(text);
+      if (exactWordsDebounceRef.current) clearTimeout(exactWordsDebounceRef.current);
+      setLocalSaving(true);
+      exactWordsDebounceRef.current = setTimeout(() => {
+        onUpdateExactWords(text);
+        setLocalSaving(false);
+      }, 400);
+    },
+    [onUpdateExactWords]
+  );
+
+  const handleNotesChange = useCallback(
+    (text: string) => {
+      setLocalNotes(text);
+      if (notesDebounceRef.current) clearTimeout(notesDebounceRef.current);
+      setLocalSaving(true);
+      notesDebounceRef.current = setTimeout(() => {
+        onUpdateNotes(text);
+        setLocalSaving(false);
+      }, 400);
+    },
+    [onUpdateNotes]
+  );
+
+  const effectiveSaving = localSaving || isSaving;
 
   return (
     <div className="rounded-lg border border-[#233554] bg-[#0b132b] shadow-xl">
@@ -89,21 +198,21 @@ export const CurrentStagePanel: React.FC<CurrentStagePanelProps> = ({
           </ul>
         </div>
 
-        {/* What Happened? Outcome Buttons */}
+        {/* What Happened? Outcome Buttons — driven by LOCAL optimistic state */}
         <OutcomeButtons
           options={stage.outcome_options}
-          selectedOutcome={selectedOutcome}
-          onSelectOutcome={onUpdateOutcome}
+          selectedOutcome={localOutcome}
+          onSelectOutcome={handleOutcomeClick}
         />
 
-        {/* Prospect exact words & notes field */}
+        {/* Prospect exact words & notes field — driven by LOCAL state */}
         <ProspectNotesField
           isStage5={stage.stage_number === 5}
-          exactWords={exactWords}
-          notes={notes}
-          onExactWordsChange={onUpdateExactWords}
-          onNotesChange={onUpdateNotes}
-          isSaving={isSaving}
+          exactWords={localExactWords}
+          notes={localNotes}
+          onExactWordsChange={handleExactWordsChange}
+          onNotesChange={handleNotesChange}
+          isSaving={effectiveSaving}
         />
       </div>
 
