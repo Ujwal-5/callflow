@@ -134,36 +134,73 @@ export const CallDetailModal: React.FC<CallDetailModalProps> = ({
         {/* Modal Scrollable Body */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* Outcome & Next Step Summary Box */}
-          <div className="grid grid-cols-1 gap-4 rounded border border-[#233554] bg-[#070d1e] p-4 sm:grid-cols-3">
-            <div>
-              <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                Final Call Outcome
-              </span>
-              <span className="mt-1 block font-semibold text-white">
-                {currentCall.final_outcome || "Not logged / In progress"}
-              </span>
-            </div>
-            <div>
-              <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                Highest Stage Reached
-              </span>
-              <span className="mt-1 block font-mono font-semibold text-slate-200">
-                Stage {currentCall.highest_stage} of 8
-              </span>
-            </div>
-            <div>
-              <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                Next Action Agreed
-              </span>
-              <span className="mt-1 block text-slate-200">
-                {currentCall.next_action || "None specified"}
-              </span>
-              {currentCall.follow_up_time && (
-                <span className="mt-0.5 block text-[11px] text-[#3b82f6]">
-                  Timing: {currentCall.follow_up_time} ({currentCall.follow_up_channel || "WhatsApp"})
+          <div className="rounded border border-[#233554] bg-[#070d1e] p-4 space-y-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <div>
+                <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  Final Call Outcome
                 </span>
-              )}
+                <span className="mt-1 block font-semibold text-white">
+                  {currentCall.final_outcome || "Not logged / In progress"}
+                </span>
+              </div>
+              <div>
+                <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  Highest Stage Reached
+                </span>
+                <span className="mt-1 block font-mono font-semibold text-slate-200">
+                  Stage {currentCall.highest_stage} of 8
+                </span>
+              </div>
+              <div>
+                <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  Next Action Agreed
+                </span>
+                <span className="mt-1 block text-slate-200">
+                  {currentCall.next_action || "None specified"}
+                </span>
+                {currentCall.follow_up_time && (
+                  <span className="mt-0.5 block text-[11px] text-[#3b82f6]">
+                    Timing: {currentCall.follow_up_time} ({currentCall.follow_up_channel || "WhatsApp"})
+                  </span>
+                )}
+              </div>
             </div>
+
+            {/* Additional recorded non-linear outcomes */}
+            {(currentCall.referral_name || currentCall.objection || currentCall.prospect_statement) && (
+              <div className="border-t border-[#233554] pt-2.5 grid grid-cols-1 gap-3 sm:grid-cols-3 text-xs">
+                {currentCall.referral_name && (
+                  <div>
+                    <span className="block text-[10px] font-bold uppercase tracking-wider text-purple-300">
+                      👥 Referred Contact
+                    </span>
+                    <span className="text-white font-medium">{currentCall.referral_name}</span>
+                    {currentCall.referral_contact && (
+                      <span className="block text-[11px] text-slate-400 font-mono">
+                        {currentCall.referral_contact}
+                      </span>
+                    )}
+                  </div>
+                )}
+                {currentCall.objection && (
+                  <div>
+                    <span className="block text-[10px] font-bold uppercase tracking-wider text-amber-300">
+                      🚫 Primary Objection
+                    </span>
+                    <span className="text-slate-200">{currentCall.objection}</span>
+                  </div>
+                )}
+                {currentCall.prospect_statement && (
+                  <div className={currentCall.referral_name && currentCall.objection ? "" : "sm:col-span-2"}>
+                    <span className="block text-[10px] font-bold uppercase tracking-wider text-[#60a5fa]">
+                      💬 Prospect&apos;s Words
+                    </span>
+                    <span className="italic text-slate-300">&ldquo;{currentCall.prospect_statement}&rdquo;</span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Call Audio Transcript (if recorded) */}
@@ -296,15 +333,21 @@ export const CallDetailModal: React.FC<CallDetailModalProps> = ({
             <div className="space-y-2.5">
               {stages.map((stage) => {
                 const sr = stageResultsMap.get(stage.stage_number);
-                const hasData =
-                  sr && (sr.selected_outcome || sr.prospect_exact_words || sr.notes);
+                const isSkipped = sr?.status === "skipped";
+                const isNotApplicable = sr?.status === "not_applicable";
+                const isCompleted = sr?.status === "completed" || Boolean(sr && (sr.selected_outcome || sr.prospect_exact_words || sr.notes) && !isSkipped && !isNotApplicable);
+                const hasData = isCompleted || isSkipped || isNotApplicable;
 
                 return (
                   <div
                     key={stage.stage_number}
                     className={`rounded border p-3 ${
-                      hasData
-                        ? "border-[#233554] bg-[#070d1e]"
+                      isCompleted
+                        ? "border-emerald-500/30 bg-[#070d1e]"
+                        : isSkipped
+                        ? "border-amber-500/30 bg-amber-950/15"
+                        : isNotApplicable
+                        ? "border-slate-700 bg-slate-900/40"
                         : "border-[#1c2a47] bg-[#070d1e]/40 opacity-50"
                     }`}
                   >
@@ -316,6 +359,26 @@ export const CallDetailModal: React.FC<CallDetailModalProps> = ({
                         <span className="font-semibold text-white text-xs">
                           {stage.name}
                         </span>
+                        {isCompleted && (
+                          <span className="rounded bg-emerald-950/60 border border-emerald-500/40 px-1.5 py-0.2 text-[9px] font-semibold text-emerald-300">
+                            ✓ Completed
+                          </span>
+                        )}
+                        {isSkipped && (
+                          <span className="rounded bg-amber-950/60 border border-amber-500/40 px-1.5 py-0.2 text-[9px] font-semibold text-amber-300">
+                            ⏭ Skipped
+                          </span>
+                        )}
+                        {isNotApplicable && (
+                          <span className="rounded bg-slate-800 border border-slate-600 px-1.5 py-0.2 text-[9px] font-semibold text-slate-300">
+                            — N/A
+                          </span>
+                        )}
+                        {!hasData && (
+                          <span className="text-[10px] text-slate-500 italic">
+                            (Unvisited)
+                          </span>
+                        )}
                       </div>
                       {sr?.selected_outcome && (
                         <span className="rounded bg-[#0062ff]/20 px-2 py-0.5 text-[10px] font-semibold text-[#60a5fa]">

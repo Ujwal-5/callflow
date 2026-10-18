@@ -44,5 +44,9 @@ class Settings(BaseSettings):
     def use_supabase(self) -> bool:
         return bool(self.SUPABASE_URL.strip() and self.supabase_key)
 
+    @property
+    def gemini_configured(self) -> bool:
+        return bool(self.GEMINI_API_KEY and self.GEMINI_API_KEY.strip())
+
 
 settings = Settings()

@@ -14,6 +14,7 @@ class StageResultUpdate(BaseModel):
     selected_outcome: Optional[str] = Field(None, description="Selected mutually exclusive stage outcome")
     prospect_exact_words: Optional[str] = Field(None, description="Prospect's verbatim words")
     notes: Optional[str] = Field(None, description="Additional notes for this stage")
+    status: Optional[str] = Field(None, description="Stage status: completed, skipped, not_applicable")
 
 
 class StageResultResponse(BaseModel):
@@ -23,6 +24,7 @@ class StageResultResponse(BaseModel):
     selected_outcome: Optional[str] = None
     prospect_exact_words: Optional[str] = None
     notes: Optional[str] = None
+    status: Optional[str] = "completed"
     created_at: str
     updated_at: str
 
@@ -32,6 +34,10 @@ class CallClose(BaseModel):
     next_action: Optional[str] = Field(None, description="Agreed next step or action")
     follow_up_time: Optional[str] = Field(None, description="Follow-up date/time")
     follow_up_channel: Optional[str] = Field(None, description="Follow-up channel e.g. Email, WhatsApp, Phone")
+    referral_name: Optional[str] = Field(None, description="Referred person's name")
+    referral_contact: Optional[str] = Field(None, description="Referred person's phone or email")
+    objection: Optional[str] = Field(None, description="Primary objection or reason for hesitation/declining")
+    prospect_statement: Optional[str] = Field(None, description="Verbatim statement or pain point quote from prospect")
 
 
 class AISummary(BaseModel):
@@ -55,11 +61,29 @@ class CallResponse(BaseModel):
     next_action: Optional[str] = None
     follow_up_time: Optional[str] = None
     follow_up_channel: Optional[str] = None
+    referral_name: Optional[str] = None
+    referral_contact: Optional[str] = None
+    objection: Optional[str] = None
+    prospect_statement: Optional[str] = None
     ai_summary: Optional[Dict[str, Any]] = None
     started_at: str
     ended_at: Optional[str] = None
     created_at: str
     updated_at: str
+
+
+class StageSuggestion(BaseModel):
+    has_suggestion: bool = False
+    suggested_stage_number: Optional[int] = None
+    suggested_stage_name: Optional[str] = None
+    evidence_quote: Optional[str] = None
+    reason: Optional[str] = None
+    confidence: float = 0.0
+
+
+class StageSuggestPayload(BaseModel):
+    transcript: Optional[str] = Field(None, description="Optional dialogue text to analyze. If omitted, uses saved transcript.")
+    current_stage: Optional[int] = Field(None, ge=1, le=8, description="Current stage number to compare against.")
 
 
 

@@ -27,6 +27,8 @@ from backend.app.models import (
     ConversationGapsAnalysisResponse,
     ProspectCreate,
     ProspectResponse,
+    StageSuggestion,
+    StageSuggestPayload,
 )
 from backend.app.stages_data import STAGES
 from backend.app.db import db
@@ -35,6 +37,7 @@ from backend.app.transcription import validate_audio, transcribe_audio
 from backend.app.radar import analyze_transcript_with_radar
 from backend.app.historical_radar import find_relevant_historical_matches
 from backend.app.gap_detector import analyze_transcript_for_gaps
+from backend.app.stage_suggester import suggest_stage_from_transcript
 
 
 router = APIRouter()
@@ -114,13 +117,39 @@ def update_stage_result(call_id: str, stage_number: int, payload: StageResultUpd
         selected_outcome=payload.selected_outcome,
         prospect_exact_words=payload.prospect_exact_words,
         notes=payload.notes,
+        status=payload.status,
+    )
+    return res
+
+
+@router.post("/calls/{call_id}/stages/{stage_number}/skip", response_model=StageResultResponse, tags=["Stages"])
+def skip_stage(call_id: str, stage_number: int, not_applicable: bool = Query(False)):
+    """Mark a stage as skipped or not applicable."""
+    if stage_number < 1 or stage_number > 8:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Stage number must be between 1 and 8. Received: {stage_number}"
+        )
+
+    call = db.get_call(call_id)
+    if not call:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Call with ID '{call_id}' not found."
+        )
+
+    st = "not_applicable" if not_applicable else "skipped"
+    res = db.upsert_stage_result(
+        call_id=call_id,
+        stage_number=stage_number,
+        status=st,
     )
     return res
 
 
 @router.post("/calls/{call_id}/advance", response_model=CallDetailResponse, tags=["Calls"])
 def advance_call_stage(call_id: str, stage_number: int = Query(..., ge=1, le=8)):
-    """Advance the current active stage of the call."""
+    """Advance or manually switch the current active stage of the call."""
     call = db.get_call(call_id)
     if not call:
         raise HTTPException(
@@ -131,9 +160,93 @@ def advance_call_stage(call_id: str, stage_number: int = Query(..., ge=1, le=8))
     return updated
 
 
+@router.get("/calls/{call_id}/stage-suggestion", response_model=StageSuggestion, tags=["Stages"])
+async def get_stage_suggestion(call_id: str):
+    """
+    Suggest stage change based on current dialogue with supporting evidence.
+    Does NOT change stage automatically; requires user confirmation.
+    """
+    call = db.get_call(call_id)
+    if not call:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Call with ID '{call_id}' not found."
+        )
+
+    transcript_rec = db.get_transcript(call_id)
+    dialogue = ""
+    if transcript_rec:
+        dialogue = (
+            transcript_rec.get("edited_transcript")
+            or transcript_rec.get("raw_transcript")
+            or ""
+        ).strip()
+
+    # Fallback to stage notes if no audio transcript
+    if not dialogue:
+        notes_lines = []
+        for sr in call.get("stage_results", []):
+            if sr.get("prospect_exact_words"):
+                notes_lines.append(f"PROSPECT: {sr['prospect_exact_words']}")
+            if sr.get("notes"):
+                notes_lines.append(f"NOTES: {sr['notes']}")
+        dialogue = "\n".join(notes_lines)
+
+    suggestion = await suggest_stage_from_transcript(
+        transcript=dialogue,
+        current_stage=call.get("current_stage", 1),
+    )
+    return suggestion
+
+
+@router.post("/calls/{call_id}/stage-suggestion", response_model=StageSuggestion, tags=["Stages"])
+async def post_stage_suggestion(call_id: str, payload: Optional[StageSuggestPayload] = None):
+    """
+    Analyze provided or stored transcript dialogue to suggest a stage change with supporting evidence.
+    Does NOT mutate call stage automatically.
+    """
+    call = db.get_call(call_id)
+    if not call:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Call with ID '{call_id}' not found."
+        )
+
+    current_st = (
+        payload.current_stage
+        if (payload and payload.current_stage is not None)
+        else call.get("current_stage", 1)
+    )
+
+    dialogue = (payload.transcript if payload and payload.transcript else "").strip()
+    if not dialogue:
+        transcript_rec = db.get_transcript(call_id)
+        if transcript_rec:
+            dialogue = (
+                transcript_rec.get("edited_transcript")
+                or transcript_rec.get("raw_transcript")
+                or ""
+            ).strip()
+
+    if not dialogue:
+        notes_lines = []
+        for sr in call.get("stage_results", []):
+            if sr.get("prospect_exact_words"):
+                notes_lines.append(f"PROSPECT: {sr['prospect_exact_words']}")
+            if sr.get("notes"):
+                notes_lines.append(f"NOTES: {sr['notes']}")
+        dialogue = "\n".join(notes_lines)
+
+    suggestion = await suggest_stage_from_transcript(
+        transcript=dialogue,
+        current_stage=current_st,
+    )
+    return suggestion
+
+
 @router.post("/calls/{call_id}/close", response_model=CallDetailResponse, tags=["Calls"])
 async def close_call(call_id: str, payload: CallClose):
-    """Close a call and record final outcome, next action, and follow-up details."""
+    """Close a call and record final outcome, next action, follow-up, referrals, objections, and verbatim statements."""
     call = db.get_call(call_id)
     if not call:
         raise HTTPException(
@@ -147,6 +260,10 @@ async def close_call(call_id: str, payload: CallClose):
         next_action=payload.next_action,
         follow_up_time=payload.follow_up_time,
         follow_up_channel=payload.follow_up_channel,
+        referral_name=payload.referral_name,
+        referral_contact=payload.referral_contact,
+        objection=payload.objection,
+        prospect_statement=payload.prospect_statement,
     )
 
     # Trigger initial conversation gaps analysis if complete transcript is available.

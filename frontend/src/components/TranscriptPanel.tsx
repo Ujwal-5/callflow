@@ -35,6 +35,8 @@ interface TranscriptPanelProps {
   onCopyToExactWords?: (text: string) => void;
   /** Pre-loaded transcript if the call already has one (e.g. on resume). */
   initialTranscript?: Transcript | null;
+  /** Called when transcript is uploaded, transcribed, or edited */
+  onTranscriptChange?: (text: string) => void;
 }
 
 // ── Format elapsed seconds as MM:SS ──────────────────────────────────────────
@@ -55,6 +57,7 @@ export const TranscriptPanel: React.FC<TranscriptPanelProps> = ({
   callId,
   onCopyToExactWords,
   initialTranscript = null,
+  onTranscriptChange,
 }) => {
   const recorder = useAudioRecorder();
 
@@ -146,6 +149,9 @@ export const TranscriptPanel: React.FC<TranscriptPanelProps> = ({
         setTranscript(result);
         if (result.status === "failed") {
           setTranscribeError(result.error_message || "Transcription failed.");
+        } else if (onTranscriptChange) {
+          const text = result.edited_transcript ?? result.raw_transcript ?? "";
+          if (text) onTranscriptChange(text);
         }
       } catch (err) {
         const msg =
@@ -155,7 +161,7 @@ export const TranscriptPanel: React.FC<TranscriptPanelProps> = ({
         setIsTranscribing(false);
       }
     },
-    [callId]
+    [callId, onTranscriptChange]
   );
 
   // ── Autosave edited transcript (debounced) ────────────────────────────────
@@ -170,12 +176,16 @@ export const TranscriptPanel: React.FC<TranscriptPanelProps> = ({
           const saved = await api.saveEditedTranscript(callId, value);
           setTranscript(saved);
           setSaveStatus("saved");
+          if (onTranscriptChange) {
+            const text = saved.edited_transcript ?? saved.raw_transcript ?? value;
+            if (text) onTranscriptChange(text);
+          }
         } catch {
           setSaveStatus("error");
         }
       }, 800);
     },
-    [callId]
+    [callId, onTranscriptChange]
   );
 
   // ── Retry ─────────────────────────────────────────────────────────────────

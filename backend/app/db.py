@@ -65,6 +65,10 @@ class DatabaseAdapter:
             next_action TEXT,
             follow_up_time TEXT,
             follow_up_channel TEXT,
+            referral_name TEXT,
+            referral_contact TEXT,
+            objection TEXT,
+            prospect_statement TEXT,
             ai_summary TEXT,
             started_at TEXT NOT NULL,
             ended_at TEXT,
@@ -81,11 +85,29 @@ class DatabaseAdapter:
             selected_outcome TEXT,
             prospect_exact_words TEXT,
             notes TEXT,
+            status TEXT NOT NULL DEFAULT 'completed',
             created_at TEXT NOT NULL,
             updated_at TEXT NOT NULL,
             UNIQUE(call_id, stage_number)
         );
         """)
+
+        # Migration columns if table already existed without them
+        for col_name, col_type in [
+            ("referral_name", "TEXT"),
+            ("referral_contact", "TEXT"),
+            ("objection", "TEXT"),
+            ("prospect_statement", "TEXT"),
+        ]:
+            try:
+                cursor.execute(f"ALTER TABLE calls ADD COLUMN {col_name} {col_type};")
+            except Exception:
+                pass
+
+        try:
+            cursor.execute("ALTER TABLE call_stage_results ADD COLUMN status TEXT DEFAULT 'completed';")
+        except Exception:
+            pass
 
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_calls_started ON calls(started_at DESC);")
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_calls_company ON calls(company_name);")
@@ -317,8 +339,10 @@ class DatabaseAdapter:
     def upsert_stage_result(self, call_id: str, stage_number: int,
                             selected_outcome: Optional[str] = None,
                             prospect_exact_words: Optional[str] = None,
-                            notes: Optional[str] = None) -> Dict[str, Any]:
+                            notes: Optional[str] = None,
+                            status: Optional[str] = None) -> Dict[str, Any]:
         now = get_utc_now_iso()
+        resolved_status = status or ("completed" if (selected_outcome or prospect_exact_words or notes) else "completed")
 
         if self.use_supabase and self.supabase_client:
             # Check existing stage result
@@ -334,7 +358,13 @@ class DatabaseAdapter:
                     update_payload["prospect_exact_words"] = prospect_exact_words
                 if notes is not None:
                     update_payload["notes"] = notes
-                res = self.supabase_client.table("call_stage_results").update(update_payload).eq("id", result_id).execute()
+                if status is not None:
+                    update_payload["status"] = status
+                try:
+                    res = self.supabase_client.table("call_stage_results").update(update_payload).eq("id", result_id).execute()
+                except Exception:
+                    update_payload.pop("status", None)
+                    res = self.supabase_client.table("call_stage_results").update(update_payload).eq("id", result_id).execute()
                 stage_data = res.data[0]
             else:
                 result_id = str(uuid.uuid4())
@@ -345,10 +375,15 @@ class DatabaseAdapter:
                     "selected_outcome": selected_outcome,
                     "prospect_exact_words": prospect_exact_words,
                     "notes": notes,
+                    "status": resolved_status,
                     "created_at": now,
                     "updated_at": now
                 }
-                res = self.supabase_client.table("call_stage_results").insert(insert_payload).execute()
+                try:
+                    res = self.supabase_client.table("call_stage_results").insert(insert_payload).execute()
+                except Exception:
+                    insert_payload.pop("status", None)
+                    res = self.supabase_client.table("call_stage_results").insert(insert_payload).execute()
                 stage_data = res.data[0]
 
             # Update call highest stage and current stage
@@ -378,15 +413,16 @@ class DatabaseAdapter:
                 SET selected_outcome = COALESCE(?, selected_outcome),
                     prospect_exact_words = COALESCE(?, prospect_exact_words),
                     notes = COALESCE(?, notes),
+                    status = COALESCE(?, status),
                     updated_at = ?
                 WHERE id = ?
-            """, (selected_outcome, prospect_exact_words, notes, now, result_id))
+            """, (selected_outcome, prospect_exact_words, notes, status, now, result_id))
         else:
             result_id = str(uuid.uuid4())
             cursor.execute("""
-                INSERT INTO call_stage_results (id, call_id, stage_number, selected_outcome, prospect_exact_words, notes, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            """, (result_id, call_id, stage_number, selected_outcome, prospect_exact_words, notes, now, now))
+                INSERT INTO call_stage_results (id, call_id, stage_number, selected_outcome, prospect_exact_words, notes, status, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (result_id, call_id, stage_number, selected_outcome, prospect_exact_words, notes, resolved_status, now, now))
 
         # Update call table
         cursor.execute("SELECT highest_stage FROM calls WHERE id = ?", (call_id,))
@@ -437,7 +473,9 @@ class DatabaseAdapter:
         return self.get_call(call_id)
 
     def close_call(self, call_id: str, final_outcome: str, next_action: Optional[str] = None,
-                   follow_up_time: Optional[str] = None, follow_up_channel: Optional[str] = None) -> Optional[Dict[str, Any]]:
+                   follow_up_time: Optional[str] = None, follow_up_channel: Optional[str] = None,
+                   referral_name: Optional[str] = None, referral_contact: Optional[str] = None,
+                   objection: Optional[str] = None, prospect_statement: Optional[str] = None) -> Optional[Dict[str, Any]]:
         now = get_utc_now_iso()
 
         if self.use_supabase and self.supabase_client:
@@ -450,7 +488,27 @@ class DatabaseAdapter:
                 "ended_at": now,
                 "updated_at": now
             }
-            self.supabase_client.table("calls").update(update_payload).eq("id", call_id).execute()
+            if referral_name is not None:
+                update_payload["referral_name"] = referral_name
+            if referral_contact is not None:
+                update_payload["referral_contact"] = referral_contact
+            if objection is not None:
+                update_payload["objection"] = objection
+            if prospect_statement is not None:
+                update_payload["prospect_statement"] = prospect_statement
+            try:
+                self.supabase_client.table("calls").update(update_payload).eq("id", call_id).execute()
+            except Exception:
+                standard_payload = {
+                    "status": "completed",
+                    "final_outcome": final_outcome,
+                    "next_action": next_action,
+                    "follow_up_time": follow_up_time,
+                    "follow_up_channel": follow_up_channel,
+                    "ended_at": now,
+                    "updated_at": now
+                }
+                self.supabase_client.table("calls").update(standard_payload).eq("id", call_id).execute()
             return self.get_call(call_id)
 
         conn = self.get_sqlite_conn()
@@ -462,10 +520,16 @@ class DatabaseAdapter:
                 next_action = ?,
                 follow_up_time = ?,
                 follow_up_channel = ?,
+                referral_name = ?,
+                referral_contact = ?,
+                objection = ?,
+                prospect_statement = ?,
                 ended_at = ?,
                 updated_at = ?
             WHERE id = ?
-        """, (final_outcome, next_action, follow_up_time, follow_up_channel, now, now, call_id))
+        """, (final_outcome, next_action, follow_up_time, follow_up_channel,
+              referral_name, referral_contact, objection, prospect_statement,
+              now, now, call_id))
         conn.commit()
         conn.close()
         return self.get_call(call_id)
@@ -961,12 +1025,28 @@ class DatabaseAdapter:
             c["evidence_quote"].strip().lower(): c for c in existing if c.get("evidence_quote")
         }
 
+        def find_existing_commitment(cand):
+            q = cand.get("evidence_quote", "").strip().lower()
+            if q and q in existing_by_quote:
+                return existing_by_quote[q]
+            cand_act = cand.get("action", "").strip().lower()
+            cand_rel = (cand.get("relative_due") or "").strip().lower()
+            for ex in existing:
+                ex_q = (ex.get("evidence_quote") or "").strip().lower()
+                ex_act = (ex.get("action") or "").strip().lower()
+                ex_rel = (ex.get("relative_due") or "").strip().lower()
+                if q and ex_q and (q in ex_q or ex_q in q):
+                    return ex
+                if cand_act and ex_act and (cand_act == ex_act or (cand_rel and cand_rel == ex_rel and "call" in cand_act and "call" in ex_act)):
+                    return ex
+            return None
+
         results = []
         for cand in candidate_commitments:
             quote_key = cand.get("evidence_quote", "").strip().lower()
-            if quote_key and quote_key in existing_by_quote:
+            curr = find_existing_commitment(cand)
+            if curr:
                 # Existing commitment: preserve manual status
-                curr = existing_by_quote[quote_key]
                 # If still pending, refresh extracted metadata (timing, channel, action)
                 if curr.get("status") == "pending":
                     upd = {
@@ -999,6 +1079,7 @@ class DatabaseAdapter:
                     status=cand.get("status", "pending"),
                 )
                 results.append(inserted)
+                existing.append(inserted)
                 if quote_key:
                     existing_by_quote[quote_key] = inserted
 
@@ -1522,7 +1603,7 @@ class DatabaseAdapter:
 
     def list_prospects(self, search: Optional[str] = None) -> List[Dict[str, Any]]:
         """List all prospects, seeded and custom, sorted alphabetically by company name."""
-        # Ensure SQLite has seeded prospects
+        # Ensure prospects are seeded in SQLite and Supabase (if table exists)
         self._ensure_prospects_seeded()
 
         if self.use_supabase and self.supabase_client:
@@ -1532,7 +1613,7 @@ class DatabaseAdapter:
                     term = search.strip()
                     query = query.or_(f"company_name.ilike.%{term}%,contact_name.ilike.%{term}%,context.ilike.%{term}%")
                 res = query.execute()
-                if res.data:
+                if res.data is not None and (len(res.data) > 0 or (search and search.strip())):
                     return [self._format_prospect_dict(r) for r in res.data]
             except Exception as exc:
                 # Fallback to local SQLite if table does not exist or network fails
@@ -1641,37 +1722,64 @@ class DatabaseAdapter:
         conn.close()
 
     def _ensure_prospects_seeded(self):
-        """Seed initial prospects from JSON/transcripts into SQLite if empty."""
+        """Seed initial prospects from JSON/transcripts into SQLite and Supabase if empty."""
         conn = self.get_sqlite_conn()
         cursor = conn.cursor()
         cursor.execute("SELECT COUNT(*) FROM prospects")
-        count = cursor.fetchone()[0]
-        if count == 0:
-            import os
-            seed_file = os.path.join(
-                os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-                "cold-call-transcripts-100",
-                "prospects_seed.json"
-            )
-            if os.path.exists(seed_file):
-                with open(seed_file, "r", encoding="utf-8") as f:
-                    seeds = json.load(f)
-                now = get_utc_now_iso()
-                for s in seeds:
-                    cursor.execute("""
-                        INSERT OR IGNORE INTO prospects (id, company_name, contact_name, phone_number, context, is_custom, created_at, updated_at)
-                        VALUES (?, ?, ?, ?, ?, 0, ?, ?)
-                    """, (
-                        s["id"],
-                        s["company_name"],
-                        s.get("contact_name"),
-                        s.get("phone_number"),
-                        s.get("context"),
-                        now,
-                        now,
-                    ))
-                conn.commit()
+        sqlite_count = cursor.fetchone()[0]
+
+        import os
+        seed_file = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            "cold-call-transcripts-100",
+            "prospects_seed.json"
+        )
+        seeds = []
+        if os.path.exists(seed_file):
+            with open(seed_file, "r", encoding="utf-8") as f:
+                seeds = json.load(f)
+
+        now = get_utc_now_iso()
+
+        if sqlite_count == 0 and seeds:
+            for s in seeds:
+                cursor.execute("""
+                    INSERT OR IGNORE INTO prospects (id, company_name, contact_name, phone_number, context, is_custom, created_at, updated_at)
+                    VALUES (?, ?, ?, ?, ?, 0, ?, ?)
+                """, (
+                    s["id"],
+                    s["company_name"],
+                    s.get("contact_name"),
+                    s.get("phone_number"),
+                    s.get("context"),
+                    now,
+                    now,
+                ))
+            conn.commit()
         conn.close()
+
+        # Check and seed Supabase table if it exists and has 0 rows
+        if self.use_supabase and self.supabase_client and seeds:
+            try:
+                chk = self.supabase_client.table("prospects").select("id", count="exact").limit(1).execute()
+                if chk.count == 0:
+                    batch = [
+                        {
+                            "id": s["id"],
+                            "company_name": s["company_name"],
+                            "contact_name": s.get("contact_name"),
+                            "phone_number": s.get("phone_number"),
+                            "context": s.get("context"),
+                            "is_custom": False,
+                            "created_at": now,
+                            "updated_at": now,
+                        }
+                        for s in seeds
+                    ]
+                    for i in range(0, len(batch), 50):
+                        self.supabase_client.table("prospects").upsert(batch[i:i + 50]).execute()
+            except Exception:
+                pass
 
 
 db = DatabaseAdapter()

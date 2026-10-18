@@ -209,6 +209,127 @@ class TestCallFlowAPI(unittest.TestCase):
         self.assertIn("available", data)
         self.assertEqual(data["call_id"], call_id)
 
+    def test_11_nonlinear_flow_and_stage_skipping(self):
+        """Test non-linear progression: skipping, revisiting, manual jumping, and distinguishing skipped from completed."""
+        call_res = self.client.post("/calls", json={"company_name": "NonLinear Dynamics Ltd"})
+        call_id = call_res.json()["id"]
+
+        # 1. Complete Stage 1 (Opening)
+        res1 = self.client.put(f"/calls/{call_id}/stages/1", json={
+            "selected_outcome": "Reached intended person",
+            "notes": "Direct transfer",
+            "status": "completed"
+        })
+        self.assertEqual(res1.status_code, 200)
+        self.assertEqual(res1.json()["status"], "completed")
+
+        # 2. Skip Stage 2 (Purpose) directly via skip endpoint
+        skip_res = self.client.post(f"/calls/{call_id}/stages/2/skip")
+        self.assertEqual(skip_res.status_code, 200)
+        self.assertEqual(skip_res.json()["status"], "skipped")
+
+        # 3. Mark Stage 3 as not applicable via PUT
+        na_res = self.client.put(f"/calls/{call_id}/stages/3", json={
+            "status": "not_applicable",
+            "notes": "Already had prior contact"
+        })
+        self.assertEqual(na_res.status_code, 200)
+        self.assertEqual(na_res.json()["status"], "not_applicable")
+
+        # 4. Jump directly forward to Stage 4 (Their business)
+        adv_res = self.client.post(f"/calls/{call_id}/advance?stage_number=4")
+        self.assertEqual(adv_res.status_code, 200)
+        self.assertEqual(adv_res.json()["current_stage"], 4)
+        self.assertEqual(adv_res.json()["highest_stage"], 4)
+
+        # 5. Save Stage 4 result
+        s4_res = self.client.put(f"/calls/{call_id}/stages/4", json={
+            "selected_outcome": "Explained their business",
+            "notes": "Auto components supplier with 3 plants",
+            "status": "completed"
+        })
+        self.assertEqual(s4_res.status_code, 200)
+
+        # 6. Revisit Stage 2 (previously skipped) to record an update without breaking progress
+        revisit_res = self.client.put(f"/calls/{call_id}/stages/2", json={
+            "selected_outcome": "Purpose understood",
+            "status": "completed"
+        })
+        self.assertEqual(revisit_res.status_code, 200)
+        self.assertEqual(revisit_res.json()["status"], "completed")
+
+        # 7. Check full call details: verify Stage 1 completed, Stage 2 completed, Stage 3 not_applicable, Stage 4 completed
+        detail = self.client.get(f"/calls/{call_id}").json()
+        stage_map = {sr["stage_number"]: sr for sr in detail["stage_results"]}
+        self.assertEqual(stage_map[1]["status"], "completed")
+        self.assertEqual(stage_map[2]["status"], "completed")
+        self.assertEqual(stage_map[3]["status"], "not_applicable")
+        self.assertEqual(stage_map[4]["status"], "completed")
+
+    def test_12_stage_suggestion_with_evidence_does_not_mutate_stage(self):
+        """Test that stage suggestion provides supporting evidence but NEVER changes call stage automatically."""
+        call_res = self.client.post("/calls", json={"company_name": "Suggested Workflow Co"})
+        call_id = call_res.json()["id"]
+
+        # Call starts at Stage 1
+        detail_before = self.client.get(f"/calls/{call_id}").json()
+        self.assertEqual(detail_before["current_stage"], 1)
+
+        # Transcript dialogue where prospect clearly raises an objection
+        dialogue = "CALLER: Hello, this is Priya. PROSPECT: Look, we already have an agency handling all our logistics."
+
+        sugg_res = self.client.post(f"/calls/{call_id}/stage-suggestion", json={
+            "transcript": dialogue,
+            "current_stage": 1
+        })
+        self.assertEqual(sugg_res.status_code, 200)
+        sugg = sugg_res.json()
+        self.assertTrue(sugg["has_suggestion"])
+        self.assertEqual(sugg["suggested_stage_number"], 6)
+        self.assertEqual(sugg["suggested_stage_name"], "Objection")
+        self.assertIsNotNone(sugg["evidence_quote"])
+        self.assertIn("already have an agency", sugg["evidence_quote"].lower())
+
+        # CRITICAL TEST: Current stage in database MUST STILL BE 1 (no automatic mutation!)
+        detail_after = self.client.get(f"/calls/{call_id}").json()
+        self.assertEqual(detail_after["current_stage"], 1)
+
+    def test_13_early_call_termination_with_callback_referral_objection_statement(self):
+        """Test early call termination prioritizing actual outcomes, callbacks, referrals, objections, statements, and next steps."""
+        call_res = self.client.post("/calls", json={"company_name": "Early Exit Corp", "contact_name": "Ramesh Rao"})
+        call_id = call_res.json()["id"]
+
+        # Terminate early at Stage 3 with full prioritized data
+        close_payload = {
+            "final_outcome": "Referred to another person",
+            "next_action": "Reach out to VP of Operations next Monday morning",
+            "follow_up_time": "Next Monday 10:00 AM",
+            "follow_up_channel": "Phone Call",
+            "referral_name": "Sunil Mehta",
+            "referral_contact": "sunil.mehta@earlyexit.com / +91 98765 00000",
+            "objection": "Ramesh does not handle vendor evaluation",
+            "prospect_statement": "I'm not the right person for this, please speak to Sunil Mehta in procurement."
+        }
+        close_res = self.client.post(f"/calls/{call_id}/close", json=close_payload)
+        self.assertEqual(close_res.status_code, 200)
+        closed_call = close_res.json()
+        self.assertEqual(closed_call["status"], "completed")
+        self.assertEqual(closed_call["final_outcome"], "Referred to another person")
+        self.assertEqual(closed_call["referral_name"], "Sunil Mehta")
+        self.assertEqual(closed_call["referral_contact"], "sunil.mehta@earlyexit.com / +91 98765 00000")
+        self.assertEqual(closed_call["objection"], "Ramesh does not handle vendor evaluation")
+        self.assertEqual(closed_call["prospect_statement"], "I'm not the right person for this, please speak to Sunil Mehta in procurement.")
+        self.assertEqual(closed_call["next_action"], "Reach out to VP of Operations next Monday morning")
+        self.assertEqual(closed_call["follow_up_time"], "Next Monday 10:00 AM")
+
+        # Verify persistence on re-fetch
+        fetched = self.client.get(f"/calls/{call_id}").json()
+        self.assertEqual(fetched["referral_name"], "Sunil Mehta")
+        self.assertEqual(fetched["referral_contact"], "sunil.mehta@earlyexit.com / +91 98765 00000")
+        self.assertEqual(fetched["objection"], "Ramesh does not handle vendor evaluation")
+        self.assertEqual(fetched["prospect_statement"], "I'm not the right person for this, please speak to Sunil Mehta in procurement.")
+
 
 if __name__ == "__main__":
     unittest.main()
+

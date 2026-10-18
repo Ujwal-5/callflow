@@ -9,6 +9,8 @@ export interface StageDefinition {
   has_exact_words_prominent: boolean;
 }
 
+export type StageStatus = "completed" | "skipped" | "not_applicable" | "in_progress" | "pending";
+
 export interface StageResult {
   id?: string;
   call_id?: string;
@@ -16,6 +18,7 @@ export interface StageResult {
   selected_outcome: string | null;
   prospect_exact_words: string | null;
   notes: string | null;
+  status?: StageStatus | string | null;
   created_at?: string;
   updated_at?: string;
 }
@@ -41,6 +44,10 @@ export interface Call {
   next_action: string | null;
   follow_up_time: string | null;
   follow_up_channel: string | null;
+  referral_name?: string | null;
+  referral_contact?: string | null;
+  objection?: string | null;
+  prospect_statement?: string | null;
   ai_summary: AISummary | null;
   started_at: string;
   ended_at: string | null;
@@ -65,6 +72,19 @@ export interface CloseCallPayload {
   next_action?: string;
   follow_up_time?: string;
   follow_up_channel?: string;
+  referral_name?: string;
+  referral_contact?: string;
+  objection?: string;
+  prospect_statement?: string;
+}
+
+export interface StageSuggestion {
+  has_suggestion: boolean;
+  suggested_stage_number?: number | null;
+  suggested_stage_name?: string | null;
+  evidence_quote?: string | null;
+  reason?: string | null;
+  confidence: number;
 }
 
 export interface SummaryResponse {

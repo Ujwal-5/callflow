@@ -19,6 +19,7 @@ import {
   CreateCallPayload,
   CloseCallPayload,
   StageResult,
+  StageSuggestion,
 } from "@/types";
 
 const ACTIVE_CALL_STORAGE_KEY = "callflow_active_call_id";
@@ -35,6 +36,8 @@ export default function Home() {
   const [isLoadingInitial, setIsLoadingInitial] = useState(true);
   const [isStartingCall, setIsStartingCall] = useState(false);
   const [isEndingCallModalOpen, setIsEndingCallModalOpen] = useState(false);
+  const [initialModalOutcome, setInitialModalOutcome] = useState<string | undefined>(undefined);
+  const [stageSuggestion, setStageSuggestion] = useState<StageSuggestion | null>(null);
   const [isSubmittingClose, setIsSubmittingClose] = useState(false);
   const [serviceStatus, setServiceStatus] = useState<ServiceStatus>("online");
   const [wakingElapsed, setWakingElapsed] = useState(0);
@@ -128,6 +131,7 @@ export default function Home() {
         selected_outcome?: string | null;
         prospect_exact_words?: string | null;
         notes?: string | null;
+        status?: string | null;
       }
     ): Promise<void> => {
       return api
@@ -306,9 +310,122 @@ export default function Home() {
         });
       }
       setCurrentStageNumber(stageNum);
+      setActiveCall((prev) =>
+        prev
+          ? {
+              ...prev,
+              current_stage: stageNum,
+              highest_stage: Math.max(prev.highest_stage, stageNum),
+            }
+          : null
+      );
+      api.advanceCallStage(activeCall.id, stageNum).catch(() => {});
     },
     [activeCall, currentStageNumber, persistStageData]
   );
+
+  /**
+   * Mark stage as skipped or not applicable and move forward.
+   */
+  const handleSkipStage = useCallback(
+    async (notApplicable: boolean = false) => {
+      if (!activeCall) return;
+      try {
+        if (stagePanelFlushRef.current) {
+          const { exactWords, notes } = stagePanelFlushRef.current();
+          if (exactWords || notes) {
+            await persistStageData(activeCall.id, currentStageNumber, {
+              prospect_exact_words: exactWords,
+              notes,
+            });
+          }
+        }
+
+        const updatedSr = await api.skipStage(
+          activeCall.id,
+          currentStageNumber,
+          notApplicable
+        );
+
+        setActiveCall((prev) => {
+          if (!prev) return null;
+          const existingStages = prev.stage_results || [];
+          const idx = existingStages.findIndex(
+            (s) => s.stage_number === currentStageNumber
+          );
+          let newStages: StageResult[];
+          if (idx >= 0) {
+            newStages = [...existingStages];
+            newStages[idx] = updatedSr;
+          } else {
+            newStages = [...existingStages, updatedSr];
+          }
+          return {
+            ...prev,
+            stage_results: newStages,
+          };
+        });
+
+        if (currentStageNumber < stages.length) {
+          const nextStage = currentStageNumber + 1;
+          setCurrentStageNumber(nextStage);
+          api.advanceCallStage(activeCall.id, nextStage).catch(() => {});
+        }
+      } catch (err) {
+        console.error("Failed to skip stage:", err);
+      }
+    },
+    [activeCall, currentStageNumber, stages.length, persistStageData]
+  );
+
+  /**
+   * Quick early call termination presets (e.g. busy, uninterested, ready to schedule)
+   */
+  const handleQuickEndCall = useCallback((presetOutcome: string) => {
+    setInitialModalOutcome(presetOutcome);
+    setIsEndingCallModalOpen(true);
+  }, []);
+
+  /**
+   * AI Stage Suggestion confirmation & dismiss
+   */
+  const handleApplyStageSuggestion = useCallback(
+    (targetStage: number) => {
+      handleSelectStage(targetStage);
+      setStageSuggestion(null);
+    },
+    [handleSelectStage]
+  );
+
+  const handleDismissStageSuggestion = useCallback(() => {
+    setStageSuggestion(null);
+  }, []);
+
+  // Poll or check for transcript-grounded stage suggestions
+  useEffect(() => {
+    if (!activeCall) {
+      setStageSuggestion(null);
+      return;
+    }
+    let isMounted = true;
+    const checkSuggestion = async () => {
+      try {
+        const sugg = await api.getStageSuggestion(activeCall.id);
+        if (isMounted) {
+          setStageSuggestion(sugg);
+        }
+      } catch {
+        // ignore background poll errors
+      }
+    };
+
+    checkSuggestion();
+    const interval = setInterval(checkSuggestion, 10000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [activeCall?.id, currentStageNumber]);
 
   // Next Stage navigation
   const handleNextStage = useCallback(async () => {
@@ -330,6 +447,7 @@ export default function Home() {
       api.advanceCallStage(activeCall.id, nextStage).catch(() => {});
     } else {
       // Reached Stage 8 finish action
+      setInitialModalOutcome(undefined);
       setIsEndingCallModalOpen(true);
     }
   }, [activeCall, currentStageNumber, stages.length, persistStageData]);
@@ -352,6 +470,7 @@ export default function Home() {
       localStorage.removeItem(ACTIVE_CALL_STORAGE_KEY);
       setActiveCall(null);
       setIsEndingCallModalOpen(false);
+      setInitialModalOutcome(undefined);
 
       // Refresh history and open the closed call in detail inspection
       const updatedHistory = await api.listCalls();
@@ -534,7 +653,10 @@ export default function Home() {
                     {/* Quick End Action */}
                     <button
                       type="button"
-                      onClick={() => setIsEndingCallModalOpen(true)}
+                      onClick={() => {
+                        setInitialModalOutcome(undefined);
+                        setIsEndingCallModalOpen(true);
+                      }}
                       className="rounded border border-rose-500/40 bg-rose-950/30 px-3 py-1 text-xs font-semibold text-rose-300 hover:border-rose-400 hover:bg-rose-900/50 hover:text-white transition-colors"
                     >
                       End Call
@@ -558,12 +680,22 @@ export default function Home() {
                       key={currentStageNumber}
                       stage={currentStageDef}
                       totalStages={stages.length}
+                      allStages={stages}
                       stageResult={currentStageResult}
                       onUpdateOutcome={handleSelectOutcome}
                       onUpdateExactWords={handleExactWordsChange}
                       onUpdateNotes={handleNotesChange}
                       onNextStage={handleNextStage}
-                      onEndCall={() => setIsEndingCallModalOpen(true)}
+                      onEndCall={() => {
+                        setInitialModalOutcome(undefined);
+                        setIsEndingCallModalOpen(true);
+                      }}
+                      onSelectStage={handleSelectStage}
+                      onSkipStage={handleSkipStage}
+                      onQuickEndCall={handleQuickEndCall}
+                      stageSuggestion={stageSuggestion}
+                      onApplyStageSuggestion={handleApplyStageSuggestion}
+                      onDismissStageSuggestion={handleDismissStageSuggestion}
                       isSaving={false}
                       isLastStage={currentStageNumber === stages.length}
                       onRegisterFlush={(fn) => {
@@ -581,6 +713,14 @@ export default function Home() {
                     onCopyToExactWords={(text) => {
                       if (copyToExactWordsRef.current) {
                         copyToExactWordsRef.current(text);
+                      }
+                    }}
+                    onTranscriptChange={() => {
+                      if (activeCall) {
+                        api
+                          .getStageSuggestion(activeCall.id)
+                          .then(setStageSuggestion)
+                          .catch(() => {});
                       }
                     }}
                   />
@@ -611,7 +751,11 @@ export default function Home() {
           call={activeCall}
           currentStageNumber={currentStageNumber}
           currentStageName={currentStageDef?.name || "Close"}
-          onClose={() => setIsEndingCallModalOpen(false)}
+          initialOutcome={initialModalOutcome}
+          onClose={() => {
+            setIsEndingCallModalOpen(false);
+            setInitialModalOutcome(undefined);
+          }}
           onConfirmEnd={handleConfirmEndCall}
           isSubmitting={isSubmittingClose}
         />

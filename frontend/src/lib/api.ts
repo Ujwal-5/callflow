@@ -14,6 +14,7 @@ import {
   ConversationGapsResponse,
   Prospect,
   CreateProspectPayload,
+  StageSuggestion,
 } from "@/types";
 
 
@@ -119,12 +120,37 @@ class ApiClient {
       selected_outcome?: string | null;
       prospect_exact_words?: string | null;
       notes?: string | null;
+      status?: string | null;
     }
   ): Promise<StageResult> {
     return this.request(`/calls/${callId}/stages/${stageNumber}`, {
       method: "PUT",
       body: JSON.stringify(payload),
     });
+  }
+
+  async skipStage(
+    callId: string,
+    stageNumber: number,
+    notApplicable: boolean = false
+  ): Promise<StageResult> {
+    return this.request(`/calls/${callId}/stages/${stageNumber}/skip?not_applicable=${notApplicable}`, {
+      method: "POST",
+    });
+  }
+
+  async getStageSuggestion(
+    callId: string,
+    transcript?: string,
+    currentStage?: number
+  ): Promise<StageSuggestion> {
+    if (transcript !== undefined || currentStage !== undefined) {
+      return this.request(`/calls/${callId}/stage-suggestion`, {
+        method: "POST",
+        body: JSON.stringify({ transcript, current_stage: currentStage }),
+      });
+    }
+    return this.request(`/calls/${callId}/stage-suggestion`);
   }
 
   async advanceCallStage(callId: string, stageNumber: number): Promise<Call> {

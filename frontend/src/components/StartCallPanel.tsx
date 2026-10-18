@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { CreateCallPayload, Prospect } from "@/types";
 import { api } from "@/lib/api";
 
@@ -13,54 +13,47 @@ export const StartCallPanel: React.FC<StartCallPanelProps> = ({
   onStartCall,
   isLoading = false,
 }) => {
-  // Form fields
+  // Single form fields used for selecting, modifying, and creating prospects
   const [companyName, setCompanyName] = useState("");
   const [contactName, setContactName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [context, setContext] = useState("");
-  const [error, setError] = useState<string | null>(null);
 
-  // Prospects list & dropdown state
+  // Directory and selection state
   const [prospects, setProspects] = useState<Prospect[]>([]);
   const [isLoadingProspects, setIsLoadingProspects] = useState(false);
+  const [prospectsError, setProspectsError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedProspectId, setSelectedProspectId] = useState<string | null>(null);
 
-  // Add new prospect modal/form state
-  const [isAddingNew, setIsAddingNew] = useState(false);
-  const [newCompany, setNewCompany] = useState("");
-  const [newContact, setNewContact] = useState("");
-  const [newPhone, setNewPhone] = useState("");
-  const [newContext, setNewContext] = useState("");
-  const [isSavingNew, setIsSavingNew] = useState(false);
-  const [addError, setAddError] = useState<string | null>(null);
+  // Saving as new prospect state & feedback
+  const [isSavingProspect, setIsSavingProspect] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [saveSuccessMessage, setSaveSuccessMessage] = useState<string | null>(null);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Load prospects on mount
-  useEffect(() => {
-    let isMounted = true;
+  // Load prospects from API
+  const loadProspects = useCallback(async () => {
     setIsLoadingProspects(true);
-    api.listProspects()
-      .then((data) => {
-        if (isMounted) {
-          setProspects(data);
-        }
-      })
-      .catch((err) => {
-        console.error("Failed to load prospects:", err);
-      })
-      .finally(() => {
-        if (isMounted) {
-          setIsLoadingProspects(false);
-        }
-      });
-
-    return () => {
-      isMounted = false;
-    };
+    setProspectsError(null);
+    try {
+      const data = await api.listProspects();
+      setProspects(Array.isArray(data) ? data : []);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to load prospects.";
+      console.error("Failed to load prospects:", err);
+      setProspectsError(msg);
+    } finally {
+      setIsLoadingProspects(false);
+    }
   }, []);
+
+  // Fetch prospects on initial mount
+  useEffect(() => {
+    loadProspects();
+  }, [loadProspects]);
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -97,63 +90,75 @@ export const StartCallPanel: React.FC<StartCallPanelProps> = ({
     setContext(p.context || "");
     setSearchQuery(p.company_name);
     setIsDropdownOpen(false);
-    setError(null);
+    setFormError(null);
+    setSaveSuccessMessage(null);
   };
 
-  // Handle saving new prospect
-  const handleCreateProspect = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const comp = newCompany.trim();
+  // Handle resetting the form to enter a completely new prospect
+  const handleClearForm = () => {
+    setSelectedProspectId(null);
+    setCompanyName("");
+    setContactName("");
+    setPhoneNumber("");
+    setContext("");
+    setSearchQuery("");
+    setFormError(null);
+    setSaveSuccessMessage(null);
+  };
+
+  // Handle saving the current form values as a new prospect
+  const handleSaveAsNewProspect = async () => {
+    setFormError(null);
+    setSaveSuccessMessage(null);
+
+    const comp = companyName.trim();
     if (!comp) {
-      setAddError("Please provide a company or organization name.");
+      setFormError("Please enter a prospect / company name to save.");
       return;
     }
 
-    // Client-side duplicate check
-    const isDuplicate = prospects.some(
+    // Check duplicate against currently loaded directory
+    const existing = prospects.find(
       (p) => p.company_name.trim().toLowerCase() === comp.toLowerCase()
     );
-    if (isDuplicate) {
-      setAddError(`A prospect with the company name "${comp}" already exists.`);
+    if (existing) {
+      setFormError(`A prospect with the company name "${comp}" already exists in the directory.`);
       return;
     }
 
-    setAddError(null);
-    setIsSavingNew(true);
-
+    setIsSavingProspect(true);
     try {
       const created = await api.createProspect({
         company_name: comp,
-        contact_name: newContact.trim() || undefined,
-        phone_number: newPhone.trim() || undefined,
-        context: newContext.trim() || undefined,
+        contact_name: contactName.trim() || undefined,
+        phone_number: phoneNumber.trim() || undefined,
+        context: context.trim() || undefined,
       });
 
-      // Update state and list
-      setProspects((prev) => [created, ...prev.filter((p) => p.id !== created.id)]);
-      handleSelectProspect(created);
+      // Refresh directory from backend and Supabase
+      const updatedList = await api.listProspects();
+      setProspects(Array.isArray(updatedList) ? updatedList : [created, ...prospects]);
 
-      // Reset modal fields
-      setNewCompany("");
-      setNewContact("");
-      setNewPhone("");
-      setNewContext("");
-      setIsAddingNew(false);
+      // Select newly saved prospect
+      setSelectedProspectId(created.id);
+      setSearchQuery(created.company_name);
+      setSaveSuccessMessage(`"${created.company_name}" has been saved to the directory! You can start the call now.`);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Failed to create prospect.";
-      setAddError(msg);
+      const msg = err instanceof Error ? err.message : "Failed to save new prospect.";
+      setFormError(msg);
     } finally {
-      setIsSavingNew(false);
+      setIsSavingProspect(false);
     }
   };
 
+  // Handle starting the call
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!companyName.trim()) {
-      setError("Please provide a company or prospect organization name.");
+      setFormError("Please provide a company or prospect organization name.");
       return;
     }
-    setError(null);
+    setFormError(null);
     onStartCall({
       company_name: companyName.trim(),
       contact_name: contactName.trim() || undefined,
@@ -161,6 +166,8 @@ export const StartCallPanel: React.FC<StartCallPanelProps> = ({
       context: context.trim() || undefined,
     });
   };
+
+  const isSelectedFromDirectory = Boolean(selectedProspectId);
 
   return (
     <div className="mx-auto max-w-xl rounded-lg border border-[#233554] bg-[#0b132b] p-6 shadow-xl">
@@ -172,43 +179,101 @@ export const StartCallPanel: React.FC<StartCallPanelProps> = ({
           Select or Enter Prospect
         </h2>
         <p className="mt-1 text-xs text-slate-300">
-          Search from 100 existing prospects or add a new prospect to begin the guided 8-stage cold call workflow.
+          Search from existing prospects or enter prospect details below to begin the guided 8-stage cold call workflow.
         </p>
       </div>
 
-      {error && (
-        <div className="mb-4 rounded border border-rose-500/50 bg-rose-950/40 p-2.5 text-xs text-rose-300">
-          {error}
+      {/* Error alert banner */}
+      {formError && (
+        <div className="mb-4 rounded border border-rose-500/50 bg-rose-950/40 p-3 text-xs text-rose-300 flex items-start justify-between">
+          <span>{formError}</span>
+          <button
+            type="button"
+            onClick={() => setFormError(null)}
+            className="ml-2 text-rose-400 hover:text-rose-200"
+          >
+            ✕
+          </button>
         </div>
       )}
 
-      {/* Searchable Prospect Dropdown */}
-      <div className="mb-5" ref={dropdownRef}>
-        <div className="mb-1 flex items-center justify-between">
-          <label className="text-xs font-semibold text-slate-200">
-            Prospect Directory ({prospects.length} Available)
-          </label>
+      {/* Success notification banner */}
+      {saveSuccessMessage && (
+        <div className="mb-4 rounded border border-emerald-500/50 bg-emerald-950/40 p-3 text-xs text-emerald-300 flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <svg className="h-4 w-4 shrink-0 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            <span>{saveSuccessMessage}</span>
+          </div>
           <button
             type="button"
-            onClick={() => {
-              setAddError(null);
-              setIsAddingNew(!isAddingNew);
-            }}
-            className="flex items-center space-x-1 text-xs font-medium text-[#0062ff] hover:text-[#3884ff] transition-colors"
+            onClick={() => setSaveSuccessMessage(null)}
+            className="ml-2 text-emerald-400 hover:text-emerald-200"
           >
-            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            <span>{isAddingNew ? "Close Add Form" : "Add New Prospect"}</span>
+            ✕
           </button>
         </div>
+      )}
+
+      {/* Searchable Prospect Directory Dropdown */}
+      <div className="mb-5" ref={dropdownRef}>
+        <div className="mb-1.5 flex items-center justify-between">
+          <label className="text-xs font-semibold text-slate-200 flex items-center space-x-2">
+            <span>Prospect Directory</span>
+            {isLoadingProspects ? (
+              <span className="text-[11px] font-normal text-slate-400 animate-pulse">
+                (Loading...)
+              </span>
+            ) : prospectsError ? (
+              <span className="text-[11px] font-normal text-rose-400">
+                (Error loading)
+              </span>
+            ) : (
+              <span className="text-[11px] font-normal text-[#3884ff]">
+                ({prospects.length} Available)
+              </span>
+            )}
+          </label>
+
+          {(companyName || selectedProspectId) && (
+            <button
+              type="button"
+              onClick={handleClearForm}
+              className="text-xs font-medium text-slate-400 hover:text-white transition-colors"
+            >
+              Clear Form
+            </button>
+          )}
+        </div>
+
+        {/* Directory error banner with retry button */}
+        {prospectsError && (
+          <div className="mb-2 rounded border border-rose-500/40 bg-rose-950/30 p-2.5 text-xs text-rose-300 flex items-center justify-between">
+            <span>Unable to load directory: {prospectsError}</span>
+            <button
+              type="button"
+              onClick={loadProspects}
+              className="rounded bg-rose-800/80 px-2 py-0.5 text-xs font-semibold text-white hover:bg-rose-700 transition-colors"
+            >
+              Retry
+            </button>
+          </div>
+        )}
 
         <div className="relative">
           <div className="relative flex items-center">
             <span className="pointer-events-none absolute left-3 text-slate-400">
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
+              {isLoadingProspects ? (
+                <svg className="h-4 w-4 animate-spin text-[#0062ff]" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                </svg>
+              ) : (
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              )}
             </span>
             <input
               type="text"
@@ -220,7 +285,13 @@ export const StartCallPanel: React.FC<StartCallPanelProps> = ({
                 setIsDropdownOpen(true);
               }}
               onFocus={() => setIsDropdownOpen(true)}
-              placeholder={isLoadingProspects ? "Loading 100 prospects..." : "Search prospects by company, contact, or industry..."}
+              placeholder={
+                isLoadingProspects
+                  ? "Loading prospects from directory..."
+                  : prospects.length > 0
+                  ? `Search ${prospects.length} prospects by company, contact, or context...`
+                  : "Search prospects by company, contact, or context..."
+              }
               className="w-full rounded border border-[#233554] bg-[#070d1e] pl-9 pr-8 py-2 text-sm text-white placeholder-slate-400 focus:border-[#0062ff] focus:outline-none focus:ring-1 focus:ring-[#0062ff]"
             />
             {searchQuery && (
@@ -228,36 +299,58 @@ export const StartCallPanel: React.FC<StartCallPanelProps> = ({
                 type="button"
                 onClick={() => {
                   setSearchQuery("");
-                  setSelectedProspectId(null);
                 }}
                 className="absolute right-2.5 text-xs text-slate-400 hover:text-white"
+                title="Clear search"
               >
                 ✕
               </button>
             )}
           </div>
 
-          {/* Dropdown menu */}
+          {/* Search Dropdown list */}
           {isDropdownOpen && (
             <div className="absolute z-30 mt-1 max-h-64 w-full overflow-y-auto rounded-md border border-[#233554] bg-[#0e1738] py-1 shadow-2xl">
               {isLoadingProspects ? (
-                <div className="p-3 text-center text-xs text-slate-400">
-                  Loading prospects...
+                <div className="flex items-center justify-center space-x-2 p-4 text-xs text-slate-300">
+                  <svg className="h-4 w-4 animate-spin text-[#0062ff]" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                  </svg>
+                  <span>Loading prospects directory...</span>
                 </div>
-              ) : filteredProspects.length === 0 ? (
-                <div className="p-3 text-center text-xs text-slate-400">
-                  <p>No matching prospects found for &ldquo;{searchQuery}&rdquo;.</p>
+              ) : prospectsError ? (
+                <div className="p-4 text-center text-xs text-rose-300">
+                  <p>Failed to load prospects from server.</p>
                   <button
                     type="button"
-                    onClick={() => {
-                      setNewCompany(searchQuery);
-                      setIsAddingNew(true);
-                      setIsDropdownOpen(false);
-                    }}
-                    className="mt-2 inline-block rounded bg-[#0062ff]/20 px-2.5 py-1 text-xs font-semibold text-[#0062ff] hover:bg-[#0062ff]/30"
+                    onClick={loadProspects}
+                    className="mt-2 rounded bg-rose-800/80 px-2.5 py-1 text-xs font-semibold text-white hover:bg-rose-700"
                   >
-                    + Add as New Prospect
+                    Retry loading
                   </button>
+                </div>
+              ) : filteredProspects.length === 0 ? (
+                <div className="p-4 text-center text-xs text-slate-300">
+                  {searchQuery.trim() ? (
+                    <>
+                      <p>No matching prospects found for &ldquo;{searchQuery}&rdquo;.</p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCompanyName(searchQuery);
+                          setSelectedProspectId(null);
+                          setIsDropdownOpen(false);
+                          setSaveSuccessMessage(null);
+                        }}
+                        className="mt-2 inline-flex items-center space-x-1 rounded bg-[#0062ff]/20 px-3 py-1.5 text-xs font-semibold text-[#3884ff] hover:bg-[#0062ff]/30 border border-[#0062ff]/40 transition-colors"
+                      >
+                        <span>Use &ldquo;{searchQuery}&rdquo; in form below</span>
+                      </button>
+                    </>
+                  ) : (
+                    <p className="text-slate-400">Directory is empty. Enter details below to add prospects.</p>
+                  )}
                 </div>
               ) : (
                 filteredProspects.map((p) => {
@@ -284,7 +377,9 @@ export const StartCallPanel: React.FC<StartCallPanelProps> = ({
                       {(p.contact_name || p.phone_number) && (
                         <div className="mt-0.5 flex flex-wrap gap-x-2 text-xs text-slate-300">
                           {p.contact_name && <span>{p.contact_name}</span>}
-                          {p.phone_number && <span className="text-slate-400 font-mono">({p.phone_number})</span>}
+                          {p.phone_number && (
+                            <span className="text-slate-400 font-mono">({p.phone_number})</span>
+                          )}
                         </div>
                       )}
                       {p.context && (
@@ -301,116 +396,33 @@ export const StartCallPanel: React.FC<StartCallPanelProps> = ({
         </div>
       </div>
 
-      {/* Add New Prospect Accordion/Form */}
-      {isAddingNew && (
-        <div className="mb-5 rounded border border-[#233554] bg-[#070d1e] p-4">
-          <div className="mb-3 flex items-center justify-between">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-400">
-              Add New Prospect to Directory
-            </h3>
-            <button
-              type="button"
-              onClick={() => setIsAddingNew(false)}
-              className="text-xs text-slate-400 hover:text-white"
-            >
-              ✕ Cancel
-            </button>
-          </div>
-
-          {addError && (
-            <div className="mb-3 rounded border border-rose-500/50 bg-rose-950/40 p-2 text-xs text-rose-300">
-              {addError}
-            </div>
-          )}
-
-          <div className="space-y-3">
-            <div>
-              <label className="mb-1 block text-xs font-semibold text-slate-200">
-                Company Name <span className="text-rose-400">*</span>
-              </label>
-              <input
-                type="text"
-                required
-                value={newCompany}
-                onChange={(e) => setNewCompany(e.target.value)}
-                placeholder="e.g., Zenith BioTech Ltd"
-                className="w-full rounded border border-[#233554] bg-[#0b132b] px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:border-[#0062ff] focus:outline-none focus:ring-1 focus:ring-[#0062ff]"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div>
-                <label className="mb-1 block text-xs font-semibold text-slate-200">
-                  Contact Name & Role
-                </label>
-                <input
-                  type="text"
-                  value={newContact}
-                  onChange={(e) => setNewContact(e.target.value)}
-                  placeholder="e.g., Vikram Roy (Founder)"
-                  className="w-full rounded border border-[#233554] bg-[#0b132b] px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:border-[#0062ff] focus:outline-none focus:ring-1 focus:ring-[#0062ff]"
-                />
-              </div>
-
-              <div>
-                <label className="mb-1 block text-xs font-semibold text-slate-200">
-                  Phone Number
-                </label>
-                <input
-                  type="text"
-                  value={newPhone}
-                  onChange={(e) => setNewPhone(e.target.value)}
-                  placeholder="e.g., +91 98111 22334"
-                  className="w-full rounded border border-[#233554] bg-[#0b132b] px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:border-[#0062ff] focus:outline-none focus:ring-1 focus:ring-[#0062ff]"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="mb-1 block text-xs font-semibold text-slate-200">
-                Background / Lead Context
-              </label>
-              <input
-                type="text"
-                value={newContext}
-                onChange={(e) => setNewContext(e.target.value)}
-                placeholder="e.g., Inbound inquiry via webinar on enterprise growth"
-                className="w-full rounded border border-[#233554] bg-[#0b132b] px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:border-[#0062ff] focus:outline-none focus:ring-1 focus:ring-[#0062ff]"
-              />
-            </div>
-
-            <div className="pt-1 flex justify-end space-x-2">
-              <button
-                type="button"
-                onClick={() => setIsAddingNew(false)}
-                className="rounded border border-[#233554] px-3 py-1.5 text-xs text-slate-300 hover:text-white"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleCreateProspect}
-                disabled={isSavingNew}
-                className="rounded bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white shadow hover:bg-emerald-500 disabled:opacity-50"
-              >
-                {isSavingNew ? "Saving..." : "Save Prospect & Auto-Fill"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Cold Call Initiation Form */}
+      {/* Single Prospect Form (Used for both selecting and adding prospects) */}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="mb-1 block text-xs font-semibold text-slate-200">
-            Prospect / Company Name <span className="text-rose-400">*</span>
-          </label>
+          <div className="mb-1 flex items-center justify-between">
+            <label className="text-xs font-semibold text-slate-200">
+              Prospect / Company Name <span className="text-rose-400">*</span>
+            </label>
+            {isSelectedFromDirectory && (
+              <span className="rounded bg-[#0062ff]/20 border border-[#0062ff]/40 px-2 py-0.5 text-[10px] font-medium text-[#3884ff]">
+                Selected from Directory
+              </span>
+            )}
+          </div>
           <input
             type="text"
             required
             value={companyName}
-            onChange={(e) => setCompanyName(e.target.value)}
+            onChange={(e) => {
+              setCompanyName(e.target.value);
+              // If user manually changes name from selected, unbind prospect id
+              if (selectedProspectId) {
+                const cur = prospects.find((p) => p.id === selectedProspectId);
+                if (cur && cur.company_name.trim().toLowerCase() !== e.target.value.trim().toLowerCase()) {
+                  setSelectedProspectId(null);
+                }
+              }
+            }}
             placeholder="e.g., Kalpana Chem Supplies, Orbit Automation"
             className="w-full rounded border border-[#233554] bg-[#070d1e] px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:border-[#0062ff] focus:outline-none focus:ring-1 focus:ring-[#0062ff]"
           />
@@ -457,11 +469,42 @@ export const StartCallPanel: React.FC<StartCallPanelProps> = ({
           />
         </div>
 
-        <div className="pt-3">
+        {/* Action Buttons: Save as New Prospect & Start Call */}
+        <div className="pt-3 flex flex-col-reverse sm:flex-row items-stretch sm:items-center gap-3">
+          <button
+            type="button"
+            onClick={handleSaveAsNewProspect}
+            disabled={isSavingProspect || isLoading}
+            className="flex items-center justify-center space-x-2 rounded border border-emerald-500/50 bg-emerald-950/30 px-4 py-2.5 text-xs sm:text-sm font-semibold text-emerald-300 shadow hover:bg-emerald-900/50 hover:border-emerald-500 transition-all disabled:opacity-50"
+            title="Save these details as a new prospect in the directory and Supabase"
+          >
+            {isSavingProspect ? (
+              <>
+                <svg className="h-4 w-4 animate-spin text-emerald-400" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                </svg>
+                <span>Saving Prospect...</span>
+              </>
+            ) : (
+              <>
+                <svg className="h-4 w-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
+                  />
+                </svg>
+                <span>Save as New Prospect</span>
+              </>
+            )}
+          </button>
+
           <button
             type="submit"
-            disabled={isLoading}
-            className="flex w-full items-center justify-center space-x-2 rounded bg-[#0062ff] px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-[#0062ff]/30 transition-all hover:bg-[#0052d9] disabled:opacity-60"
+            disabled={isLoading || isSavingProspect}
+            className="flex flex-1 items-center justify-center space-x-2 rounded bg-[#0062ff] px-4 py-2.5 text-xs sm:text-sm font-bold text-white shadow-md shadow-[#0062ff]/30 transition-all hover:bg-[#0052d9] disabled:opacity-60"
           >
             {isLoading ? (
               <span>Starting Call...</span>

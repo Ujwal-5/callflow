@@ -253,13 +253,32 @@ export const PastCallsList: React.FC<PastCallsListProps> = ({
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      {getOutcomeBadge(c.final_outcome)}
+                      <div>
+                        {getOutcomeBadge(c.final_outcome)}
+                      </div>
+                      {c.referral_name && (
+                        <div className="mt-1 text-[10px] text-blue-300 truncate max-w-[180px]" title={`Referral: ${c.referral_name}${c.referral_contact ? ` (${c.referral_contact})` : ""}`}>
+                          ↪ Ref: <span className="text-white">{c.referral_name}</span>
+                        </div>
+                      )}
+                      {c.objection && (
+                        <div className="mt-0.5 text-[10px] text-amber-300 truncate max-w-[180px]" title={`Objection: ${c.objection}`}>
+                          ⚠ {c.objection}
+                        </div>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-slate-300">
                       {c.next_action ? (
-                        <span className="line-clamp-1 max-w-[200px]" title={c.next_action}>
-                          {c.next_action}
-                        </span>
+                        <div>
+                          <span className="line-clamp-1 max-w-[200px]" title={c.next_action}>
+                            {c.next_action}
+                          </span>
+                          {c.follow_up_time && (
+                            <span className="mt-0.5 block font-mono text-[10px] text-slate-400">
+                              ⏰ {c.follow_up_time} {c.follow_up_channel ? `(${c.follow_up_channel})` : ""}
+                            </span>
+                          )}
+                        </div>
                       ) : (
                         <span className="text-slate-600">—</span>
                       )}
