@@ -3,12 +3,14 @@
 import React from "react";
 import { Call } from "@/types";
 
+import { ServiceStatus } from "./ServiceStatusBanner";
+
 interface HeaderProps {
   activeView: "active" | "history";
   onViewChange: (view: "active" | "history") => void;
   activeCall: Call | null;
   historyCount?: number;
-  apiConnected: boolean;
+  serviceStatus: ServiceStatus;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -16,7 +18,7 @@ export const Header: React.FC<HeaderProps> = ({
   onViewChange,
   activeCall,
   historyCount = 0,
-  apiConnected,
+  serviceStatus,
 }) => {
   return (
     <header className="border-b border-[#233554] bg-[#0b132b] px-4 py-3 sm:px-6">
@@ -75,20 +77,35 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           )}
 
-          {/* Backend Connection Dot */}
-          <div
-            title={apiConnected ? "Backend API connected" : "Backend unreachable"}
-            className="flex items-center space-x-1.5 text-[11px] text-slate-400"
-          >
-            <span
-              className={`h-2 w-2 rounded-full ${
-                apiConnected ? "bg-emerald-500" : "bg-red-500 animate-pulse"
-              }`}
-            />
-            <span className="hidden md:inline">
-              {apiConnected ? "API OK" : "Offline"}
-            </span>
-          </div>
+          {/* Service status indicator */}
+          {serviceStatus === "online" ? (
+            <div
+              title="Service is running"
+              className="hidden items-center space-x-1.5 text-[11px] text-emerald-400 sm:flex"
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              <span className="hidden md:inline font-medium">Online</span>
+            </div>
+          ) : serviceStatus === "waking" ? (
+            <div
+              title="Service is starting up…"
+              className="hidden items-center space-x-1.5 text-[11px] text-amber-400 sm:flex"
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-60" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500" />
+              </span>
+              <span className="hidden md:inline font-medium">Starting…</span>
+            </div>
+          ) : (
+            <div
+              title="Service is inactive"
+              className="hidden items-center space-x-1.5 text-[11px] text-slate-500 sm:flex"
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-slate-600" />
+              <span className="hidden md:inline">Inactive</span>
+            </div>
+          )}
         </div>
 
         {/* View switcher */}
