@@ -9,7 +9,9 @@ import { EndCallModal } from "@/components/EndCallModal";
 import { PastCallsList } from "@/components/PastCallsList";
 import { CallDetailModal } from "@/components/CallDetailModal";
 import { TranscriptPanel } from "@/components/TranscriptPanel";
+import { CommitmentRadarPanel } from "@/components/CommitmentRadarPanel";
 import { ServiceStatusBanner, type ServiceStatus } from "@/components/ServiceStatusBanner";
+
 import { api } from "@/lib/api";
 import {
   StageDefinition,
@@ -582,6 +584,19 @@ export default function Home() {
                       }
                     }}
                   />
+
+                  {/* Commitment Radar Panel */}
+                  <div className="mt-4">
+                    <CommitmentRadarPanel
+                      callId={activeCall.id}
+                      onCommitmentsChange={(updatedCommitments) => {
+                        setActiveCall((prev) =>
+                          prev ? { ...prev, commitments: updatedCommitments } : null
+                        );
+                      }}
+                    />
+                  </div>
+
                 </div>
               </div>
             )}

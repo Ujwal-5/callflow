@@ -3,6 +3,9 @@
 import React, { useState, useEffect } from "react";
 import { Call, StageDefinition, Transcript } from "@/types";
 import { api } from "@/lib/api";
+import { CommitmentRadarPanel } from "@/components/CommitmentRadarPanel";
+import { ConversationReview } from "@/components/ConversationReview";
+
 
 interface CallDetailModalProps {
   call: Call | null;
@@ -269,8 +272,23 @@ export const CallDetailModal: React.FC<CallDetailModalProps> = ({
             )}
           </div>
 
+          {/* Conversation Review Section (Conversation Gap Detector) */}
+          <ConversationReview
+            callId={currentCall.id}
+            isReadOnly={false}
+            className="border-[#233554] bg-[#101c3d]/40"
+          />
+
+          {/* Commitment Radar Section */}
+          <CommitmentRadarPanel
+            callId={currentCall.id}
+            isReadOnly={false}
+            className="border-[#233554] bg-[#101c3d]/30"
+          />
+
           {/* Stage-by-Stage Results Record */}
           <div className="space-y-3">
+
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
               Stage-by-Stage Captured Notes
             </h3>

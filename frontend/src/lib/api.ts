@@ -6,7 +6,14 @@ import {
   StageResult,
   SummaryResponse,
   Transcript,
+  Commitment,
+  MissedOpportunity,
+  HistoricalMatch,
+  RadarAnalysisResponse,
+  ConversationGap,
+  ConversationGapsResponse,
 } from "@/types";
+
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
@@ -197,6 +204,86 @@ class ApiClient {
       body: JSON.stringify({ edited_transcript: editedTranscript }),
     });
   }
+
+  async analyzeRadar(callId: string, transcript?: string): Promise<RadarAnalysisResponse> {
+    return this.request(`/calls/${callId}/radar/analyze`, {
+      method: "POST",
+      body: JSON.stringify(transcript ? { transcript } : {}),
+    });
+  }
+
+  async getRadar(callId: string): Promise<RadarAnalysisResponse> {
+    return this.request(`/calls/${callId}/radar`);
+  }
+
+  async createCommitment(callId: string, payload: Partial<Commitment>): Promise<Commitment> {
+    return this.request(`/calls/${callId}/commitments`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async updateCommitment(
+    callId: string,
+    commitmentId: string,
+    updates: Partial<Commitment>
+  ): Promise<Commitment> {
+    return this.request(`/calls/${callId}/commitments/${commitmentId}`, {
+      method: "PATCH",
+      body: JSON.stringify(updates),
+    });
+  }
+
+  async updateMissedOpportunity(
+    callId: string,
+    opportunityId: string,
+    updates: Partial<MissedOpportunity>
+  ): Promise<MissedOpportunity> {
+    return this.request(`/calls/${callId}/missed-opportunities/${opportunityId}`, {
+      method: "PATCH",
+      body: JSON.stringify(updates),
+    });
+  }
+
+  async getHistoricalMatches(query?: string): Promise<HistoricalMatch[]> {
+    const qs = query ? `?query=${encodeURIComponent(query)}` : "";
+    return this.request(`/radar/historical-matches${qs}`);
+  }
+
+  async analyzeConversationGaps(callId: string, transcript?: string): Promise<ConversationGapsResponse> {
+    return this.request(`/calls/${callId}/gaps/analyze`, {
+      method: "POST",
+      body: JSON.stringify(transcript ? { transcript } : {}),
+    });
+  }
+
+  async getConversationGaps(callId: string): Promise<ConversationGapsResponse> {
+    return this.request(`/calls/${callId}/gaps`);
+  }
+
+  async updateConversationGap(
+    callId: string,
+    gapId: string,
+    updates: Partial<ConversationGap>
+  ): Promise<ConversationGap> {
+    return this.request(`/calls/${callId}/gaps/${gapId}`, {
+      method: "PATCH",
+      body: JSON.stringify(updates),
+    });
+  }
+
+  async createGapFollowup(callId: string, gapId: string): Promise<ConversationGap> {
+    return this.request(`/calls/${callId}/gaps/${gapId}/create-followup`, {
+      method: "POST",
+    });
+  }
+
+  async deleteConversationGap(callId: string, gapId: string): Promise<void> {
+    return this.request(`/calls/${callId}/gaps/${gapId}`, {
+      method: "DELETE",
+    });
+  }
 }
 
 export const api = new ApiClient(API_BASE_URL);
+
