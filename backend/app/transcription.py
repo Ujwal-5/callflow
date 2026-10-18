@@ -86,16 +86,33 @@ def _run_transcription(audio_bytes: bytes, content_type: str) -> Tuple[str, Dict
 
         client = genai.Client(api_key=api_key.strip())
 
+        from backend.app.gemini_pool import audio_model_pool
+
         # Use inline bytes — no File Upload API required for ≤20 MB
         part = genai_types.Part.from_bytes(data=audio_bytes, mime_type=content_type)
 
-        response = client.models.generate_content(
-            model=TRANSCRIBE_MODEL,
-            contents=[part],
-            config=genai_types.GenerateContentConfig(
-                temperature=0.0,  # deterministic for transcription
-            ),
-        )
+        used_model_name = [TRANSCRIBE_MODEL]
+
+        def _call_transcribe(model_name: str):
+            used_model_name[0] = model_name
+            # For general multimodal models, supply an explicit transcription prompt
+            if "transcribe" in model_name:
+                contents = [part]
+            else:
+                contents = [
+                    "Please transcribe the following audio recording verbatim into text with speaker turns if detectable:",
+                    part,
+                ]
+
+            return client.models.generate_content(
+                model=model_name,
+                contents=contents,
+                config=genai_types.GenerateContentConfig(
+                    temperature=0.0,  # deterministic for transcription
+                ),
+            )
+
+        response = audio_model_pool.execute_with_fallback(_call_transcribe)
 
         # Extract text from response:
         # gemini-3.5-transcribe returns text in candidate parts as either
@@ -126,11 +143,11 @@ def _run_transcription(audio_bytes: bytes, content_type: str) -> Tuple[str, Dict
         text = " ".join(t.strip() for t in transcript_parts if t.strip())
 
         # Fallback to response.text if parts didn't yield text
-        if not text and response.text:
+        if not text and getattr(response, "text", None):
             text = response.text.strip()
 
         metadata: Dict[str, Any] = {
-            "model": TRANSCRIBE_MODEL,
+            "model": used_model_name[0],
             "audio_bytes": len(audio_bytes),
             "mime_type": content_type,
         }

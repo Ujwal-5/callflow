@@ -178,6 +178,22 @@ class DatabaseAdapter:
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_gaps_status ON call_conversation_gaps(status);")
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_gaps_type ON call_conversation_gaps(type);")
 
+        # Prospects table
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS prospects (
+            id TEXT PRIMARY KEY,
+            company_name TEXT NOT NULL,
+            contact_name TEXT,
+            phone_number TEXT,
+            context TEXT,
+            is_custom INTEGER NOT NULL DEFAULT 0,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+        );
+        """)
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_prospects_company ON prospects(company_name);")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_prospects_created ON prospects(created_at DESC);")
+
         conn.commit()
         conn.close()
 
@@ -1493,6 +1509,169 @@ class DatabaseAdapter:
                 existing_by_key[key] = inserted
 
         return self.list_conversation_gaps(call_id)
+
+    # ──────────────────────────────────────────────────────────────────────────
+    # Prospects
+    # ──────────────────────────────────────────────────────────────────────────
+
+    def _format_prospect_dict(self, row: Dict[str, Any]) -> Dict[str, Any]:
+        d = dict(row)
+        if "is_custom" in d:
+            d["is_custom"] = bool(d["is_custom"])
+        return d
+
+    def list_prospects(self, search: Optional[str] = None) -> List[Dict[str, Any]]:
+        """List all prospects, seeded and custom, sorted alphabetically by company name."""
+        # Ensure SQLite has seeded prospects
+        self._ensure_prospects_seeded()
+
+        if self.use_supabase and self.supabase_client:
+            try:
+                query = self.supabase_client.table("prospects").select("*").order("company_name")
+                if search and search.strip():
+                    term = search.strip()
+                    query = query.or_(f"company_name.ilike.%{term}%,contact_name.ilike.%{term}%,context.ilike.%{term}%")
+                res = query.execute()
+                if res.data:
+                    return [self._format_prospect_dict(r) for r in res.data]
+            except Exception as exc:
+                # Fallback to local SQLite if table does not exist or network fails
+                pass
+
+        conn = self.get_sqlite_conn()
+        cursor = conn.cursor()
+        query = "SELECT * FROM prospects WHERE 1=1"
+        params: List[Any] = []
+        if search and search.strip():
+            term = f"%{search.strip()}%"
+            query += " AND (company_name LIKE ? OR contact_name LIKE ? OR context LIKE ?)"
+            params.extend([term, term, term])
+        query += " ORDER BY company_name COLLATE NOCASE ASC"
+        cursor.execute(query, params)
+        rows = cursor.fetchall()
+        conn.close()
+        return [self._format_prospect_dict(dict(r)) for r in rows]
+
+    def get_prospect_by_company(self, company_name: str) -> Optional[Dict[str, Any]]:
+        """Find a prospect by company name (case-insensitive)."""
+        clean = company_name.strip().lower()
+        if not clean:
+            return None
+
+        self._ensure_prospects_seeded()
+
+        if self.use_supabase and self.supabase_client:
+            try:
+                res = self.supabase_client.table("prospects").select("*").ilike("company_name", clean).execute()
+                if res.data:
+                    return self._format_prospect_dict(res.data[0])
+            except Exception:
+                pass
+
+        conn = self.get_sqlite_conn()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM prospects WHERE LOWER(TRIM(company_name)) = ?", (clean,))
+        row = cursor.fetchone()
+        conn.close()
+        return self._format_prospect_dict(dict(row)) if row else None
+
+    def create_prospect(
+        self,
+        company_name: str,
+        contact_name: Optional[str] = None,
+        phone_number: Optional[str] = None,
+        context: Optional[str] = None,
+        is_custom: bool = True,
+        custom_id: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Create a new prospect. Raises ValueError if duplicate company name."""
+        company_clean = company_name.strip()
+        existing = self.get_prospect_by_company(company_clean)
+        if existing:
+            raise ValueError(f"Prospect company '{company_clean}' already exists.")
+
+        rec_id = custom_id or str(uuid.uuid4())
+        now = get_utc_now_iso()
+
+        payload = {
+            "id": rec_id,
+            "company_name": company_clean,
+            "contact_name": contact_name.strip() if contact_name else None,
+            "phone_number": phone_number.strip() if phone_number else None,
+            "context": context.strip() if context else None,
+            "is_custom": is_custom,
+            "created_at": now,
+            "updated_at": now,
+        }
+
+        # Save to Supabase if available
+        if self.use_supabase and self.supabase_client:
+            try:
+                res = self.supabase_client.table("prospects").insert(payload).execute()
+                # Also mirror into local SQLite
+                self._insert_prospect_sqlite(payload)
+                return self._format_prospect_dict(res.data[0])
+            except Exception as exc:
+                if "duplicate key" in str(exc).lower() or "unique constraint" in str(exc).lower():
+                    raise ValueError(f"Prospect company '{company_clean}' already exists.")
+                # Fallback to local SQLite if table does not exist
+                pass
+
+        # Save into SQLite
+        self._insert_prospect_sqlite(payload)
+        return self._format_prospect_dict(payload)
+
+    def _insert_prospect_sqlite(self, payload: Dict[str, Any]):
+        conn = self.get_sqlite_conn()
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT OR REPLACE INTO prospects (id, company_name, contact_name, phone_number, context, is_custom, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            payload["id"],
+            payload["company_name"],
+            payload["contact_name"],
+            payload["phone_number"],
+            payload["context"],
+            1 if payload.get("is_custom") else 0,
+            payload["created_at"],
+            payload["updated_at"],
+        ))
+        conn.commit()
+        conn.close()
+
+    def _ensure_prospects_seeded(self):
+        """Seed initial prospects from JSON/transcripts into SQLite if empty."""
+        conn = self.get_sqlite_conn()
+        cursor = conn.cursor()
+        cursor.execute("SELECT COUNT(*) FROM prospects")
+        count = cursor.fetchone()[0]
+        if count == 0:
+            import os
+            seed_file = os.path.join(
+                os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                "cold-call-transcripts-100",
+                "prospects_seed.json"
+            )
+            if os.path.exists(seed_file):
+                with open(seed_file, "r", encoding="utf-8") as f:
+                    seeds = json.load(f)
+                now = get_utc_now_iso()
+                for s in seeds:
+                    cursor.execute("""
+                        INSERT OR IGNORE INTO prospects (id, company_name, contact_name, phone_number, context, is_custom, created_at, updated_at)
+                        VALUES (?, ?, ?, ?, ?, 0, ?, ?)
+                    """, (
+                        s["id"],
+                        s["company_name"],
+                        s.get("contact_name"),
+                        s.get("phone_number"),
+                        s.get("context"),
+                        now,
+                        now,
+                    ))
+                conn.commit()
+        conn.close()
 
 
 db = DatabaseAdapter()

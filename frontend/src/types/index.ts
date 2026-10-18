@@ -191,3 +191,22 @@ export interface ConversationGapsResponse {
   summary: string;
 }
 
+export interface Prospect {
+  id: string;
+  company_name: string;
+  contact_name: string | null;
+  phone_number: string | null;
+  context: string | null;
+  is_custom: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateProspectPayload {
+  company_name: string;
+  contact_name?: string;
+  phone_number?: string;
+  context?: string;
+}
+
+

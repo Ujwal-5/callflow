@@ -258,3 +258,22 @@ class ConversationGapsAnalysisResponse(BaseModel):
     summary: str
 
 
+class ProspectCreate(BaseModel):
+    company_name: str = Field(..., min_length=1, description="Company or prospect organization name")
+    contact_name: Optional[str] = Field(None, description="Contact person name and role")
+    phone_number: Optional[str] = Field(None, description="Phone number")
+    context: Optional[str] = Field(None, description="Lead context, industry, or background details")
+
+
+class ProspectResponse(BaseModel):
+    id: str
+    company_name: str
+    contact_name: Optional[str] = None
+    phone_number: Optional[str] = None
+    context: Optional[str] = None
+    is_custom: bool = False
+    created_at: str
+    updated_at: str
+
+
+

@@ -366,15 +366,20 @@ Contact: {contact_name or 'Unknown'}
 
 Analyze the dialogue above according to your system instructions. Evaluate the sequence of dialogue context. Identify only meaningful potential conversation gaps. Return strict JSON."""
 
-            response = client.models.generate_content(
-                model="gemini-3.8-flash",
-                contents=user_prompt,
-                config=types.GenerateContentConfig(
-                    system_instruction=GAP_DETECTOR_SYSTEM_PROMPT,
-                    response_mime_type="application/json",
-                    temperature=0.1,
-                ),
-            )
+            from backend.app.gemini_pool import text_model_pool
+
+            def _call_gap(model_name: str):
+                return client.models.generate_content(
+                    model=model_name,
+                    contents=user_prompt,
+                    config=types.GenerateContentConfig(
+                        system_instruction=GAP_DETECTOR_SYSTEM_PROMPT,
+                        response_mime_type="application/json",
+                        temperature=0.1,
+                    ),
+                )
+
+            response = text_model_pool.execute_with_fallback(_call_gap)
 
             if response and response.text:
                 raw_result = json.loads(response.text.strip())

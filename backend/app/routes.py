@@ -25,6 +25,8 @@ from backend.app.models import (
     ConversationGapResponse,
     GapAnalyzePayload,
     ConversationGapsAnalysisResponse,
+    ProspectCreate,
+    ProspectResponse,
 )
 from backend.app.stages_data import STAGES
 from backend.app.db import db
@@ -784,4 +786,51 @@ def delete_conversation_gap_endpoint(call_id: str, gap_id: str):
         )
     db.delete_conversation_gap(gap_id)
     return None
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# Prospects Endpoints
+# ──────────────────────────────────────────────────────────────────────────
+
+@router.get("/prospects", response_model=List[ProspectResponse], tags=["Prospects"])
+def list_prospects_endpoint(
+    search: Optional[str] = Query(None, description="Search prospects by company, contact, or context")
+):
+    """Retrieve list of all available prospects populated from transcripts and added prospects."""
+    return db.list_prospects(search=search)
+
+
+@router.post("/prospects", response_model=ProspectResponse, status_code=status.HTTP_201_CREATED, tags=["Prospects"])
+def create_prospect_endpoint(payload: ProspectCreate):
+    """Create a new prospect and save to database. Rejects duplicate company names."""
+    company_name = payload.company_name.strip()
+    if not company_name:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Company name is required."
+        )
+
+    # Check for existing duplicate
+    existing = db.get_prospect_by_company(company_name)
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Prospect with company name '{company_name}' already exists."
+        )
+
+    try:
+        created = db.create_prospect(
+            company_name=company_name,
+            contact_name=payload.contact_name,
+            phone_number=payload.phone_number,
+            context=payload.context,
+            is_custom=True,
+        )
+        return created
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(e)
+        )
+
 

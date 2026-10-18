@@ -73,6 +73,7 @@ async def generate_call_summary(call_data: Dict[str, Any]) -> Dict[str, Any]:
     try:
         from google import genai
         from google.genai import types
+        from backend.app.gemini_pool import text_model_pool
 
         client = genai.Client(api_key=api_key)
         stage_text = format_stage_notes_for_llm(call_data)
@@ -86,14 +87,17 @@ async def generate_call_summary(call_data: Dict[str, Any]) -> Dict[str, Any]:
             stage_notes_text=stage_text
         )
 
-        response = client.models.generate_content(
-            model="gemini-3.8-flash",
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json",
-                temperature=0.2,
+        def _call_gemini(model_name: str):
+            return client.models.generate_content(
+                model=model_name,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    temperature=0.2,
+                )
             )
-        )
+
+        response = text_model_pool.execute_with_fallback(_call_gemini)
 
         response_text = response.text.strip()
         data = json.loads(response_text)

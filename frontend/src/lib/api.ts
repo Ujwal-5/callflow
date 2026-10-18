@@ -12,6 +12,8 @@ import {
   RadarAnalysisResponse,
   ConversationGap,
   ConversationGapsResponse,
+  Prospect,
+  CreateProspectPayload,
 } from "@/types";
 
 
@@ -281,6 +283,18 @@ class ApiClient {
   async deleteConversationGap(callId: string, gapId: string): Promise<void> {
     return this.request(`/calls/${callId}/gaps/${gapId}`, {
       method: "DELETE",
+    });
+  }
+
+  async listProspects(search?: string): Promise<Prospect[]> {
+    const qs = search && search.trim() ? `?search=${encodeURIComponent(search.trim())}` : "";
+    return this.request(`/prospects${qs}`);
+  }
+
+  async createProspect(payload: CreateProspectPayload): Promise<Prospect> {
+    return this.request("/prospects", {
+      method: "POST",
+      body: JSON.stringify(payload),
     });
   }
 }
