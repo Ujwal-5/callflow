@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { Call, StageDefinition } from "@/types";
+import React, { useState, useEffect } from "react";
+import { Call, StageDefinition, Transcript } from "@/types";
 import { api } from "@/lib/api";
 
 interface CallDetailModalProps {
@@ -20,6 +20,13 @@ export const CallDetailModal: React.FC<CallDetailModalProps> = ({
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
   const [currentCall, setCurrentCall] = useState<Call | null>(call);
+  const [callTranscript, setCallTranscript] = useState<Transcript | null>(null);
+
+  useEffect(() => {
+    if (call?.id) {
+      api.getTranscript(call.id).then(setCallTranscript).catch(() => {});
+    }
+  }, [call?.id]);
 
   if (!call || !currentCall) return null;
 
@@ -155,6 +162,40 @@ export const CallDetailModal: React.FC<CallDetailModalProps> = ({
               )}
             </div>
           </div>
+
+          {/* Call Audio Transcript (if recorded) */}
+          {callTranscript && callTranscript.status === "completed" && (
+            <div className="rounded-lg border border-[#233554] bg-[#070d1e] p-4">
+              <div className="flex items-center justify-between border-b border-[#233554] pb-2.5">
+                <div className="flex items-center space-x-2">
+                  <span className="flex h-5 w-5 items-center justify-center rounded bg-emerald-950 text-emerald-400 border border-emerald-500/30 text-xs">
+                    🎤
+                  </span>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-white">
+                    Audio Call Transcript
+                  </h3>
+                </div>
+                {callTranscript.edited_transcript && (
+                  <span className="rounded bg-slate-800 px-2 py-0.5 text-[10px] text-slate-400">
+                    User Edited
+                  </span>
+                )}
+              </div>
+              <p className="mt-3 text-xs leading-relaxed text-slate-200 whitespace-pre-wrap">
+                {callTranscript.edited_transcript || callTranscript.raw_transcript || "No words transcribed."}
+              </p>
+              {callTranscript.edited_transcript && callTranscript.raw_transcript && (
+                <details className="mt-2 text-[10px] text-slate-500">
+                  <summary className="cursor-pointer hover:text-slate-400">
+                    View original audio-derived transcript
+                  </summary>
+                  <p className="mt-1 rounded border border-[#233554] bg-[#101c3d]/40 p-2 leading-relaxed whitespace-pre-wrap">
+                    {callTranscript.raw_transcript}
+                  </p>
+                </details>
+              )}
+            </div>
+          )}
 
           {/* AI Summary Section (Gemini) */}
           <div className="rounded-lg border border-[#233554] bg-[#101c3d]/50 p-4">

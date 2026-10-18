@@ -5,6 +5,7 @@ import {
   CloseCallPayload,
   StageResult,
   SummaryResponse,
+  Transcript,
 } from "@/types";
 
 const API_BASE_URL =
@@ -133,6 +134,67 @@ class ApiClient {
   async generateCallSummary(callId: string): Promise<SummaryResponse> {
     return this.request(`/calls/${callId}/summary`, {
       method: "POST",
+    });
+  }
+
+  async getTranscript(callId: string): Promise<Transcript | null> {
+    return this.request(`/calls/${callId}/transcript`);
+  }
+
+  /**
+   * Upload audio Blob to the backend transcription endpoint.
+   * Uses fetch directly (not the JSON helper) because the body is multipart/form-data.
+   * Throws an Error with a user-friendly message on non-2xx responses.
+   */
+  async uploadAndTranscribe(callId: string, audioBlob: Blob, mimeType: string): Promise<Transcript> {
+    const url = `${this.baseUrl}/calls/${callId}/transcript`;
+    const formData = new FormData();
+    formData.append("audio", audioBlob, `recording.${mimeType.split("/")[1]?.split(";")[0] || "webm"}`);
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 120_000); // 2 min upload timeout
+
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        body: formData,
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        let errorMessage = `Transcription request failed (HTTP ${response.status})`;
+        try {
+          const errData = await response.json();
+          if (errData?.detail) {
+            errorMessage = typeof errData.detail === "string"
+              ? errData.detail
+              : JSON.stringify(errData.detail);
+          }
+        } catch {
+          // Non-JSON error body
+        }
+        throw new Error(errorMessage);
+      }
+
+      return await response.json();
+    } catch (err: unknown) {
+      clearTimeout(timeoutId);
+      if (err instanceof Error) {
+        if (err.name === "AbortError") {
+          throw new Error("Upload timed out. Check your connection and try again.");
+        }
+        throw err;
+      }
+      throw new Error("An unexpected error occurred during audio upload.");
+    }
+  }
+
+  async saveEditedTranscript(callId: string, editedTranscript: string): Promise<Transcript> {
+    return this.request(`/calls/${callId}/transcript`, {
+      method: "PUT",
+      body: JSON.stringify({ edited_transcript: editedTranscript }),
     });
   }
 }

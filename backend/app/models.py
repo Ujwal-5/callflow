@@ -83,3 +83,19 @@ class HealthResponse(BaseModel):
     database_mode: str
     gemini_configured: bool
     version: str = "1.0.0"
+
+
+class TranscriptResponse(BaseModel):
+    id: str
+    call_id: str
+    status: str  # pending | processing | completed | failed
+    raw_transcript: Optional[str] = None
+    edited_transcript: Optional[str] = None
+    transcript_metadata: Optional[Dict[str, Any]] = None
+    error_message: Optional[str] = None
+    created_at: str
+    updated_at: str
+
+
+class EditTranscriptPayload(BaseModel):
+    edited_transcript: str = Field(..., description="User-edited transcript text to persist")

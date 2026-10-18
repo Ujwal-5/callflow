@@ -39,6 +39,20 @@ CREATE TABLE IF NOT EXISTS call_stage_results (
     CONSTRAINT uq_call_stage UNIQUE (call_id, stage_number)
 );
 
+-- Transcripts table (one record per call, replaced on retry)
+CREATE TABLE IF NOT EXISTS call_transcripts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    call_id UUID NOT NULL REFERENCES calls(id) ON DELETE CASCADE,
+    status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'completed', 'failed')),
+    raw_transcript TEXT,
+    edited_transcript TEXT,
+    transcript_metadata JSONB,
+    error_message TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc', now()),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc', now()),
+    CONSTRAINT uq_call_transcript UNIQUE (call_id)
+);
+
 -- Performance Indexes
 CREATE INDEX IF NOT EXISTS idx_calls_started_at ON calls (started_at DESC);
 CREATE INDEX IF NOT EXISTS idx_calls_company ON calls (company_name);
@@ -47,11 +61,14 @@ CREATE INDEX IF NOT EXISTS idx_calls_final_outcome ON calls (final_outcome);
 CREATE INDEX IF NOT EXISTS idx_calls_highest_stage ON calls (highest_stage);
 CREATE INDEX IF NOT EXISTS idx_stage_results_call_id ON call_stage_results (call_id);
 CREATE INDEX IF NOT EXISTS idx_stage_results_call_stage ON call_stage_results (call_id, stage_number);
+CREATE INDEX IF NOT EXISTS idx_transcripts_call_id ON call_transcripts (call_id);
+CREATE INDEX IF NOT EXISTS idx_transcripts_status ON call_transcripts (status);
 
 -- Supabase Row Level Security (RLS) Configuration
 -- For service role operations or public anonymous access if enabled
 ALTER TABLE calls ENABLE ROW LEVEL SECURITY;
 ALTER TABLE call_stage_results ENABLE ROW LEVEL SECURITY;
+ALTER TABLE call_transcripts ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Allow service role full access to calls" ON calls;
 CREATE POLICY "Allow service role full access to calls" 
@@ -62,5 +79,11 @@ CREATE POLICY "Allow service role full access to calls"
 DROP POLICY IF EXISTS "Allow service role full access to stage results" ON call_stage_results;
 CREATE POLICY "Allow service role full access to stage results" 
     ON call_stage_results FOR ALL 
+    USING (true) 
+    WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow service role full access to transcripts" ON call_transcripts;
+CREATE POLICY "Allow service role full access to transcripts" 
+    ON call_transcripts FOR ALL 
     USING (true) 
     WITH CHECK (true);

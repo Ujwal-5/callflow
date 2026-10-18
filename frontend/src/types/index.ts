@@ -69,3 +69,17 @@ export interface SummaryResponse {
   error?: string | null;
   summary?: AISummary | null;
 }
+
+export type TranscriptStatus = "pending" | "processing" | "completed" | "failed";
+
+export interface Transcript {
+  id: string;
+  call_id: string;
+  status: TranscriptStatus;
+  raw_transcript: string | null;
+  edited_transcript: string | null;
+  transcript_metadata: Record<string, unknown> | null;
+  error_message: string | null;
+  created_at: string;
+  updated_at: string;
+}

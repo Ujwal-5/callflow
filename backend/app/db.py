@@ -94,6 +94,25 @@ class DatabaseAdapter:
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_calls_status ON calls(status);")
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_stage_results_call ON call_stage_results(call_id);")
 
+        # Transcript table: one record per call, upserted on retry
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS call_transcripts (
+            id TEXT PRIMARY KEY,
+            call_id TEXT NOT NULL REFERENCES calls(id) ON DELETE CASCADE,
+            status TEXT NOT NULL DEFAULT 'pending',
+            raw_transcript TEXT,
+            edited_transcript TEXT,
+            transcript_metadata TEXT,
+            error_message TEXT,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            UNIQUE(call_id)
+        );
+        """)
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_transcripts_call ON call_transcripts(call_id);"
+        )
+
         conn.commit()
         conn.close()
 
@@ -390,6 +409,243 @@ class DatabaseAdapter:
             if isinstance(d["ai_summary"], str):
                 try:
                     d["ai_summary"] = json.loads(d["ai_summary"])
+                except Exception:
+                    pass
+        return d
+
+    # ──────────────────────────────────────────────────────────────
+    # Transcript methods
+    # ──────────────────────────────────────────────────────────────
+
+    def get_transcript(self, call_id: str) -> Optional[Dict[str, Any]]:
+        """Return the transcript record for a call, or None if it does not exist."""
+        if self.use_supabase and self.supabase_client:
+            res = (
+                self.supabase_client
+                .table("call_transcripts")
+                .select("*")
+                .eq("call_id", call_id)
+                .execute()
+            )
+            return self._format_transcript_dict(res.data[0]) if res.data else None
+
+        conn = self.get_sqlite_conn()
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT * FROM call_transcripts WHERE call_id = ?", (call_id,)
+        )
+        row = cursor.fetchone()
+        conn.close()
+        return self._format_transcript_dict(dict(row)) if row else None
+
+    def upsert_transcript_pending(self, call_id: str) -> Dict[str, Any]:
+        """Create or reset a transcript record to 'processing' status.
+
+        Prevents duplicate rows: if a record already exists for the call,
+        its status and timestamps are updated instead of inserting a new row.
+        """
+        now = get_utc_now_iso()
+
+        if self.use_supabase and self.supabase_client:
+            existing = (
+                self.supabase_client
+                .table("call_transcripts")
+                .select("id")
+                .eq("call_id", call_id)
+                .execute()
+            )
+            if existing.data:
+                rec_id = existing.data[0]["id"]
+                res = (
+                    self.supabase_client
+                    .table("call_transcripts")
+                    .update({
+                        "status": "processing",
+                        "raw_transcript": None,
+                        "edited_transcript": None,
+                        "error_message": None,
+                        "transcript_metadata": None,
+                        "updated_at": now,
+                    })
+                    .eq("id", rec_id)
+                    .execute()
+                )
+            else:
+                rec_id = str(uuid.uuid4())
+                res = (
+                    self.supabase_client
+                    .table("call_transcripts")
+                    .insert({
+                        "id": rec_id,
+                        "call_id": call_id,
+                        "status": "processing",
+                        "created_at": now,
+                        "updated_at": now,
+                    })
+                    .execute()
+                )
+            return self._format_transcript_dict(res.data[0])
+
+        conn = self.get_sqlite_conn()
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT id FROM call_transcripts WHERE call_id = ?", (call_id,)
+        )
+        row = cursor.fetchone()
+
+        if row:
+            rec_id = row["id"]
+            cursor.execute("""
+                UPDATE call_transcripts
+                SET status = 'processing',
+                    raw_transcript = NULL,
+                    edited_transcript = NULL,
+                    error_message = NULL,
+                    transcript_metadata = NULL,
+                    updated_at = ?
+                WHERE id = ?
+            """, (now, rec_id))
+        else:
+            rec_id = str(uuid.uuid4())
+            cursor.execute("""
+                INSERT INTO call_transcripts
+                    (id, call_id, status, created_at, updated_at)
+                VALUES (?, ?, 'processing', ?, ?)
+            """, (rec_id, call_id, now, now))
+
+        conn.commit()
+        cursor.execute("SELECT * FROM call_transcripts WHERE id = ?", (rec_id,))
+        result = self._format_transcript_dict(dict(cursor.fetchone()))
+        conn.close()
+        return result
+
+    def complete_transcript(
+        self,
+        call_id: str,
+        raw_transcript: str,
+        transcript_metadata: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        """Mark a transcript as completed and store the raw transcribed text."""
+        now = get_utc_now_iso()
+
+        if self.use_supabase and self.supabase_client:
+            res = (
+                self.supabase_client
+                .table("call_transcripts")
+                .update({
+                    "status": "completed",
+                    "raw_transcript": raw_transcript,
+                    "transcript_metadata": transcript_metadata,
+                    "error_message": None,
+                    "updated_at": now,
+                })
+                .eq("call_id", call_id)
+                .execute()
+            )
+            return self._format_transcript_dict(res.data[0])
+
+        conn = self.get_sqlite_conn()
+        cursor = conn.cursor()
+        cursor.execute("""
+            UPDATE call_transcripts
+            SET status = 'completed',
+                raw_transcript = ?,
+                transcript_metadata = ?,
+                error_message = NULL,
+                updated_at = ?
+            WHERE call_id = ?
+        """, (
+            raw_transcript,
+            json.dumps(transcript_metadata) if transcript_metadata else None,
+            now,
+            call_id,
+        ))
+        conn.commit()
+        cursor.execute(
+            "SELECT * FROM call_transcripts WHERE call_id = ?", (call_id,)
+        )
+        result = self._format_transcript_dict(dict(cursor.fetchone()))
+        conn.close()
+        return result
+
+    def fail_transcript(self, call_id: str, error_message: str) -> Dict[str, Any]:
+        """Mark a transcript as failed with an error message."""
+        now = get_utc_now_iso()
+
+        if self.use_supabase and self.supabase_client:
+            res = (
+                self.supabase_client
+                .table("call_transcripts")
+                .update({
+                    "status": "failed",
+                    "error_message": error_message,
+                    "updated_at": now,
+                })
+                .eq("call_id", call_id)
+                .execute()
+            )
+            return self._format_transcript_dict(res.data[0])
+
+        conn = self.get_sqlite_conn()
+        cursor = conn.cursor()
+        cursor.execute("""
+            UPDATE call_transcripts
+            SET status = 'failed',
+                error_message = ?,
+                updated_at = ?
+            WHERE call_id = ?
+        """, (error_message, now, call_id))
+        conn.commit()
+        cursor.execute(
+            "SELECT * FROM call_transcripts WHERE call_id = ?", (call_id,)
+        )
+        result = self._format_transcript_dict(dict(cursor.fetchone()))
+        conn.close()
+        return result
+
+    def update_edited_transcript(
+        self, call_id: str, edited_transcript: str
+    ) -> Optional[Dict[str, Any]]:
+        """Persist the user's edited version of the transcript.
+
+        The raw_transcript is never overwritten here — edits are stored
+        in the separate edited_transcript column.
+        """
+        now = get_utc_now_iso()
+
+        if self.use_supabase and self.supabase_client:
+            res = (
+                self.supabase_client
+                .table("call_transcripts")
+                .update({"edited_transcript": edited_transcript, "updated_at": now})
+                .eq("call_id", call_id)
+                .execute()
+            )
+            return self._format_transcript_dict(res.data[0]) if res.data else None
+
+        conn = self.get_sqlite_conn()
+        cursor = conn.cursor()
+        cursor.execute("""
+            UPDATE call_transcripts
+            SET edited_transcript = ?,
+                updated_at = ?
+            WHERE call_id = ?
+        """, (edited_transcript, now, call_id))
+        conn.commit()
+        cursor.execute(
+            "SELECT * FROM call_transcripts WHERE call_id = ?", (call_id,)
+        )
+        row = cursor.fetchone()
+        conn.close()
+        return self._format_transcript_dict(dict(row)) if row else None
+
+    def _format_transcript_dict(self, row: Dict[str, Any]) -> Dict[str, Any]:
+        """Deserialise JSON transcript_metadata if stored as a string (SQLite)."""
+        d = dict(row)
+        if "transcript_metadata" in d and d["transcript_metadata"]:
+            if isinstance(d["transcript_metadata"], str):
+                try:
+                    d["transcript_metadata"] = json.loads(d["transcript_metadata"])
                 except Exception:
                     pass
         return d

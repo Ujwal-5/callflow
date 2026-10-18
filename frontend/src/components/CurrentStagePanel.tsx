@@ -18,6 +18,11 @@ interface CurrentStagePanelProps {
   isLastStage: boolean;
   /** Called once on mount so the parent can read the panel's latest local text. */
   onRegisterFlush?: (fn: () => { exactWords: string; notes: string }) => void;
+  /**
+   * Called once on mount so the parent (via TranscriptPanel) can push transcript
+   * text into the exactWords field without lifting state to the page.
+   */
+  onRegisterCopyExactWords?: (fn: (text: string) => void) => void;
 }
 
 /**
@@ -45,6 +50,7 @@ export const CurrentStagePanel: React.FC<CurrentStagePanelProps> = ({
   isSaving,
   isLastStage,
   onRegisterFlush,
+  onRegisterCopyExactWords,
 }) => {
   // Local optimistic state – decoupled from the server-owned stageResult prop.
   const [localOutcome, setLocalOutcome] = useState<string | null>(
@@ -76,6 +82,23 @@ export const CurrentStagePanel: React.FC<CurrentStagePanelProps> = ({
 
   const exactWordsDebounceRef = useRef<NodeJS.Timeout | null>(null);
   const notesDebounceRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Register a copy-to-exact-words function so TranscriptPanel can inject text.
+  useEffect(() => {
+    if (onRegisterCopyExactWords) {
+      onRegisterCopyExactWords((text: string) => {
+        setLocalExactWords(text);
+        localExactWordsRef.current = text;
+        if (exactWordsDebounceRef.current) clearTimeout(exactWordsDebounceRef.current);
+        setLocalSaving(true);
+        exactWordsDebounceRef.current = setTimeout(() => {
+          onUpdateExactWords(text);
+          setLocalSaving(false);
+        }, 400);
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onRegisterCopyExactWords]);
 
 
   // Re-sync local state when switching stages (stage_number changes).

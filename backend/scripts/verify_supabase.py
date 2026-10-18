@@ -53,6 +53,13 @@ def main():
         print("\n👉 ACTION REQUIRED: Run the SQL in backend/sql/schema.sql in your Supabase SQL Editor.")
         sys.exit(2)
 
+    try:
+        db.supabase_client.table("call_transcripts").select("id").limit(1).execute()
+        print("  ✓ Table 'call_transcripts' exists.")
+    except Exception as e:
+        print(f"  ⚠️  Table 'call_transcripts' not created on Supabase yet.")
+        print("  👉 Run backend/sql/migration_transcripts.sql in your Supabase SQL Editor to enable remote transcripts storage.")
+
     # 2. Test create call
     print("\n2. Testing call creation...")
     test_company = f"Verification Inc {uuid.uuid4().hex[:6]}"

@@ -8,6 +8,7 @@ import { StartCallPanel } from "@/components/StartCallPanel";
 import { EndCallModal } from "@/components/EndCallModal";
 import { PastCallsList } from "@/components/PastCallsList";
 import { CallDetailModal } from "@/components/CallDetailModal";
+import { TranscriptPanel } from "@/components/TranscriptPanel";
 import { ServiceStatusBanner, type ServiceStatus } from "@/components/ServiceStatusBanner";
 import { api } from "@/lib/api";
 import {
@@ -50,6 +51,12 @@ export default function Home() {
   const stagePanelFlushRef = useRef<
     (() => { exactWords: string; notes: string }) | null
   >(null);
+
+  /**
+   * copyToExactWordsRef holds a function registered by CurrentStagePanel
+   * that lets the TranscriptPanel push text into the exact-words field.
+   */
+  const copyToExactWordsRef = useRef<((text: string) => void) | null>(null);
 
   // Initial data loading
   useEffect(() => {
@@ -560,8 +567,21 @@ export default function Home() {
                       onRegisterFlush={(fn) => {
                         stagePanelFlushRef.current = fn;
                       }}
+                      onRegisterCopyExactWords={(fn) => {
+                        copyToExactWordsRef.current = fn;
+                      }}
                     />
                   )}
+
+                  {/* Transcript Panel — collapsible, additive, does not replace manual notes */}
+                  <TranscriptPanel
+                    callId={activeCall.id}
+                    onCopyToExactWords={(text) => {
+                      if (copyToExactWordsRef.current) {
+                        copyToExactWordsRef.current(text);
+                      }
+                    }}
+                  />
                 </div>
               </div>
             )}

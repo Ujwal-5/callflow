@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, HTTPException, Query, UploadFile, File, status
 from typing import List, Optional, Dict, Any
 from backend.app.models import (
     CallCreate,
@@ -9,10 +9,13 @@ from backend.app.models import (
     CallClose,
     StageDefinition,
     AISummary,
+    TranscriptResponse,
+    EditTranscriptPayload,
 )
 from backend.app.stages_data import STAGES
 from backend.app.db import db
 from backend.app.llm import generate_call_summary
+from backend.app.transcription import validate_audio, transcribe_audio
 
 router = APIRouter()
 
@@ -150,3 +153,122 @@ async def summarize_call(call_id: str):
         "error": result.get("error"),
         "summary": result.get("summary") or call.get("ai_summary"),
     }
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Transcript endpoints
+# ──────────────────────────────────────────────────────────────────────────────
+
+
+@router.get(
+    "/calls/{call_id}/transcript",
+    response_model=Optional[TranscriptResponse],
+    tags=["Transcript"],
+)
+def get_transcript(call_id: str):
+    """Return the current transcript record for a call, or null if none exists."""
+    call = db.get_call(call_id)
+    if not call:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Call with ID '{call_id}' not found.",
+        )
+    return db.get_transcript(call_id)
+
+
+@router.post(
+    "/calls/{call_id}/transcript",
+    response_model=TranscriptResponse,
+    tags=["Transcript"],
+)
+async def upload_and_transcribe(
+    call_id: str,
+    audio: UploadFile = File(..., description="Audio recording from the browser MediaRecorder API"),
+):
+    """Upload an audio file and transcribe it using Gemini 3.5 Transcribe.
+
+    - Validates call ownership, file type, and file size server-side.
+    - Prevents duplicate transcription requests by resetting the existing record.
+    - Returns transcript status immediately; if processing completes synchronously,
+      status will be 'completed' with raw_transcript populated.
+    - Audio is processed in memory and never stored on disk.
+    - Retry: calling this endpoint again on a failed transcript resets and retries.
+    """
+    call = db.get_call(call_id)
+    if not call:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Call with ID '{call_id}' not found.",
+        )
+
+    # Read audio data
+    audio_bytes = await audio.read()
+    content_type = audio.content_type or "audio/webm"
+
+    # Server-side validation of file type and size
+    validation_error = validate_audio(audio_bytes, content_type)
+    if validation_error:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=validation_error,
+        )
+
+    # Mark as processing (idempotent — resets a previous failed attempt)
+    db.upsert_transcript_pending(call_id)
+
+    try:
+        transcript_text, metadata = await transcribe_audio(audio_bytes, content_type)
+
+        if not transcript_text:
+            # Model returned empty output (e.g., silence or inaudible audio)
+            result = db.complete_transcript(
+                call_id,
+                raw_transcript="",
+                transcript_metadata=metadata,
+            )
+        else:
+            result = db.complete_transcript(
+                call_id,
+                raw_transcript=transcript_text,
+                transcript_metadata=metadata,
+            )
+
+    except RuntimeError as exc:
+        # User-friendly error — no stack trace exposed
+        error_msg = str(exc)
+        result = db.fail_transcript(call_id, error_msg)
+
+    except Exception as exc:
+        # Unexpected error — log full details but only return a generic message
+        import logging
+        logging.getLogger("callflow.routes").exception("Unexpected transcription error")
+        result = db.fail_transcript(call_id, "An unexpected error occurred during transcription.")
+
+    return result
+
+
+@router.put(
+    "/calls/{call_id}/transcript",
+    response_model=TranscriptResponse,
+    tags=["Transcript"],
+)
+def save_edited_transcript(call_id: str, payload: EditTranscriptPayload):
+    """Persist the user's edited version of the transcript.
+
+    The original raw_transcript is never overwritten.
+    Edits are stored in the separate edited_transcript column.
+    """
+    call = db.get_call(call_id)
+    if not call:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Call with ID '{call_id}' not found.",
+        )
+
+    result = db.update_edited_transcript(call_id, payload.edited_transcript)
+    if not result:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No transcript record found for this call. Upload audio first.",
+        )
+    return result
