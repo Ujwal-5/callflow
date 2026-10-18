@@ -1,7 +1,11 @@
 """
 transcription.py — Audio transcription via Gemini 3.5 Transcribe.
 
-Uses the existing GEMINI_API_KEY. No new API keys or paid dependencies required.
+Uses GEMINI_API_KEY plus the optional GEMINI_API_KEY_2 backup key, rotated
+by the shared Gemini pool. No new paid dependencies required.
+
+Note: gemini-3.5-transcribe-live is designed for real-time WebSocket
+streaming; it cannot process pre-recorded uploads through generate_content.
 
 Supported audio MIME types (MediaRecorder output varies by browser):
   audio/webm, audio/webm;codecs=opus, audio/ogg, audio/ogg;codecs=opus,
@@ -28,7 +32,7 @@ logger = logging.getLogger("callflow.transcription")
 # server-side limit.
 MAX_AUDIO_BYTES = 20 * 1024 * 1024  # 20 MB
 
-# The Gemini model used for transcription.
+# Primary Gemini model for transcription (backups live in gemini_pool).
 TRANSCRIBE_MODEL = "gemini-3.5-transcribe"
 
 # MIME types accepted from the browser (MediaRecorder).
@@ -74,17 +78,14 @@ def _run_transcription(audio_bytes: bytes, content_type: str) -> Tuple[str, Dict
     Returns (transcript_text, metadata_dict).
     Raises RuntimeError with a user-friendly message on failure.
     """
-    api_key = settings.GEMINI_API_KEY
-    if not api_key or not api_key.strip():
+    if not settings.gemini_configured:
         raise RuntimeError(
-            "Gemini API key is not configured. Set GEMINI_API_KEY on the server."
+            "Gemini API key is not configured. Set GEMINI_API_KEY "
+            "(and optionally GEMINI_API_KEY_2) on the server."
         )
 
     try:
-        from google import genai
         from google.genai import types as genai_types
-
-        client = genai.Client(api_key=api_key.strip())
 
         from backend.app.gemini_pool import audio_model_pool
 
@@ -93,7 +94,7 @@ def _run_transcription(audio_bytes: bytes, content_type: str) -> Tuple[str, Dict
 
         used_model_name = [TRANSCRIBE_MODEL]
 
-        def _call_transcribe(model_name: str):
+        def _call_transcribe(client, model_name: str):
             used_model_name[0] = model_name
             # For general multimodal models, supply an explicit transcription prompt
             if "transcribe" in model_name:
@@ -115,7 +116,7 @@ def _run_transcription(audio_bytes: bytes, content_type: str) -> Tuple[str, Dict
         response = audio_model_pool.execute_with_fallback(_call_transcribe)
 
         # Extract text from response:
-        # gemini-3.5-transcribe returns text in candidate parts as either
+        # Gemini transcribe models return text in candidate parts as either
         # part.audio_transcription.text or part.text.
         transcript_parts = []
         speaker_segments = []

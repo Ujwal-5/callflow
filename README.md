@@ -181,6 +181,7 @@ Open `http://localhost:3000` in your web browser.
 | `PORT` | No | `8000` | Port for the uvicorn HTTP server |
 | `FRONTEND_ORIGIN` | No | `http://localhost:3000,http://127.0.0.1:3000` | Comma-separated allowed origins for CORS |
 | `GEMINI_API_KEY` | No | `""` | Google Gemini API key (server-side only, never shared with client) |
+| `GEMINI_API_KEY_2` | No | `""` | Optional backup Gemini key, used automatically when the primary key hits its quota |
 | `SUPABASE_URL` | No | `""` | Supabase project URL (e.g. `https://your-project.supabase.co`) |
 | `SUPABASE_SECRET_KEY` | No | `""` | Supabase backend secret key (preferred, server-side only) |
 | `SUPABASE_SERVICE_ROLE_KEY` | No | `""` | Alternative Supabase service role secret key |
@@ -266,6 +267,7 @@ Key Findings:
    - **Health Check Path**: `/health`
 4. Set Environment Variables:
    - `GEMINI_API_KEY`: Your Google Gen AI key.
+   - `GEMINI_API_KEY_2`: Optional backup key for automatic quota failover.
    - `SUPABASE_URL`: Your Supabase URL (`https://your-project.supabase.co`).
    - `SUPABASE_SECRET_KEY`: Your Supabase backend secret key.
    - `FRONTEND_ORIGIN`: Your deployed Vercel frontend URL.

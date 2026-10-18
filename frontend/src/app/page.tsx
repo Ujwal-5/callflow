@@ -9,7 +9,6 @@ import { EndCallModal } from "@/components/EndCallModal";
 import { PastCallsList } from "@/components/PastCallsList";
 import { CallDetailModal } from "@/components/CallDetailModal";
 import { TranscriptPanel } from "@/components/TranscriptPanel";
-import { CommitmentRadarPanel } from "@/components/CommitmentRadarPanel";
 import { ServiceStatusBanner, type ServiceStatus } from "@/components/ServiceStatusBanner";
 
 import { api } from "@/lib/api";
@@ -42,6 +41,12 @@ export default function Home() {
   const [serviceStatus, setServiceStatus] = useState<ServiceStatus>("online");
   const [wakingElapsed, setWakingElapsed] = useState(0);
   const [globalError, setGlobalError] = useState<string | null>(null);
+
+  // Auto-analysis state (triggered after call close)
+  const [isAutoAnalyzing, setIsAutoAnalyzing] = useState(false);
+  const [autoAnalysisError, setAutoAnalysisError] = useState<string | null>(null);
+  /** Tracks which call ID is currently being auto-analyzed to prevent duplicate runs */
+  const analysisRunningForRef = useRef<string | null>(null);
 
   // Wake polling refs
   const wakePollingRef = useRef<NodeJS.Timeout | null>(null);
@@ -477,6 +482,51 @@ export default function Home() {
       setCallsHistory(updatedHistory);
       setSelectedHistoryCall(closedCall);
       setActiveView("history");
+
+      // ── Auto-analysis: fire-and-forget, non-blocking ──
+      // Guard: only run if this call hasn't already been analyzed
+      const hasExistingSummary = Boolean(closedCall.ai_summary);
+      const callId = closedCall.id;
+
+      if (!hasExistingSummary && analysisRunningForRef.current !== callId) {
+        analysisRunningForRef.current = callId;
+        setIsAutoAnalyzing(true);
+        setAutoAnalysisError(null);
+
+        (async () => {
+          try {
+            // Run summary + gap analysis + radar concurrently; all results persist to DB.
+            // ConversationReview auto-loads persisted gap/radar data on mount, so we only
+            // need to capture the summary result here to update the call state.
+            const [summaryRes] = await Promise.allSettled([
+              api.generateCallSummary(callId),
+              api.analyzeConversationGaps(callId),
+              api.analyzeRadar(callId),
+            ]);
+
+            // Update call with summary if available
+            if (summaryRes.status === "fulfilled" && summaryRes.value.available && summaryRes.value.summary) {
+              setSelectedHistoryCall((prev) =>
+                prev && prev.id === callId
+                  ? { ...prev, ai_summary: summaryRes.value.summary! }
+                  : prev
+              );
+            } else if (summaryRes.status === "rejected") {
+              const msg = summaryRes.reason instanceof Error
+                ? summaryRes.reason.message
+                : "AI summary generation failed.";
+              setAutoAnalysisError(msg);
+            } else if (summaryRes.status === "fulfilled" && summaryRes.value.error) {
+              setAutoAnalysisError(summaryRes.value.error);
+            }
+          } catch {
+            setAutoAnalysisError("Analysis failed. You can retry from the AI Summary section.");
+          } finally {
+            setIsAutoAnalyzing(false);
+            analysisRunningForRef.current = null;
+          }
+        })();
+      }
     } catch (err: unknown) {
       setGlobalError(
         err instanceof Error ? err.message : "Failed to close call."
@@ -486,8 +536,50 @@ export default function Home() {
     }
   };
 
+  /**
+   * Manual retry for auto-analysis — called from CallDetailModal's AI summary section.
+   * Safe to call multiple times; guards against concurrent runs.
+   */
+  const handleRetryAnalysis = async () => {
+    if (!selectedHistoryCall) return;
+    const callId = selectedHistoryCall.id;
+    if (analysisRunningForRef.current === callId) return; // already running
+
+    analysisRunningForRef.current = callId;
+    setIsAutoAnalyzing(true);
+    setAutoAnalysisError(null);
+
+    try {
+      const [summaryRes] = await Promise.allSettled([
+        api.generateCallSummary(callId),
+        api.analyzeConversationGaps(callId),
+        api.analyzeRadar(callId),
+      ]);
+
+      if (summaryRes.status === "fulfilled" && summaryRes.value.available && summaryRes.value.summary) {
+        setSelectedHistoryCall((prev) =>
+          prev && prev.id === callId
+            ? { ...prev, ai_summary: summaryRes.value.summary! }
+            : prev
+        );
+      } else if (summaryRes.status === "rejected") {
+        setAutoAnalysisError(
+          summaryRes.reason instanceof Error ? summaryRes.reason.message : "Retry failed."
+        );
+      }
+    } catch {
+      setAutoAnalysisError("Retry failed. Check connection and try again.");
+    } finally {
+      setIsAutoAnalyzing(false);
+      analysisRunningForRef.current = null;
+    }
+  };
+
   // Direct inspect call from past calls list
   const handleInspectHistoryCall = async (callId: string) => {
+    // Reset any lingering auto-analysis state from a previous call closure
+    setAutoAnalysisError(null);
+    setIsAutoAnalyzing(false);
     try {
       const fullCall = await api.getCall(callId);
       setSelectedHistoryCall(fullCall);
@@ -725,18 +817,6 @@ export default function Home() {
                     }}
                   />
 
-                  {/* Commitment Radar Panel */}
-                  <div className="mt-4">
-                    <CommitmentRadarPanel
-                      callId={activeCall.id}
-                      onCommitmentsChange={(updatedCommitments) => {
-                        setActiveCall((prev) =>
-                          prev ? { ...prev, commitments: updatedCommitments } : null
-                        );
-                      }}
-                    />
-                  </div>
-
                 </div>
               </div>
             )}
@@ -766,7 +846,13 @@ export default function Home() {
         <CallDetailModal
           call={selectedHistoryCall}
           stages={stages}
-          onClose={() => setSelectedHistoryCall(null)}
+          isAutoAnalyzing={isAutoAnalyzing}
+          autoAnalysisError={autoAnalysisError}
+          onRetryAnalysis={handleRetryAnalysis}
+          onClose={() => {
+            setSelectedHistoryCall(null);
+            setAutoAnalysisError(null);
+          }}
           onResumeCall={(callToResume) => {
             setActiveCall(callToResume);
             setCurrentStageNumber(callToResume.current_stage || 1);

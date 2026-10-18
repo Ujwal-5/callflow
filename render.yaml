@@ -14,6 +14,8 @@ services:
         value: https://callflow.vercel.app,http://localhost:3000
       - key: GEMINI_API_KEY
         sync: false
+      - key: GEMINI_API_KEY_2
+        sync: false
       - key: SUPABASE_URL
         sync: false
       - key: SUPABASE_SECRET_KEY

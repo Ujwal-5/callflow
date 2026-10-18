@@ -173,10 +173,8 @@ async def suggest_stage_from_transcript(
     # First attempt LLM analysis if Gemini is configured and transcript is multi-turn
     if settings.gemini_configured and len(clean_transcript) > 60:
         try:
-            from google import genai
             from google.genai import types
 
-            client = genai.Client(api_key=settings.GEMINI_API_KEY)
             prompt = f"""You are an expert cold-call sales workflow observer.
 Review the following cold-call dialogue and determine if the caller and prospect have naturally transitioned to a different stage than current Stage {current_stage}.
 
@@ -208,7 +206,7 @@ Dialogue:
 {clean_transcript}
 """
 
-            def _call_gemini(model_name: str):
+            def _call_gemini(client, model_name: str):
                 return client.models.generate_content(
                     model=model_name,
                     contents=prompt,

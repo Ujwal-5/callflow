@@ -345,15 +345,11 @@ async def analyze_transcript_with_radar(
             "analysis_summary": "Transcript is empty. No commitments or opportunities to extract.",
         }
 
-    api_key = settings.GEMINI_API_KEY
     raw_result = None
 
-    if api_key and api_key.strip():
+    if settings.gemini_configured:
         try:
-            from google import genai
             from google.genai import types
-
-            client = genai.Client(api_key=api_key.strip())
 
             user_prompt = f"""Call Context:
 Call ID: {call_id}
@@ -369,7 +365,7 @@ Analyze the dialogue above according to your system instructions. Extract commit
 
             from backend.app.gemini_pool import text_model_pool
 
-            def _call_radar(model_name: str):
+            def _call_radar(client, model_name: str):
                 return client.models.generate_content(
                     model=model_name,
                     contents=user_prompt,

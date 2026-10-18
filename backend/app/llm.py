@@ -62,20 +62,20 @@ def format_stage_notes_for_llm(call_data: Dict[str, Any]) -> str:
 
 
 async def generate_call_summary(call_data: Dict[str, Any]) -> Dict[str, Any]:
-    api_key = settings.GEMINI_API_KEY
-    if not api_key or api_key.strip() == "":
+    if not settings.gemini_configured:
         return {
             "available": False,
-            "error": "Gemini API key is not configured on the server. Please set GEMINI_API_KEY.",
+            "error": (
+                "Gemini API key is not configured on the server. "
+                "Please set GEMINI_API_KEY or GEMINI_API_KEY_2."
+            ),
             "summary": None,
         }
 
     try:
-        from google import genai
         from google.genai import types
         from backend.app.gemini_pool import text_model_pool
 
-        client = genai.Client(api_key=api_key)
         stage_text = format_stage_notes_for_llm(call_data)
 
         prompt = SUMMARY_PROMPT_TEMPLATE.format(
@@ -87,7 +87,7 @@ async def generate_call_summary(call_data: Dict[str, Any]) -> Dict[str, Any]:
             stage_notes_text=stage_text
         )
 
-        def _call_gemini(model_name: str):
+        def _call_gemini(client, model_name: str):
             return client.models.generate_content(
                 model=model_name,
                 contents=prompt,

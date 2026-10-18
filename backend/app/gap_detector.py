@@ -346,15 +346,12 @@ async def analyze_transcript_for_gaps(
             "summary": "Transcript is empty. No conversation gaps to analyze.",
         }
 
-    api_key = settings.GEMINI_API_KEY
     raw_result = None
 
-    if api_key and api_key.strip():
+    if settings.gemini_configured:
         try:
-            from google import genai
             from google.genai import types
 
-            client = genai.Client(api_key=api_key.strip())
             user_prompt = f"""Call Context:
 Call ID: {call_id}
 Company: {company_name or 'Unknown'}
@@ -368,7 +365,7 @@ Analyze the dialogue above according to your system instructions. Evaluate the s
 
             from backend.app.gemini_pool import text_model_pool
 
-            def _call_gap(model_name: str):
+            def _call_gap(client, model_name: str):
                 return client.models.generate_content(
                     model=model_name,
                     contents=user_prompt,

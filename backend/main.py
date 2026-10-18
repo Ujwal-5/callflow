@@ -39,7 +39,7 @@ def health():
         "status": "ok",
         "service": "callflow-api",
         "database_mode": db_mode,
-        "gemini_configured": bool(settings.GEMINI_API_KEY and settings.GEMINI_API_KEY.strip()),
+        "gemini_configured": settings.gemini_configured,
         "version": "1.0.0",
     }
 
