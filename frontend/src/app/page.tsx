@@ -33,6 +33,8 @@ import {
 } from "@/types";
 
 const ACTIVE_CALL_STORAGE_KEY = "callflow_active_call_id";
+const KEEP_ALIVE_STORAGE_KEY = "callflow_keep_alive_enabled";
+const KEEP_ALIVE_INTERVAL_MS = 10 * 60 * 1000;
 
 export default function Home() {
   const [activeView, setActiveView] = useState<MainNavigationArea>("overview");
@@ -64,6 +66,9 @@ export default function Home() {
   const stageSuggestionRequestRef = useRef<{ callId: string; stage: number; transcript: string } | null>(null);
   const [isSubmittingClose, setIsSubmittingClose] = useState(false);
   const [serviceStatus, setServiceStatus] = useState<ServiceStatus>("online");
+  const [keepAliveEnabled, setKeepAliveEnabled] = useState(() =>
+    typeof window !== "undefined" && localStorage.getItem(KEEP_ALIVE_STORAGE_KEY) === "true"
+  );
   const [wakingElapsed, setWakingElapsed] = useState(0);
   const [globalError, setGlobalError] = useState<string | null>(null);
   const [isLiveAssistVisible, setIsLiveAssistVisible] = useState(false);
@@ -82,6 +87,7 @@ export default function Home() {
   // Wake polling refs
   const wakePollingRef = useRef<NodeJS.Timeout | null>(null);
   const wakeElapsedRef = useRef<NodeJS.Timeout | null>(null);
+  const keepAliveRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const stagePanelFlushRef = useRef<
     (() => { exactWords: string; notes: string }) | null
@@ -147,6 +153,32 @@ export default function Home() {
     });
     return unsub;
   }, []);
+
+  // Render's free tier sleeps after inactivity. A lightweight health request
+  // every ten minutes keeps it warm while this page remains open.
+  useEffect(() => {
+    if (keepAliveRef.current) {
+      clearInterval(keepAliveRef.current);
+      keepAliveRef.current = null;
+    }
+
+    if (!keepAliveEnabled || serviceStatus !== "online") return;
+
+    const ping = async () => {
+      const healthRes = await api.getHealth({ retries: 0, delayMs: 0 }).catch(() => null);
+      if (!healthRes) {
+        setServiceStatus("sleeping");
+      }
+    };
+
+    keepAliveRef.current = setInterval(ping, KEEP_ALIVE_INTERVAL_MS);
+    return () => {
+      if (keepAliveRef.current) {
+        clearInterval(keepAliveRef.current);
+        keepAliveRef.current = null;
+      }
+    };
+  }, [keepAliveEnabled, serviceStatus]);
 
   // Initial data loading
   useEffect(() => {
@@ -290,6 +322,8 @@ export default function Home() {
     if (wakeElapsedRef.current) clearInterval(wakeElapsedRef.current);
 
     setServiceStatus("waking");
+    setKeepAliveEnabled(true);
+    localStorage.setItem(KEEP_ALIVE_STORAGE_KEY, "true");
     setWakingElapsed(0);
 
     let elapsed = 0;
@@ -330,6 +364,14 @@ export default function Home() {
     poll();
     wakePollingRef.current = setInterval(poll, 3000);
   }, [serviceStatus]);
+
+  const handleToggleKeepAlive = useCallback(() => {
+    setKeepAliveEnabled((enabled) => {
+      const nextEnabled = !enabled;
+      localStorage.setItem(KEEP_ALIVE_STORAGE_KEY, String(nextEnabled));
+      return nextEnabled;
+    });
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -798,6 +840,8 @@ export default function Home() {
         <ServiceStatusBanner
           status={serviceStatus}
           onWake={handleWakeService}
+          keepAliveEnabled={keepAliveEnabled}
+          onToggleKeepAlive={handleToggleKeepAlive}
           wakingElapsed={wakingElapsed}
         />
 

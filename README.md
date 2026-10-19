@@ -462,3 +462,16 @@ The eight cold-call stages are defined in `backend/app/stages_data.py` with the 
 ## 13. Gemini AI Key Pooling
 
 The backend supports dual Gemini API key configuration via `GEMINI_API_KEY` and `GEMINI_API_KEY_2`. When the primary key hits its quota/rate limit, the system automatically fails over to the backup key. This ensures continuous AI summarization and transcription capability without manual intervention. Key pooling status can be checked via the `/health` endpoint (`gemini_configured` field).
+
+The model pool is quota-aware. A short-lived 429/503 is cooled down using the
+API-provided retry delay when available. A daily quota error disables only the
+affected API-key/model pair for the current quota day, allowing another key to
+try the same model. That pair is eligible again after Gemini's midnight-Pacific
+reset. Gemini does not expose a remaining-request count through the normal API,
+so availability is inferred from observed API responses rather than guessed by
+repeatedly calling exhausted models.
+
+Frequent workflow assistance uses a separate Gemma 4 pool (`gemma-4-26b-a4b-it`
+then `gemma-4-31b-it`). Higher-value summaries, commitment radar, conversation
+gap analysis, and transcription continue using their existing specialized or
+stronger model pools.

@@ -4,7 +4,7 @@ import logging
 from typing import Dict, Any, Optional, List
 from backend.app.config import settings
 from backend.app.radar import verify_quote_in_transcript
-from backend.app.gemini_pool import text_model_pool
+from backend.app.gemini_pool import light_text_model_pool
 from backend.app.stages_data import STAGES
 
 logger = logging.getLogger("callflow.stage_suggester")
@@ -216,7 +216,7 @@ Dialogue:
                     ),
                 )
 
-            res = text_model_pool.execute_with_fallback(_call_gemini)
+            res = light_text_model_pool.execute_with_fallback(_call_gemini)
             if res and res.text:
                 data = json.loads(res.text.strip())
                 if data.get("has_suggestion") and data.get("suggested_stage_number"):

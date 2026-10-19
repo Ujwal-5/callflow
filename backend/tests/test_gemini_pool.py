@@ -6,6 +6,7 @@ from unittest.mock import patch
 from backend.app.config import settings
 from backend.app.gemini_pool import (
     DEFAULT_AUDIO_MODELS,
+    DEFAULT_LIGHT_TEXT_MODELS,
     GeminiKeyPool,
     GeminiModelPool,
 )
@@ -45,6 +46,10 @@ class TestGeminiPool(unittest.TestCase):
         self.assertEqual(DEFAULT_AUDIO_MODELS[0], "gemini-3.5-transcribe")
         self.assertNotIn("gemini-3.5-transcribe-live", DEFAULT_AUDIO_MODELS)
 
+    def test_lightweight_models_are_separate_from_important_text_pool(self):
+        self.assertEqual(DEFAULT_LIGHT_TEXT_MODELS[0], "gemma-4-26b-a4b-it")
+        self.assertNotIn(DEFAULT_LIGHT_TEXT_MODELS[0], self.pool.models)
+
     def test_keys_are_deduplicated_and_rotated(self):
         with patch.object(settings, "GEMINI_API_KEY_2", "key-1"):
             self.assertEqual(self.key_pool.get_keys(), ["key-1"])
@@ -80,6 +85,33 @@ class TestGeminiPool(unittest.TestCase):
         with self.assertRaises(RuntimeError) as ctx:
             self.pool.execute_with_fallback(always_429, client_factory=_fake_factory)
         self.assertIn("rate limited", str(ctx.exception))
+
+    def test_daily_quota_skips_all_keys_for_model(self):
+        calls = []
+
+        def func(client, model_name):
+            calls.append((client.api_key, model_name))
+            if model_name == "model-a" and client.api_key == "key-1":
+                raise Exception("429 RESOURCE_EXHAUSTED quota_exceeded: requests per day")
+            return client.api_key, model_name
+
+        result = self.pool.execute_with_fallback(func, client_factory=_fake_factory)
+
+        self.assertEqual(calls, [("key-1", "model-a"), ("key-2", "model-a")])
+        self.assertEqual(result, ("key-2", "model-a"))
+        exhausted = next(
+            item for item in self.pool.quota_status()
+            if item["api_key"] == "key-1" and item["model"] == "model-a"
+        )
+        self.assertEqual(exhausted["reason"], "daily_quota_exhausted")
+
+    def test_daily_quota_model_becomes_available_after_reset(self):
+        self.pool._daily_quota_until[("key-1", "model-a")] = 0
+        available = next(
+            item for item in self.pool.quota_status()
+            if item["api_key"] == "key-1" and item["model"] == "model-a"
+        )
+        self.assertTrue(available["available"])
 
     def test_invalid_key_is_removed_from_pool(self):
         calls = []

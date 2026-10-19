@@ -1,7 +1,10 @@
 import logging
+import re
 import threading
 import time
+from datetime import datetime, timedelta, timezone
 from typing import List, Optional, Any, Callable, Dict, Tuple
+from zoneinfo import ZoneInfo
 
 from backend.app.config import settings
 
@@ -20,6 +23,12 @@ DEFAULT_TEXT_MODELS = [
     "gemini-3.1-flash-lite",       # High-volume workloads       
     # 🔗 Dynamic String Pointers
     "gemini-flash-lite-latest",    # Points to latest stable flash-lite version
+]
+
+# Separate high-quota pool for frequent, lightweight workflow assistance.
+DEFAULT_LIGHT_TEXT_MODELS = [
+    "gemma-4-26b-a4b-it",
+    "gemma-4-31b-it",
 ]
 
 
@@ -46,6 +55,7 @@ DEFAULT_AUDIO_MODELS = [
 
 # How long a (key, model) pair is skipped after a 429/503 before it is retried.
 RATE_LIMIT_COOLDOWN_SECONDS = 60.0
+GEMINI_QUOTA_TIMEZONE = "America/Los_Angeles"
 
 
 def make_gemini_client(api_key: str):
@@ -113,6 +123,45 @@ def _is_rate_limit_or_temporary(err_str: str) -> bool:
     )
 
 
+def _is_daily_quota_exhausted(err_str: str) -> bool:
+    """Return true only for errors that indicate a requests/tokens-per-day limit."""
+    lowered = err_str.lower().replace("-", "_")
+    return any(
+        marker in lowered
+        for marker in (
+            "quota_exceeded",
+            "daily quota",
+            "per_day",
+            "per day",
+            "perday",
+            "requests per day",
+            "tokens per day",
+        )
+    )
+
+
+def _retry_delay_seconds(err_str: str) -> Optional[float]:
+    """Extract Google's retryDelay, when the SDK includes it in the exception text."""
+    patterns = (
+        r"retryDelay\s*[=:]\s*[{'\"]?seconds['\"]?\s*[=:]\s*['\"]?(\d+(?:\.\d+)?)",
+        r"retry(?:ing)?\s+(?:in|after)\s+(\d+(?:\.\d+)?)\s*(?:s|sec|seconds)",
+    )
+    for pattern in patterns:
+        match = re.search(pattern, err_str, flags=re.IGNORECASE)
+        if match:
+            return max(1.0, float(match.group(1)))
+    return None
+
+
+def _next_daily_reset_epoch() -> float:
+    """Gemini RPD quotas reset at midnight Pacific time."""
+    pacific = ZoneInfo(GEMINI_QUOTA_TIMEZONE)
+    now = datetime.now(pacific)
+    tomorrow = (now + timedelta(days=1)).date()
+    reset = datetime.combine(tomorrow, datetime.min.time(), tzinfo=pacific)
+    return reset.timestamp()
+
+
 def _is_invalid_key(err_str: str) -> bool:
     lowered = err_str.lower()
     return (
@@ -127,10 +176,9 @@ class GeminiModelPool:
     Thread-safe pool of Gemini models + API keys for the free tier.
 
     For every request it walks a rotated list of models and keys, so load is
-    spread across both. If a model/key pair is rate-limited or temporarily
-    unavailable, it cools down that pair and instantly fails over to the next
-    combination. Non-quota errors (deprecated model, bad schema) also move on
-    to the next combination, but do not cool anything down.
+    spread across both. Short-lived rate limits and daily quota exhaustion cool
+    down the affected model/key pair until it can be retried. Non-quota errors
+    move on to the next combination.
     """
 
     def __init__(
@@ -147,6 +195,10 @@ class GeminiModelPool:
         self._index = 0
         self._lock = threading.Lock()
         self._cooldowns: Dict[Tuple[str, str], float] = {}
+        # A key may belong to a different Google project, so track daily quota
+        # by (API key, model). Keys from the same project will still be tried,
+        # but Google will reject them and they will each be remembered.
+        self._daily_quota_until: Dict[Tuple[str, str], float] = {}
         self._cooldown_lock = threading.Lock()
 
     def get_models_order(self) -> List[str]:
@@ -163,6 +215,11 @@ class GeminiModelPool:
 
     def _is_cooling(self, api_key: str, model: str) -> bool:
         with self._cooldown_lock:
+            daily_until = self._daily_quota_until.get((api_key, model))
+            if daily_until is not None:
+                if daily_until > time.time():
+                    return True
+                del self._daily_quota_until[(api_key, model)]
             until = self._cooldowns.get((api_key, model))
             if until is None:
                 return False
@@ -176,6 +233,30 @@ class GeminiModelPool:
             self._cooldowns[(api_key, model)] = (
                 time.monotonic() + self.cooldown_seconds
             )
+
+    def _mark_daily_quota_exhausted(self, api_key: str, model: str) -> None:
+        with self._cooldown_lock:
+            self._daily_quota_until[(api_key, model)] = _next_daily_reset_epoch()
+
+    def quota_status(self) -> List[Dict[str, Any]]:
+        """Return observed key/model availability; remaining counts are unavailable."""
+        now = time.time()
+        status = []
+        with self._cooldown_lock:
+            for api_key in self.key_pool.get_keys():
+                for model in self.models:
+                    daily_until = self._daily_quota_until.get((api_key, model))
+                    status.append({
+                        "api_key": api_key,
+                        "model": model,
+                        "available": not daily_until or daily_until <= now,
+                        "reason": "daily_quota_exhausted" if daily_until and daily_until > now else None,
+                        "retry_at": (
+                            datetime.fromtimestamp(daily_until, timezone.utc).isoformat()
+                            if daily_until and daily_until > now else None
+                        ),
+                    })
+        return status
 
     def execute_with_fallback(
         self,
@@ -213,6 +294,10 @@ class GeminiModelPool:
         total = len(attempts)
 
         for idx, (model, api_key) in enumerate(attempts):
+            # Another concurrent request may have exhausted this model after
+            # the attempt list was built.
+            if self._is_cooling(api_key, model):
+                continue
             key_hint = f"key {keys.index(api_key) + 1}/{len(keys)}"
             try:
                 logger.info(
@@ -225,6 +310,7 @@ class GeminiModelPool:
                 err_str = str(exc)
                 last_exception = exc
                 is_quota = _is_rate_limit_or_temporary(err_str)
+                is_daily_quota = _is_daily_quota_exhausted(err_str)
 
                 if _is_invalid_key(err_str):
                     logger.warning(
@@ -233,16 +319,38 @@ class GeminiModelPool:
                     )
                     self.key_pool.mark_invalid(api_key)
                 elif is_quota:
-                    self._start_cooldown(api_key, model)
+                    if is_daily_quota:
+                        self._mark_daily_quota_exhausted(api_key, model)
+                    else:
+                        delay = _retry_delay_seconds(err_str) or self.cooldown_seconds
+                        self._start_cooldown(api_key, model)
+                        if delay != self.cooldown_seconds:
+                            with self._cooldown_lock:
+                                self._cooldowns[(api_key, model)] = time.monotonic() + delay
 
-                if idx < total - 1:
-                    next_model, next_key = attempts[idx + 1]
-                    reason = "hit limit/temporary error" if is_quota else "failed"
+                next_attempt = next(
+                    (
+                        (next_idx, next_model, next_key)
+                        for next_idx, (next_model, next_key) in enumerate(
+                            attempts[idx + 1:], start=idx + 1
+                        )
+                        if not self._is_cooling(next_key, next_model)
+                    ),
+                    None,
+                )
+                if next_attempt is not None:
+                    _, next_model, next_key = next_attempt
+                    reason = (
+                        "daily quota exhausted" if is_daily_quota
+                        else "hit limit/temporary error" if is_quota
+                        else "failed"
+                    )
                     logger.warning(
                         f"[{self.task_name}] Model '{model}' with {key_hint} {reason} "
                         f"({err_str[:120]}). Failing over to '{next_model}' "
                         f"(key {keys.index(next_key) + 1}/{len(keys)})."
                     )
+                if next_attempt is not None:
                     continue
 
                 logger.error(
@@ -259,4 +367,8 @@ class GeminiModelPool:
 
 # Global pool instances
 text_model_pool = GeminiModelPool(DEFAULT_TEXT_MODELS, task_name="Text-Analysis")
+light_text_model_pool = GeminiModelPool(
+    DEFAULT_LIGHT_TEXT_MODELS,
+    task_name="Lightweight-Workflow-Assist",
+)
 audio_model_pool = GeminiModelPool(DEFAULT_AUDIO_MODELS, task_name="Audio-Transcription")

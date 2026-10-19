@@ -7,6 +7,8 @@ export type ServiceStatus = "online" | "sleeping" | "waking";
 interface ServiceStatusBannerProps {
   status: ServiceStatus;
   onWake: () => void;
+  keepAliveEnabled: boolean;
+  onToggleKeepAlive: () => void;
   /** Seconds elapsed since the wake request was sent */
   wakingElapsed: number;
 }
@@ -25,6 +27,8 @@ interface ServiceStatusBannerProps {
 export const ServiceStatusBanner: React.FC<ServiceStatusBannerProps> = ({
   status,
   onWake,
+  keepAliveEnabled,
+  onToggleKeepAlive,
   wakingElapsed,
 }) => {
   // Brief "just came online" confirmation state
@@ -46,13 +50,14 @@ export const ServiceStatusBanner: React.FC<ServiceStatusBannerProps> = ({
   }, [status]);
 
   // Nothing to show when fully online and past the confirmation window
-  if (status === "online" && !showOnlineConfirm) return null;
+  if (status === "online" && !showOnlineConfirm && !keepAliveEnabled) return null;
 
   // ── Online confirmation (briefly shown after waking up) ──────────────────
   if (status === "online" && showOnlineConfirm) {
     return (
       <div className="border-b border-emerald-500/20 bg-emerald-950/30 px-4 py-2.5">
-        <div className="mx-auto flex max-w-6xl items-center space-x-3">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
+          <div className="flex items-center space-x-3">
           <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/20">
             <svg
               className="h-3 w-3 text-emerald-400"
@@ -71,6 +76,14 @@ export const ServiceStatusBanner: React.FC<ServiceStatusBannerProps> = ({
           <p className="text-xs font-medium text-emerald-300">
             Service is ready. You&apos;re good to go.
           </p>
+          </div>
+          <button
+            type="button"
+            onClick={onToggleKeepAlive}
+            className="shrink-0 rounded border border-emerald-500/30 px-2.5 py-1 text-[11px] font-semibold text-emerald-300 transition-colors hover:border-emerald-400/60 hover:bg-emerald-500/10"
+          >
+            {keepAliveEnabled ? "Stop keep-alive" : "Keep service awake"}
+          </button>
         </div>
       </div>
     );
@@ -124,6 +137,32 @@ export const ServiceStatusBanner: React.FC<ServiceStatusBannerProps> = ({
     );
   }
 
+  // ── Service is online ───────────────────────────────────────────────────
+  if (status === "online") {
+    return (
+      <div className="border-b border-slate-700/60 bg-[#0b1327] px-4 py-2">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
+          <p className="text-[11px] text-slate-400">
+            {keepAliveEnabled
+              ? "Keep-alive is active. The service will be pinged periodically while this page is open."
+              : "The service may sleep after a period of inactivity."}
+          </p>
+          <button
+            type="button"
+            onClick={onToggleKeepAlive}
+            className={`shrink-0 rounded border px-3 py-1.5 text-[11px] font-semibold transition-colors ${
+              keepAliveEnabled
+                ? "border-rose-500/40 bg-rose-950/20 text-rose-300 hover:border-rose-400/70 hover:bg-rose-950/40"
+                : "border-[#0062ff]/50 bg-[#0062ff]/10 text-[#60a5fa] hover:border-[#0062ff] hover:bg-[#0062ff]/20 hover:text-white"
+            }`}
+          >
+            {keepAliveEnabled ? "Stop keep-alive" : "Keep service awake"}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   // ── Service is sleeping ──────────────────────────────────────────────────
   return (
     <div className="border-b border-slate-700/60 bg-[#0b1327] px-4 py-3">
@@ -155,26 +194,37 @@ export const ServiceStatusBanner: React.FC<ServiceStatusBannerProps> = ({
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={onWake}
-          className="flex shrink-0 items-center space-x-1.5 rounded border border-[#0062ff]/50 bg-[#0062ff]/10 px-3 py-1.5 text-xs font-semibold text-[#60a5fa] transition-all hover:border-[#0062ff] hover:bg-[#0062ff]/20 hover:text-white"
-        >
-          <svg
-            className="h-3 w-3"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+        <div className="flex shrink-0 items-center gap-2">
+          {keepAliveEnabled && (
+            <button
+              type="button"
+              onClick={onToggleKeepAlive}
+              className="rounded border border-rose-500/30 px-2.5 py-1.5 text-[11px] font-semibold text-rose-300 transition-colors hover:border-rose-400/60 hover:bg-rose-950/30"
+            >
+              Stop keep-alive
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={onWake}
+            className="flex items-center space-x-1.5 rounded border border-[#0062ff]/50 bg-[#0062ff]/10 px-3 py-1.5 text-xs font-semibold text-[#60a5fa] transition-all hover:border-[#0062ff] hover:bg-[#0062ff]/20 hover:text-white"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M13 10V3L4 14h7v7l9-11h-7z"
-            />
-          </svg>
-          <span>Start service</span>
-        </button>
+            <svg
+              className="h-3 w-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 10V3L4 14h7v7l9-11h-7z"
+              />
+            </svg>
+            <span>Start service</span>
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -302,7 +302,7 @@ async def get_stage_assist_recommendation(call_id: str, payload: StageAssistPayl
         return empty
 
     from google.genai import types as genai_types
-    from backend.app.gemini_pool import text_model_pool
+    from backend.app.gemini_pool import light_text_model_pool
 
     prompt = f'''You are assisting a cold-call representative. Review the FINALIZED transcript for this one workflow stage.
 Stage {stage["stage_number"]}: {stage["name"]}
@@ -331,7 +331,7 @@ Transcript:
                 contents=prompt,
                 config=genai_types.GenerateContentConfig(temperature=0.0, response_mime_type="application/json"),
             )
-        response = text_model_pool.execute_with_fallback(_call)
+        response = light_text_model_pool.execute_with_fallback(_call)
         data = json.loads((getattr(response, "text", "") or "{}").strip())
     except Exception as exc:
         _logger.warning("Stage assist recommendation failed for %s: %s", call_id, exc)
