@@ -17,13 +17,7 @@ DEFAULT_TEXT_MODELS = [
     
     # Speed & Latency-Sensitive Lite Models
     "gemini-3.5-flash-lite",       # Lightweight agent execution
-    "gemini-3.1-flash-lite",       # High-volume workloads
-    "gemini-3-flash",              # Stable baseline Flash text model
-    
-    # Legacy & Fallback Generations
-    "gemini-2.5-flash",            
-    "gemini-2.5-flash-lite",       
-    
+    "gemini-3.1-flash-lite",       # High-volume workloads       
     # 🔗 Dynamic String Pointers
     "gemini-flash-lite-latest",    # Points to latest stable flash-lite version
 ]

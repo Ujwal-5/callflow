@@ -28,6 +28,7 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
   onStartNewCall,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
 
   const hasLiveCall = Boolean(activeCall && activeCall.status === "in_progress");
 
@@ -190,29 +191,32 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
       )}
 
       {/* ── Desktop Persistent Sidebar ── */}
-      <aside className="hidden lg:flex w-64 flex-col shrink-0 border-r border-[#233554] bg-[#0b132b] select-none min-h-screen">
+      <aside className={`hidden lg:flex ${collapsed ? "w-16" : "w-64"} flex-col shrink-0 border-r border-[#233554] bg-[#0b132b] select-none min-h-screen transition-[width] duration-200`}>
         {/* Brand identity */}
-        <div className="p-5 border-b border-[#233554]/70">
-          <div className="flex items-center space-x-3">
+        <div className={`relative p-3 border-b border-[#233554]/70 ${collapsed ? "flex justify-center" : "p-5"}`}>
+          <div className={`flex items-center ${collapsed ? "justify-center" : "space-x-3"}`}>
             <img
               src="/logo.svg"
               alt="CallFlow Brand Logo"
               className="h-9 w-9 rounded-lg shadow-md shadow-[#0062ff]/30"
             />
-            <div>
+            {!collapsed && <div>
               <div className="flex items-baseline space-x-1.5">
                 <span className="text-lg font-bold tracking-tight text-white">CallFlow</span>
               </div>
               <p className="text-[11px] text-slate-400">Sales Workflow Assistant</p>
-            </div>
+            </div>}
           </div>
+          <button type="button" onClick={() => setCollapsed((value) => !value)} aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"} title={collapsed ? "Expand sidebar" : "Collapse sidebar"} className={`mt-3 rounded p-1.5 text-slate-400 hover:bg-[#101c3d] hover:text-white ${collapsed ? "mt-2" : "absolute right-3 top-3"}`}>
+            <svg className={`h-4 w-4 transition-transform ${collapsed ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+          </button>
         </div>
 
         {/* Primary navigation areas */}
-        <nav className="flex-1 px-3 py-4 space-y-1">
-          <div className="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+        <nav className={`flex-1 ${collapsed ? "px-2" : "px-3"} py-4 space-y-1`}>
+          {!collapsed && <div className="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
             Workspace
-          </div>
+          </div>}
 
           {navItems.map((item) => {
             const isActive = activeView === item.id;
@@ -220,19 +224,20 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
               <button
                 key={item.id}
                 onClick={() => handleNavClick(item.id)}
-                className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-medium transition-all ${
+                title={collapsed ? item.label : undefined}
+                className={`flex w-full items-center ${collapsed ? "justify-center px-2" : "justify-between px-3"} rounded-lg py-2 text-xs font-medium transition-all ${
                   isActive
                     ? "bg-[#0062ff] text-white font-semibold shadow-sm shadow-[#0062ff]/20"
                     : "text-slate-300 hover:bg-[#101c3d] hover:text-white"
                 }`}
               >
-                <div className="flex items-center space-x-2.5">
+                <div className={`flex items-center ${collapsed ? "justify-center" : "space-x-2.5"}`}>
                   <span className={isActive ? "text-white" : "text-slate-400"}>
                     {item.icon}
                   </span>
-                  <span>{item.label}</span>
+                  {!collapsed && <span>{item.label}</span>}
                 </div>
-                {item.badge !== undefined && (
+                {!collapsed && item.badge !== undefined && (
                   <span
                     className={`rounded px-1.5 py-0.5 text-[10px] font-mono ${
                       isActive ? "bg-white/20 text-white" : item.badgeColor

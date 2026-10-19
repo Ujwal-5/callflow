@@ -417,17 +417,6 @@ export const TranscriptPanel: React.FC<TranscriptPanelProps> = ({
                         )}
                       </div>
 
-                      {/* Editable consolidated view */}
-                      <label className="text-[11px] font-bold uppercase tracking-wider text-slate-300">
-                        Edit Transcript
-                      </label>
-                      <textarea
-                        rows={5}
-                        value={editedText || finalTranscript}
-                        onChange={(e) => handleEditChange(e.target.value)}
-                        placeholder="Transcript will appear here…"
-                        className="w-full rounded border border-[#233554] bg-[#070d1e] px-3 py-2 text-xs text-white placeholder-slate-500 focus:border-slate-400 focus:outline-none resize-y"
-                      />
                     </>
                   )}
 
@@ -456,13 +445,9 @@ export const TranscriptPanel: React.FC<TranscriptPanelProps> = ({
                           {saveStatus === "idle" && "Auto-saved"}
                         </span>
                       </div>
-                      <textarea
-                        rows={6}
-                        value={displayText}
-                        onChange={(e) => handleEditChange(e.target.value)}
-                        placeholder="Transcript will appear here…"
-                        className="w-full rounded border border-[#233554] bg-[#070d1e] px-3 py-2 text-xs text-white placeholder-slate-500 focus:border-slate-400 focus:outline-none resize-y"
-                      />
+                      <div className="rounded border border-[#233554] bg-[#070d1e] p-3 max-h-48 overflow-y-auto whitespace-pre-wrap text-xs leading-relaxed text-slate-200">
+                        {displayText}
+                      </div>
                     </>
                   )}
 
