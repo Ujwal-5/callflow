@@ -119,29 +119,11 @@ async def run_live_transcription(
 
         client = genai.Client(api_key=api_key, http_options={"api_version": "v1alpha"})
 
-        # Configure the live session for audio input
+        # Enable the Live Transcription model's input transcription stream.
         config = genai_types.LiveConnectConfig(
             response_modalities=["TEXT"],
-            speech_config=genai_types.SpeechConfig(
-                voice_config=genai_types.VoiceConfig(
-                    prebuilt_voice_config=genai_types.PrebuiltVoiceConfig(
-                        voice_name="Aoede"
-                    )
-                )
-            ),
-            system_instruction=genai_types.Content(
-                parts=[
-                    genai_types.Part(
-                        text=(
-                            "You are a real-time transcription assistant. "
-                            "Transcribe all spoken audio verbatim. "
-                            "When you detect a speaker change, prefix with 'CALLER: ' or 'PROSPECT: ' if identifiable. "
-                            "Otherwise use 'SPEAKER: '. "
-                            "Preserve filler words, hesitations, and pauses. "
-                            "Do not add commentary or summaries — transcription only."
-                        )
-                    )
-                ]
+            input_audio_transcription=genai_types.AudioTranscriptionConfig(
+                language_codes=[],  # Let Gemini detect the spoken language.
             ),
         )
 
@@ -158,17 +140,14 @@ async def run_live_transcription(
                 try:
                     async for chunk in audio_generator:
                         if chunk:
-                            # Realtime audio must go through send_realtime_input;
-                            # RealtimeInputConfig is session *config* only (it has
-                            # no media_chunks field) and is rejected by the SDK.
                             await session.send_realtime_input(
-                                media=genai_types.Blob(
+                                audio=genai_types.Blob(
                                     data=chunk,
                                     mime_type="audio/pcm;rate=16000",
                                 )
                             )
                 except Exception as exc:
-                    logger.warning("Live transcription sender error: %s", exc)
+                    logger.exception("Live transcription sender error: %s", exc)
                 finally:
                     # Signal end of audio so Gemini flushes the final transcript.
                     try:
@@ -178,22 +157,21 @@ async def run_live_transcription(
 
             async def _receiver() -> AsyncGenerator[Dict[str, Any], None]:
                 """Receive transcription events from the Gemini session."""
-                accumulated = []
                 try:
                     async for response in session.receive():
-                        if response.text:
-                            text = response.text.strip()
-                            if text:
-                                # Detect if this is an interim or final segment
-                                # Gemini Live sends turn_complete on final responses
-                                is_final = getattr(response, "turn_complete", False)
-                                if is_final:
-                                    yield {"type": "final", "text": text}
-                                else:
-                                    yield {"type": "interim", "text": text}
-                        elif getattr(response, "turn_complete", False):
-                            # Turn complete with no text means end of speech segment
-                            pass
+                        server_content = getattr(response, "server_content", None)
+                        if not server_content:
+                            continue
+
+                        interim = getattr(
+                            server_content, "interim_input_transcription", None
+                        )
+                        if interim and getattr(interim, "text", None):
+                            yield {"type": "interim", "text": interim.text.strip()}
+
+                        final = getattr(server_content, "input_transcription", None)
+                        if final and getattr(final, "text", None):
+                            yield {"type": "final", "text": final.text.strip()}
                 except Exception as exc:
                     logger.warning("Live transcription receiver error: %s", exc)
                     yield {"type": "error", "message": str(exc)}

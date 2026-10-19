@@ -264,10 +264,8 @@ class TestAnalyzeStageNotesEndpoint(unittest.TestCase):
 class TestLiveTranscriptionSender(unittest.TestCase):
     """Regression tests for the SDK calls used to stream audio to Gemini Live.
 
-    ``RealtimeInputConfig`` is a *session config* object and has no
-    ``media_chunks`` field; passing it to ``session.send`` made the SDK raise
-    ``extra_forbidden`` and no audio ever reached Gemini. Audio must instead be
-    sent through ``session.send_realtime_input(media=Blob(...))``.
+    Audio is sent through ``session.send_realtime_input(audio=Blob(...))`` and
+    transcription is returned in server_content transcription fields.
     """
 
     def test_sender_uses_send_realtime_input_with_pcm_blob(self):
@@ -334,9 +332,9 @@ class TestLiveTranscriptionSender(unittest.TestCase):
 
         # Only the realtime-input API is used for audio — no legacy send().
         self.assertEqual(session.legacy_sends, [])
-        audio_calls = [c for c in session.realtime_inputs if "media" in c]
+        audio_calls = [c for c in session.realtime_inputs if "audio" in c]
         self.assertEqual(len(audio_calls), 1)
-        blob = audio_calls[0]["media"]
+        blob = audio_calls[0]["audio"]
         self.assertEqual(blob.data, chunk)
         self.assertEqual(blob.mime_type, "audio/pcm;rate=16000")
         self.assertTrue(session.realtime_inputs[-1].get("audio_stream_end"))
