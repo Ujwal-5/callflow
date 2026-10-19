@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, Query, UploadFile, File, status
+from fastapi import APIRouter, HTTPException, Query, UploadFile, File, status, WebSocket, WebSocketDisconnect
+from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
 from backend.app.models import (
     CallCreate,
@@ -35,12 +36,18 @@ from backend.app.models import (
 from backend.app.stages_data import STAGES
 from backend.app.db import db
 from backend.app.llm import generate_call_summary
-from backend.app.transcription import validate_audio, transcribe_audio
+from backend.app.transcription import validate_audio, transcribe_audio, run_live_transcription
 from backend.app.radar import analyze_transcript_with_radar
 from backend.app.historical_radar import find_relevant_historical_matches
 from backend.app.gap_detector import analyze_transcript_for_gaps
 from backend.app.stage_suggester import suggest_stage_from_transcript
 
+import asyncio
+import base64
+import json
+import logging
+
+_logger = logging.getLogger("callflow.routes")
 
 router = APIRouter()
 
@@ -1130,4 +1137,309 @@ def update_followup_endpoint(followup_id: str, payload: FollowUpUpdate):
     }
 
 
+# ──────────────────────────────────────────────────────────────────────────────
+# Live Transcription WebSocket
+# ──────────────────────────────────────────────────────────────────────────────
+
+
+@router.websocket("/calls/{call_id}/transcribe-live")
+async def transcribe_live(websocket: WebSocket, call_id: str):
+    """
+    WebSocket endpoint for real-time audio transcription via Gemini Live API.
+
+    Protocol (browser → server):
+      Each message is a JSON object:
+        {"audio": "<base64-encoded signed 16-bit PCM @ 16 kHz mono>"}
+      Or a control message:
+        {"control": "stop"}
+
+    Protocol (server → browser):
+      Each response is a JSON object with one of these types:
+        {"type": "connected", "call_id": "..."}
+        {"type": "interim", "text": "..."}
+        {"type": "final", "text": "..."}
+        {"type": "error", "message": "..."}
+        {"type": "done"}
+
+    The endpoint persists the accumulated finalized transcript to the database
+    when the session ends (either via control:stop or WebSocket disconnect).
+    """
+    await websocket.accept()
+
+    # Validate call exists
+    call = db.get_call(call_id)
+    if not call:
+        await websocket.send_text(json.dumps({
+            "type": "error",
+            "message": f"Call '{call_id}' not found.",
+        }))
+        await websocket.close(code=1008)
+        return
+
+    # Queue to feed audio chunks from the WebSocket into the transcription generator
+    audio_queue: asyncio.Queue[bytes] = asyncio.Queue()
+    stop_event = asyncio.Event()
+
+    accumulated_transcript: list[str] = []
+
+    async def _audio_generator():
+        """Yield raw PCM bytes from the WebSocket messages."""
+        while not stop_event.is_set():
+            try:
+                chunk = await asyncio.wait_for(audio_queue.get(), timeout=0.5)
+                if chunk is None:
+                    break  # sentinel
+                yield chunk
+            except asyncio.TimeoutError:
+                continue
+            except Exception:
+                break
+
+    async def _receive_from_browser():
+        """Receive messages from the browser and push audio into the queue."""
+        try:
+            while not stop_event.is_set():
+                raw = await websocket.receive_text()
+                try:
+                    msg = json.loads(raw)
+                except json.JSONDecodeError:
+                    continue
+
+                if msg.get("control") == "stop":
+                    stop_event.set()
+                    await audio_queue.put(None)  # sentinel
+                    break
+
+                audio_b64 = msg.get("audio")
+                if audio_b64:
+                    try:
+                        pcm_bytes = base64.b64decode(audio_b64)
+                        await audio_queue.put(pcm_bytes)
+                    except Exception as exc:
+                        _logger.warning("Failed to decode audio chunk: %s", exc)
+
+        except WebSocketDisconnect:
+            stop_event.set()
+            await audio_queue.put(None)
+        except Exception as exc:
+            _logger.warning("WebSocket receive error: %s", exc)
+            stop_event.set()
+            await audio_queue.put(None)
+
+    # Send "connected" acknowledgement
+    await websocket.send_text(json.dumps({
+        "type": "connected",
+        "call_id": call_id,
+    }))
+
+    # Run receiver and transcription pipeline concurrently
+    receiver_task = asyncio.create_task(_receive_from_browser())
+
+    try:
+        async for event in run_live_transcription(_audio_generator()):
+            event_type = event.get("type")
+
+            # Accumulate finalized text
+            if event_type == "final" and event.get("text"):
+                accumulated_transcript.append(event["text"])
+
+            try:
+                await websocket.send_text(json.dumps(event))
+            except Exception:
+                break  # WebSocket closed
+
+            if event_type in ("done", "error"):
+                break
+
+    except Exception as exc:
+        _logger.error("Live transcription pipeline error for call %s: %s", call_id, exc)
+        try:
+            await websocket.send_text(json.dumps({
+                "type": "error",
+                "message": str(exc),
+            }))
+        except Exception:
+            pass
+
+    finally:
+        stop_event.set()
+        receiver_task.cancel()
+        try:
+            await receiver_task
+        except (asyncio.CancelledError, Exception):
+            pass
+
+        # Persist accumulated transcript to the database
+        if accumulated_transcript:
+            full_text = "\n".join(accumulated_transcript)
+            try:
+                existing = db.get_transcript(call_id)
+                if existing:
+                    # Append to existing raw transcript
+                    prev = existing.get("raw_transcript") or ""
+                    merged = (prev + "\n" + full_text).strip() if prev else full_text
+                    db.complete_transcript(
+                        call_id,
+                        raw_transcript=merged,
+                        transcript_metadata={"source": "live_websocket"},
+                    )
+                else:
+                    db.upsert_transcript_pending(call_id)
+                    db.complete_transcript(
+                        call_id,
+                        raw_transcript=full_text,
+                        transcript_metadata={"source": "live_websocket"},
+                    )
+            except Exception as exc:
+                _logger.error("Failed to persist live transcript for call %s: %s", call_id, exc)
+
+        try:
+            await websocket.close()
+        except Exception:
+            pass
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Stage Notes Analysis Endpoint
+# ──────────────────────────────────────────────────────────────────────────────
+
+
+class StageNotesAnalysisPayload(BaseModel):
+    transcript_segment: str = Field(..., description="Transcript text to classify into stages")
+    segment_id: str = Field(..., description="Unique identifier to prevent duplicate analysis")
+
+
+class StageNoteItem(BaseModel):
+    stage_number: int
+    stage_name: str
+    note: str
+    evidence_quote: str
+    confidence: float
+    needs_review: bool
+
+
+class StageNotesAnalysisResponse(BaseModel):
+    call_id: str
+    segment_id: str
+    stage_notes: list[StageNoteItem]
+    unclassified_segments: list[str]
+
+
+@router.post(
+    "/calls/{call_id}/analyze-stage-notes",
+    response_model=StageNotesAnalysisResponse,
+    tags=["Stage Notes"],
+)
+async def analyze_stage_notes(call_id: str, payload: StageNotesAnalysisPayload):
+    """
+    Classify transcript segments into the 8 cold-call stages and generate
+    concise, evidence-backed notes for each stage.
+
+    Rules:
+    - Never invent statements, needs, objections, dates, or commitments.
+    - Distinguish explicit agreements from vague expressions of interest.
+    - Preserve exact prospect wording in evidence_quote.
+    - If a segment cannot be classified confidently, leave it unclassified.
+    - Does not silently overwrite manually-edited stage notes.
+    """
+    call = db.get_call(call_id)
+    if not call:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Call with ID '{call_id}' not found.",
+        )
+
+    transcript_segment = (payload.transcript_segment or "").strip()
+    if not transcript_segment:
+        return {
+            "call_id": call_id,
+            "segment_id": payload.segment_id,
+            "stage_notes": [],
+            "unclassified_segments": [],
+        }
+
+    from backend.app.gemini_pool import text_model_pool, make_gemini_client
+    from google.genai import types as genai_types
+
+    prompt = f"""You are a cold-call analysis assistant. Analyze the following transcript segment and classify useful information into the appropriate cold-call stages.
+
+STAGES:
+1. Opening: Who answered, role confirmation, introduction, whether intended person was reached.
+2. Purpose: Why the caller is contacting the prospect, how the purpose is explained.
+3. Permission: Whether the prospect is available or willing to continue the conversation.
+4. Their Business: Company context, responsibilities, current processes, business priorities.
+5. Their Need (in their words): Prospect's expressed needs, problems, and priorities. Preserve exact wording.
+6. Objection: Concerns, refusals, hesitations, existing alternatives, prospect's reasons.
+7. Next Step: Callbacks, requested info, referrals, agreed meetings, responsible parties, timing.
+8. Close: Final outcome, closing statements, agreed disposition of the call.
+
+RULES:
+- Classify by conversational context, not isolated keywords.
+- A sentence may concern an earlier stage even if the caller has moved on.
+- Distinguish caller's words from prospect's words when identifiable.
+- NEVER invent prospect statements, needs, objections, dates, or commitments.
+- Distinguish explicit agreements from suggestions and vague interest.
+- If a segment cannot be confidently classified, mark it as unclassified.
+- Preserve exact prospect wording in evidence_quote.
+- Set needs_review=true if you are uncertain or the note needs caller verification.
+- Only include stages where you found genuinely classifiable content.
+
+TRANSCRIPT SEGMENT:
+{transcript_segment}
+
+Respond with a JSON object in this exact format:
+{{
+  "stage_notes": [
+    {{
+      "stage_number": <1-8>,
+      "stage_name": "<name>",
+      "note": "<concise note about what happened at this stage>",
+      "evidence_quote": "<exact words from transcript supporting this note>",
+      "confidence": <0.0-1.0>,
+      "needs_review": <true|false>
+    }}
+  ],
+  "unclassified_segments": ["<sentence that couldn't be classified>"]
+}}
+
+Only include stages where meaningful content was found. Keep notes concise and factual."""
+
+    try:
+        def _call_analyze(client, model_name: str):
+            return client.models.generate_content(
+                model=model_name,
+                contents=[prompt],
+                config=genai_types.GenerateContentConfig(
+                    temperature=0.1,
+                    response_mime_type="application/json",
+                ),
+            )
+
+        response = text_model_pool.execute_with_fallback(_call_analyze)
+        raw_text = getattr(response, "text", "") or ""
+
+        # Parse the JSON response
+        try:
+            # Strip markdown code blocks if present
+            clean = raw_text.strip()
+            if clean.startswith("```"):
+                lines = clean.split("\n")
+                clean = "\n".join(lines[1:-1] if lines[-1] == "```" else lines[1:])
+            analysis = json.loads(clean)
+        except json.JSONDecodeError:
+            analysis = {"stage_notes": [], "unclassified_segments": []}
+
+        return {
+            "call_id": call_id,
+            "segment_id": payload.segment_id,
+            "stage_notes": analysis.get("stage_notes", []),
+            "unclassified_segments": analysis.get("unclassified_segments", []),
+        }
+
+    except Exception as exc:
+        _logger.error("Stage notes analysis failed for call %s: %s", call_id, exc)
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"Stage notes analysis failed: {exc}",
+        )
 

@@ -13,6 +13,9 @@ import { PastCallsList } from "@/components/PastCallsList";
 import { CallDetailModal } from "@/components/CallDetailModal";
 import { TranscriptPanel } from "@/components/TranscriptPanel";
 import { ServiceStatusBanner, type ServiceStatus } from "@/components/ServiceStatusBanner";
+import { StageAINotesPanel } from "@/components/StageAINotesPanel";
+import { useLiveTranscription } from "@/hooks/useLiveTranscription";
+import { useStageNotesAnalysis } from "@/hooks/useStageNotesAnalysis";
 
 import { api } from "@/lib/api";
 import {
@@ -40,6 +43,10 @@ export default function Home() {
   const [followups, setFollowups] = useState<FollowUpItem[]>([]);
   const [selectedProspectId, setSelectedProspectId] = useState<string | null>(null);
   const [selectedHistoryCall, setSelectedHistoryCall] = useState<Call | null>(null);
+
+  // ── Live transcription & AI stage-note analysis (page-level, survives stage nav) ──
+  const liveTranscription = useLiveTranscription();
+  const stageNotesAnalysis = useStageNotesAnalysis();
 
   // Pre-call briefing and prefilled prospect for Active Call
   const [initialCallProspect, setInitialCallProspect] = useState<Prospect | null>(null);
@@ -70,6 +77,16 @@ export default function Home() {
   >(null);
 
   const copyToExactWordsRef = useRef<((text: string) => void) | null>(null);
+
+  // Feed each new final segment to stage-note analysis (deduplication is inside the hook)
+  useEffect(() => {
+    if (!activeCall || liveTranscription.finalSegments.length === 0) return;
+    const latest = liveTranscription.finalSegments[liveTranscription.finalSegments.length - 1];
+    if (latest) {
+      stageNotesAnalysis.feedSegment(activeCall.id, latest.id, latest.text);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [liveTranscription.finalSegments]);
 
   // Initial data loading
   useEffect(() => {
@@ -267,6 +284,10 @@ export default function Home() {
       setCurrentStageNumber(1);
       localStorage.setItem(ACTIVE_CALL_STORAGE_KEY, fullCall.id);
       setActiveView("active");
+
+      // Reset live transcription and AI note state for the new call
+      liveTranscription.reset();
+      stageNotesAnalysis.resetNotes();
 
       // Refresh calls in background
       api.listCalls().then(setCallsHistory).catch(() => {});
@@ -473,6 +494,20 @@ export default function Home() {
           notes,
         });
       }
+
+      // ── Stop live recording and run any remaining analysis ──
+      const capturedCallId = activeCall.id;
+      const capturedTranscript = liveTranscription.finalTranscript;
+      if (
+        liveTranscription.state === "recording" ||
+        liveTranscription.state === "connecting"
+      ) {
+        liveTranscription.stopRecording();
+        // Brief grace period for the final WebSocket response
+        await new Promise((r) => setTimeout(r, 1500));
+      }
+      // Run any outstanding stage-note analysis on remaining transcript
+      await stageNotesAnalysis.runFinalAnalysis(capturedCallId, capturedTranscript).catch(() => {});
 
       const closedCall = await api.closeCall(activeCall.id, payload);
       localStorage.removeItem(ACTIVE_CALL_STORAGE_KEY);
@@ -875,6 +910,17 @@ export default function Home() {
                     highestStageReached={activeCall.highest_stage}
                     stageResults={activeCall.stage_results}
                     onSelectStage={handleSelectStage}
+                    stagesWithNotes={new Set(
+                      [...stageNotesAnalysis.stageNotesState.notes.entries()]
+                        .filter(([, notes]) => notes.length > 0)
+                        .map(([k]) => k)
+                    )}
+                    stagesNeedingReview={stageNotesAnalysis.stageNotesState.needsReview}
+                    stagesAnalyzing={
+                      stageNotesAnalysis.stageNotesState.analyzing.has(-1)
+                        ? new Set(stages.map((s) => s.stage_number))
+                        : new Set<number>()
+                    }
                   />
 
                   {/* Current Stage Panel */}
@@ -912,10 +958,40 @@ export default function Home() {
                     )}
                   </div>
 
-                  {/* Audio Transcription Panel */}
+                  {/* AI-Captured Stage Notes */}
+                  <div className="mx-auto max-w-4xl">
+                    <StageAINotesPanel
+                      stageNumber={currentStageNumber}
+                      stageName={currentStageDef?.name || ""}
+                      notes={stageNotesAnalysis.getStageNotes(currentStageNumber)}
+                      isAnalyzing={stageNotesAnalysis.stageIsAnalyzing(currentStageNumber)}
+                      onMarkReviewed={(idx) =>
+                        stageNotesAnalysis.markNoteReviewed(currentStageNumber, idx)
+                      }
+                      onDismiss={(idx) =>
+                        stageNotesAnalysis.dismissNote(currentStageNumber, idx)
+                      }
+                    />
+                  </div>
+
+                  {/* Live Audio Transcription Panel */}
                   <div className="mx-auto max-w-4xl pt-2">
                     <TranscriptPanel
                       callId={activeCall.id}
+                      recordingState={liveTranscription.state}
+                      elapsedSeconds={liveTranscription.elapsedSeconds}
+                      finalSegments={liveTranscription.finalSegments}
+                      interimText={liveTranscription.interimText}
+                      finalTranscript={liveTranscription.finalTranscript}
+                      transcriptionError={liveTranscription.error}
+                      consentAcknowledged={liveTranscription.consentAcknowledged}
+                      onStartRecording={() =>
+                        liveTranscription.startRecording(activeCall.id)
+                      }
+                      onStopRecording={() => liveTranscription.stopRecording()}
+                      onAcknowledgeConsent={() =>
+                        liveTranscription.acknowledgeConsent()
+                      }
                       onCopyToExactWords={(text: string) => {
                         if (copyToExactWordsRef.current) {
                           copyToExactWordsRef.current(text);

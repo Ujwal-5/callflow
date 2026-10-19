@@ -9,6 +9,12 @@ interface StageProgressProps {
   highestStageReached: number;
   stageResults?: StageResult[];
   onSelectStage: (stageNumber: number) => void;
+  /** Stages that have AI-generated notes */
+  stagesWithNotes?: Set<number>;
+  /** Stages whose AI notes need caller review */
+  stagesNeedingReview?: Set<number>;
+  /** Stages currently being analyzed by AI */
+  stagesAnalyzing?: Set<number>;
 }
 
 export const StageProgress: React.FC<StageProgressProps> = ({
@@ -17,6 +23,9 @@ export const StageProgress: React.FC<StageProgressProps> = ({
   highestStageReached: _highestStageReached,
   stageResults = [],
   onSelectStage,
+  stagesWithNotes = new Set(),
+  stagesNeedingReview = new Set(),
+  stagesAnalyzing = new Set(),
 }) => {
   // Map of stage status: completed | skipped | not_applicable
   const stageStatusMap = new Map<number, "completed" | "skipped" | "not_applicable">();
@@ -53,6 +62,10 @@ export const StageProgress: React.FC<StageProgressProps> = ({
             const isCompleted = status === "completed";
             const isSkipped = status === "skipped";
             const isNotApplicable = status === "not_applicable";
+            const hasNotes = stagesWithNotes.has(stage.stage_number);
+            const needsReview = stagesNeedingReview.has(stage.stage_number);
+            const isAnalyzing = stagesAnalyzing.has(stage.stage_number) ||
+              (stagesAnalyzing.has(-1) && hasNotes); // global analyzing indicator
 
             return (
               <button
@@ -90,6 +103,7 @@ export const StageProgress: React.FC<StageProgressProps> = ({
                     0{stage.stage_number}
                   </span>
 
+                  {/* Status indicators: completed/skipped/N/A or live pulse */}
                   {isCompleted ? (
                     <span className="text-[10px] font-bold text-emerald-400" title="Completed stage">
                       ✓
@@ -141,6 +155,37 @@ export const StageProgress: React.FC<StageProgressProps> = ({
                     <span className="text-slate-500">Unvisited</span>
                   )}
                 </span>
+
+                {/* AI note indicators — bottom row */}
+                {(hasNotes || isAnalyzing) && (
+                  <div className="mt-1 flex items-center gap-1">
+                    {isAnalyzing && (
+                      <span
+                        title="AI is analyzing this stage"
+                        className="inline-flex h-1.5 w-1.5 rounded-full bg-indigo-400 animate-pulse"
+                      />
+                    )}
+                    {hasNotes && !isAnalyzing && (
+                      <span
+                        title={needsReview ? "AI notes need review" : "AI notes captured"}
+                        className={`inline-flex h-1.5 w-1.5 rounded-full ${
+                          needsReview ? "bg-amber-400" : "bg-indigo-400"
+                        }`}
+                      />
+                    )}
+                    {hasNotes && (
+                      <span
+                        className={`text-[8px] font-semibold leading-none ${
+                          needsReview
+                            ? "text-amber-400"
+                            : "text-indigo-400"
+                        }`}
+                      >
+                        {needsReview ? "review" : "notes"}
+                      </span>
+                    )}
+                  </div>
+                )}
               </button>
             );
           })}

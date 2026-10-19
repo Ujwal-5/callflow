@@ -347,6 +347,47 @@ class ApiClient {
       body: JSON.stringify(updates),
     });
   }
+
+  /**
+   * Analyze a transcript segment and classify it into the 8 cold-call stages.
+   * Returns AI-generated stage notes with evidence quotes.
+   */
+  async analyzeStageNotes(
+    callId: string,
+    transcriptSegment: string,
+    segmentId: string
+  ): Promise<{
+    call_id: string;
+    segment_id: string;
+    stage_notes: Array<{
+      stage_number: number;
+      stage_name: string;
+      note: string;
+      evidence_quote: string;
+      confidence: number;
+      needs_review: boolean;
+    }>;
+    unclassified_segments: string[];
+  }> {
+    return this.request(`/calls/${callId}/analyze-stage-notes`, {
+      method: "POST",
+      body: JSON.stringify({
+        transcript_segment: transcriptSegment,
+        segment_id: segmentId,
+      }),
+    });
+  }
+
+  /**
+   * Build a WebSocket URL for the live transcription endpoint.
+   * Converts the HTTP base URL to ws:// or wss://.
+   */
+  getLiveTranscriptionWsUrl(callId: string): string {
+    const wsBase = this.baseUrl
+      .replace(/^https:\/\//, "wss://")
+      .replace(/^http:\/\//, "ws://");
+    return `${wsBase}/calls/${callId}/transcribe-live`;
+  }
 }
 
 export const api = new ApiClient(API_BASE_URL);

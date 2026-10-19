@@ -1,41 +1,46 @@
 "use client";
 
 /**
- * TranscriptPanel
+ * TranscriptPanel (Live Streaming Version)
  *
- * Integrates into the active-call screen alongside the existing stage panel.
- * Provides:
- *   - Ready state: explanation + "Start Recording" button
- *   - Recording state: live timer + Pause / Stop controls
- *   - Transcribing state: upload/processing spinner
- *   - Transcript available: editable text area + copy-to-exact-words button
- *   - Error state: message + Retry button
+ * This component receives the recording state from the parent via props
+ * (not from a locally-owned hook) so that recording survives stage navigation.
  *
- * Consent notice is shown once before the first recording.
- * Manual notes workflow is unaffected — this panel is additive.
+ * The parent (page.tsx) owns the useLiveTranscription hook and passes
+ * the relevant state down. The panel only provides UI.
  *
- * IMPORTANT: This panel only captures microphone audio available to the browser.
- * It cannot and does not capture telephone audio. Recording should only be done
- * with the appropriate consent of all parties involved.
+ * Features:
+ * - Shows connected / recording / stopping / error states
+ * - Displays live interim text as it streams
+ * - Displays finalized transcript segments
+ * - Allows editing and copying finalized transcript
+ * - Consent notice shown once per session
  */
 
-import React, {
-  useState,
-  useEffect,
-  useRef,
-  useCallback,
-} from "react";
-import { useAudioRecorder } from "@/hooks/useAudioRecorder";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { api } from "@/lib/api";
 import { Transcript } from "@/types";
+import type { LiveTranscriptionState, LiveTranscriptionSegment } from "@/hooks/useLiveTranscription";
 
 interface TranscriptPanelProps {
   callId: string;
+
+  // ── Live transcription state (owned by parent) ──
+  recordingState: LiveTranscriptionState;
+  elapsedSeconds: number;
+  finalSegments: LiveTranscriptionSegment[];
+  interimText: string;
+  finalTranscript: string;
+  transcriptionError: string | null;
+  consentAcknowledged: boolean;
+
+  // ── Callbacks ──
+  onStartRecording: () => void;
+  onStopRecording: () => void;
+  onAcknowledgeConsent: () => void;
   /** Called when the user clicks "Copy to Prospect's Exact Words" */
   onCopyToExactWords?: (text: string) => void;
-  /** Pre-loaded transcript if the call already has one (e.g. on resume). */
-  initialTranscript?: Transcript | null;
-  /** Called when transcript is uploaded, transcribed, or edited */
+  /** Called when transcript text changes (for stage suggestion updates) */
   onTranscriptChange?: (text: string) => void;
 }
 
@@ -55,117 +60,76 @@ type SaveStatus = "idle" | "saving" | "saved" | "error";
 
 export const TranscriptPanel: React.FC<TranscriptPanelProps> = ({
   callId,
+  recordingState,
+  elapsedSeconds,
+  finalSegments,
+  interimText,
+  finalTranscript,
+  transcriptionError,
+  consentAcknowledged,
+  onStartRecording,
+  onStopRecording,
+  onAcknowledgeConsent,
   onCopyToExactWords,
-  initialTranscript = null,
   onTranscriptChange,
 }) => {
-  const recorder = useAudioRecorder();
-
   // Panel open/collapsed
   const [isOpen, setIsOpen] = useState(false);
 
-  // Transcript from backend
-  const [transcript, setTranscript] = useState<Transcript | null>(initialTranscript);
+  // Existing persisted transcript (from before live recording)
+  const [savedTranscript, setSavedTranscript] = useState<Transcript | null>(null);
 
-  // Transcribing = audio uploaded, waiting for response
-  const [isTranscribing, setIsTranscribing] = useState(false);
-  const [transcribeError, setTranscribeError] = useState<string | null>(null);
-
-  // Editable text (driven by local state, not server)
+  // Editable text (from the saved transcript, not the live stream)
   const [editedText, setEditedText] = useState("");
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
-
-  // Debounce ref for autosave
   const saveDebounceRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Consent acknowledgement (stored in sessionStorage so it persists across stages)
-  const [consentAcknowledged, setConsentAcknowledged] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return sessionStorage.getItem("callflow_mic_consent") === "1";
-  });
+  // Track whether we've already saved the live transcript to the DB
+  const savedLiveRef = useRef(false);
 
-  // Track whether we've already uploaded this recording (prevent duplicates)
-  const uploadedRef = useRef(false);
-
-  // ── Fetch existing transcript on mount or when callId changes ─────────────
+  // ── Fetch existing transcript on mount or callId changes ─────────────────
   useEffect(() => {
     let ignore = false;
-    async function fetchExistingTranscript() {
+    async function fetchExisting() {
       try {
         const existing = await api.getTranscript(callId);
         if (!ignore && existing) {
-          setTranscript(existing);
+          setSavedTranscript(existing);
           if (existing.status === "completed") {
-            setIsOpen(true); // Automatically expand if a transcript already exists
+            setIsOpen(true);
+            const text =
+              existing.edited_transcript ?? existing.raw_transcript ?? "";
+            setEditedText(text);
           }
         }
       } catch {
         // Non-blocking
       }
     }
-    fetchExistingTranscript();
+    fetchExisting();
     return () => {
       ignore = true;
     };
   }, [callId]);
 
-  // ── Sync editedText when transcript arrives / changes ──────────────────────
-
+  // ── Sync editedText when live finalTranscript changes ────────────────────
   useEffect(() => {
-    if (transcript) {
-      // Show edited version if available, otherwise raw
-      const displayed =
-        transcript.edited_transcript ?? transcript.raw_transcript ?? "";
-      setEditedText(displayed);
+    if (finalTranscript && !savedTranscript) {
+      setEditedText(finalTranscript);
+      if (onTranscriptChange) {
+        onTranscriptChange(finalTranscript);
+      }
     }
-  }, [transcript?.id, transcript?.edited_transcript, transcript?.raw_transcript]);
+  }, [finalTranscript, savedTranscript, onTranscriptChange]);
 
-  // ── Auto-upload after recorder stops ────────────────────────────────────────
-
+  // ── Auto-open when recording starts ──────────────────────────────────────
   useEffect(() => {
-    if (
-      recorder.state === "stopped" &&
-      recorder.audioBlob &&
-      !uploadedRef.current
-    ) {
-      uploadedRef.current = true;
-      handleUpload(recorder.audioBlob, recorder.mimeType);
+    if (recordingState === "recording" || recordingState === "connecting") {
+      setIsOpen(true);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [recorder.state, recorder.audioBlob]);
-
-  const handleUpload = useCallback(
-    async (blob: Blob, mime: string) => {
-      if (blob.size === 0) {
-        setTranscribeError("The recording appears to be empty. Please try again.");
-        return;
-      }
-
-      setIsTranscribing(true);
-      setTranscribeError(null);
-
-      try {
-        const result = await api.uploadAndTranscribe(callId, blob, mime);
-        setTranscript(result);
-        if (result.status === "failed") {
-          setTranscribeError(result.error_message || "Transcription failed.");
-        } else if (onTranscriptChange) {
-          const text = result.edited_transcript ?? result.raw_transcript ?? "";
-          if (text) onTranscriptChange(text);
-        }
-      } catch (err) {
-        const msg =
-          err instanceof Error ? err.message : "Failed to transcribe audio.";
-        setTranscribeError(msg);
-      } finally {
-        setIsTranscribing(false);
-      }
-    },
-    [callId, onTranscriptChange]
-  );
+  }, [recordingState]);
 
   // ── Autosave edited transcript (debounced) ────────────────────────────────
-
   const handleEditChange = useCallback(
     (value: string) => {
       setEditedText(value);
@@ -174,10 +138,11 @@ export const TranscriptPanel: React.FC<TranscriptPanelProps> = ({
       saveDebounceRef.current = setTimeout(async () => {
         try {
           const saved = await api.saveEditedTranscript(callId, value);
-          setTranscript(saved);
+          setSavedTranscript(saved);
           setSaveStatus("saved");
           if (onTranscriptChange) {
-            const text = saved.edited_transcript ?? saved.raw_transcript ?? value;
+            const text =
+              saved.edited_transcript ?? saved.raw_transcript ?? value;
             if (text) onTranscriptChange(text);
           }
         } catch {
@@ -188,31 +153,24 @@ export const TranscriptPanel: React.FC<TranscriptPanelProps> = ({
     [callId, onTranscriptChange]
   );
 
-  // ── Retry ─────────────────────────────────────────────────────────────────
-
-  const handleRetry = useCallback(() => {
-    uploadedRef.current = false;
-    setTranscribeError(null);
-    setTranscript(null);
-    recorder.reset();
-  }, [recorder]);
-
-  // ── Consent acknowledgement ───────────────────────────────────────────────
-
-  const acknowledgeConsent = useCallback(() => {
-    sessionStorage.setItem("callflow_mic_consent", "1");
-    setConsentAcknowledged(true);
-  }, []);
-
   // ── Derived state ─────────────────────────────────────────────────────────
 
-  const hasTranscript =
-    transcript?.status === "completed" &&
-    transcript.raw_transcript !== null;
+  const isRecording = recordingState === "recording";
+  const isConnecting = recordingState === "connecting" || recordingState === "requesting";
+  const isStopping = recordingState === "stopping";
+  const isIdle = recordingState === "idle";
+  const isError = recordingState === "error";
 
-  const transcriptText = hasTranscript
-    ? (transcript!.edited_transcript ?? transcript!.raw_transcript ?? "")
-    : "";
+  const hasLiveTranscript = finalTranscript.length > 0;
+  const hasSavedTranscript =
+    savedTranscript?.status === "completed" &&
+    savedTranscript.raw_transcript !== null;
+
+  const displayText =
+    editedText ||
+    (hasSavedTranscript
+      ? savedTranscript!.edited_transcript ?? savedTranscript!.raw_transcript ?? ""
+      : "");
 
   // ── Render ────────────────────────────────────────────────────────────────
 
@@ -240,28 +198,39 @@ export const TranscriptPanel: React.FC<TranscriptPanelProps> = ({
             />
           </svg>
           <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
-            Audio Transcription
+            Live Transcription
           </span>
-          {/* Status badge */}
-          {recorder.state === "recording" && (
+
+          {/* Status badges */}
+          {isConnecting && (
+            <span className="rounded bg-blue-950/50 border border-blue-500/30 px-1.5 py-0.5 text-[10px] font-semibold text-blue-400 animate-pulse">
+              Connecting…
+            </span>
+          )}
+          {isRecording && (
             <span className="flex items-center space-x-1 rounded bg-rose-950/60 border border-rose-500/40 px-1.5 py-0.5 text-[10px] font-semibold text-rose-400">
               <span className="h-1.5 w-1.5 rounded-full bg-rose-400 animate-pulse" />
-              <span>REC {formatDuration(recorder.elapsedSeconds)}</span>
+              <span>● LIVE {formatDuration(elapsedSeconds)}</span>
             </span>
           )}
-          {recorder.state === "paused" && (
-            <span className="rounded bg-amber-950/50 border border-amber-500/30 px-1.5 py-0.5 text-[10px] font-semibold text-amber-400">
-              Paused {formatDuration(recorder.elapsedSeconds)}
+          {isStopping && (
+            <span className="rounded bg-amber-950/50 border border-amber-500/30 px-1.5 py-0.5 text-[10px] font-semibold text-amber-400 animate-pulse">
+              Finishing…
             </span>
           )}
-          {isTranscribing && (
-            <span className="rounded bg-blue-950/50 border border-blue-500/30 px-1.5 py-0.5 text-[10px] font-semibold text-blue-400 animate-pulse">
-              Transcribing…
+          {isError && (
+            <span className="rounded bg-rose-950/50 border border-rose-500/30 px-1.5 py-0.5 text-[10px] font-semibold text-rose-400">
+              ⚠ Error
             </span>
           )}
-          {hasTranscript && (
+          {isIdle && hasLiveTranscript && (
             <span className="rounded bg-emerald-950/50 border border-emerald-500/30 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-400">
               ✓ Transcript ready
+            </span>
+          )}
+          {isIdle && hasSavedTranscript && !hasLiveTranscript && (
+            <span className="rounded bg-emerald-950/50 border border-emerald-500/30 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-400">
+              ✓ Saved transcript
             </span>
           )}
         </div>
@@ -290,7 +259,7 @@ export const TranscriptPanel: React.FC<TranscriptPanelProps> = ({
               </p>
               <button
                 type="button"
-                onClick={acknowledgeConsent}
+                onClick={onAcknowledgeConsent}
                 className="rounded bg-amber-600/80 px-3 py-1 text-[11px] font-semibold text-white hover:bg-amber-500 transition-colors"
               >
                 I understand — continue
@@ -300,176 +269,209 @@ export const TranscriptPanel: React.FC<TranscriptPanelProps> = ({
 
           {consentAcknowledged && (
             <>
-              {/* ── IDLE / READY state ── */}
-              {(recorder.state === "idle" || recorder.state === "ready") &&
-                !isTranscribing &&
-                !hasTranscript &&
-                !transcribeError && (
-                  <div className="space-y-3">
-                    <p className="text-xs text-slate-400 leading-relaxed">
-                      Record your conversation. When you stop, the audio is sent
-                      to the server for automatic transcription using Gemini.
-                      Manual notes remain available throughout.
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => recorder.startRecording()}
-                      className="flex items-center space-x-2 rounded bg-[#0062ff] px-4 py-2 text-xs font-semibold text-white hover:bg-[#0052d9] transition-colors"
-                    >
-                      <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24">
-                        <circle cx="12" cy="12" r="8" />
-                      </svg>
-                      <span>Start Recording</span>
-                    </button>
-                    {recorder.error && (
-                      <p className="text-xs text-rose-400">{recorder.error}</p>
-                    )}
-                  </div>
-                )}
-
-              {/* ── REQUESTING state ── */}
-              {recorder.state === "requesting" && (
-                <p className="text-xs text-slate-400 animate-pulse">
-                  Requesting microphone permission…
-                </p>
-              )}
-
-              {/* ── RECORDING state ── */}
-              {recorder.state === "recording" && (
+              {/* ── IDLE: Start Recording button ── */}
+              {isIdle && !hasLiveTranscript && !hasSavedTranscript && !isError && (
                 <div className="space-y-3">
-                  <div className="flex items-center space-x-3">
-                    <span className="flex items-center space-x-1.5 text-sm font-mono text-rose-400">
-                      <span className="h-2 w-2 rounded-full bg-rose-400 animate-pulse" />
-                      <span>{formatDuration(recorder.elapsedSeconds)}</span>
-                    </span>
-                    <span className="text-xs text-slate-400">Recording…</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <button
-                      type="button"
-                      onClick={() => recorder.pauseRecording()}
-                      className="rounded border border-amber-500/40 bg-amber-950/30 px-3 py-1.5 text-xs font-semibold text-amber-300 hover:bg-amber-900/40 transition-colors"
-                    >
-                      Pause
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => recorder.stopRecording()}
-                      className="rounded border border-rose-500/40 bg-rose-950/30 px-3 py-1.5 text-xs font-semibold text-rose-300 hover:bg-rose-900/40 transition-colors"
-                    >
-                      Stop & Transcribe
-                    </button>
-                  </div>
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                    Start live transcription to capture the conversation in real time.
+                    The audio is processed on the server — your API keys never leave the backend.
+                    Recording continues across all 8 stages without interruption.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={onStartRecording}
+                    className="flex items-center space-x-2 rounded bg-[#0062ff] px-4 py-2 text-xs font-semibold text-white hover:bg-[#0052d9] transition-colors"
+                  >
+                    <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="8" />
+                    </svg>
+                    <span>Start Live Transcription</span>
+                  </button>
                 </div>
               )}
 
-              {/* ── PAUSED state ── */}
-              {recorder.state === "paused" && (
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-3">
-                    <span className="font-mono text-sm text-amber-400">
-                      {formatDuration(recorder.elapsedSeconds)}
-                    </span>
-                    <span className="text-xs text-slate-400">Paused</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <button
-                      type="button"
-                      onClick={() => recorder.resumeRecording()}
-                      className="rounded bg-[#0062ff] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#0052d9] transition-colors"
-                    >
-                      Resume
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => recorder.stopRecording()}
-                      className="rounded border border-rose-500/40 bg-rose-950/30 px-3 py-1.5 text-xs font-semibold text-rose-300 hover:bg-rose-900/40 transition-colors"
-                    >
-                      Stop & Transcribe
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* ── TRANSCRIBING state ── */}
-              {isTranscribing && (
+              {/* ── CONNECTING state ── */}
+              {isConnecting && (
                 <div className="flex items-center space-x-3">
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-[#0062ff] border-t-transparent" />
                   <span className="text-xs text-slate-400">
-                    Uploading and transcribing audio…
+                    {recordingState === "requesting"
+                      ? "Requesting microphone permission…"
+                      : "Connecting to transcription server…"}
+                  </span>
+                </div>
+              )}
+
+              {/* ── RECORDING state ── */}
+              {isRecording && (
+                <div className="space-y-3">
+                  {/* Timer & status */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <span className="flex items-center space-x-1.5 text-sm font-mono text-rose-400">
+                        <span className="h-2 w-2 rounded-full bg-rose-400 animate-pulse" />
+                        <span>{formatDuration(elapsedSeconds)}</span>
+                      </span>
+                      <span className="text-xs text-slate-400">
+                        Live transcription active — navigate freely between stages
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={onStopRecording}
+                      className="rounded border border-rose-500/40 bg-rose-950/30 px-3 py-1.5 text-xs font-semibold text-rose-300 hover:bg-rose-900/40 transition-colors"
+                    >
+                      Stop Recording
+                    </button>
+                  </div>
+
+                  {/* Live transcript display */}
+                  <div className="rounded border border-[#233554] bg-[#070d1e] p-3 min-h-[80px] max-h-64 overflow-y-auto text-xs leading-relaxed space-y-1">
+                    {/* Finalized segments */}
+                    {finalSegments.map((seg) => (
+                      <p key={seg.id} className="text-slate-200">
+                        {seg.text}
+                      </p>
+                    ))}
+                    {/* Current interim text */}
+                    {interimText && (
+                      <p className="text-slate-500 italic">{interimText}</p>
+                    )}
+                    {finalSegments.length === 0 && !interimText && (
+                      <p className="text-slate-600 italic">
+                        Listening… Start speaking to see live transcription
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* ── STOPPING state ── */}
+              {isStopping && (
+                <div className="flex items-center space-x-3">
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-amber-500 border-t-transparent" />
+                  <span className="text-xs text-slate-400">
+                    Finishing transcription…
                   </span>
                 </div>
               )}
 
               {/* ── ERROR state ── */}
-              {transcribeError && !isTranscribing && (
+              {isError && (
                 <div className="rounded border border-rose-500/30 bg-rose-950/20 p-3 space-y-2">
-                  <p className="text-xs font-semibold text-rose-300">Transcription failed</p>
-                  <p className="text-xs text-rose-400">{transcribeError}</p>
-                  <button
-                    type="button"
-                    onClick={handleRetry}
-                    className="rounded bg-rose-800/60 px-3 py-1 text-[11px] font-semibold text-white hover:bg-rose-700 transition-colors"
-                  >
-                    Retry Recording
-                  </button>
+                  <p className="text-xs font-semibold text-rose-300">Transcription error</p>
+                  {transcriptionError && (
+                    <p className="text-xs text-rose-400">{transcriptionError}</p>
+                  )}
+                  <div className="flex items-center space-x-2">
+                    <button
+                      type="button"
+                      onClick={onStartRecording}
+                      className="rounded bg-rose-800/60 px-3 py-1 text-[11px] font-semibold text-white hover:bg-rose-700 transition-colors"
+                    >
+                      Retry Recording
+                    </button>
+                    {hasLiveTranscript && (
+                      <span className="text-[10px] text-slate-400">
+                        Transcript data preserved above
+                      </span>
+                    )}
+                  </div>
                 </div>
               )}
 
-              {/* ── TRANSCRIPT AVAILABLE state ── */}
-              {hasTranscript && !isTranscribing && (
+              {/* ── LIVE TRANSCRIPT AVAILABLE (after stop or during idle with data) ── */}
+              {(hasLiveTranscript || hasSavedTranscript) && !isRecording && !isStopping && !isConnecting && (
                 <div className="space-y-3">
-                  {/* Header row */}
-                  <div className="flex items-center justify-between">
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-slate-300">
-                      Transcript
-                      {transcript!.edited_transcript !== null && (
-                        <span className="ml-2 text-[9px] font-normal text-slate-500 normal-case">
-                          (edited)
+                  {/* Show live transcript if available */}
+                  {hasLiveTranscript && (
+                    <>
+                      <div className="flex items-center justify-between">
+                        <label className="text-[11px] font-bold uppercase tracking-wider text-slate-300">
+                          Live Transcript
+                        </label>
+                        <span className="text-[10px] text-slate-500">
+                          {saveStatus === "saving" && (
+                            <span className="animate-pulse text-slate-400">Saving…</span>
+                          )}
+                          {saveStatus === "saved" && (
+                            <span className="text-emerald-500">Saved</span>
+                          )}
+                          {saveStatus === "error" && (
+                            <span className="text-rose-400">Save failed</span>
+                          )}
                         </span>
-                      )}
-                    </label>
-                    <span className="text-[10px] text-slate-500">
-                      {saveStatus === "saving" && (
-                        <span className="animate-pulse text-slate-400">Saving…</span>
-                      )}
-                      {saveStatus === "saved" && (
-                        <span className="text-emerald-500">Saved</span>
-                      )}
-                      {saveStatus === "error" && (
-                        <span className="text-rose-400">Save failed</span>
-                      )}
-                      {saveStatus === "idle" && "Auto-saved"}
-                    </span>
-                  </div>
+                      </div>
 
-                  {/* Editable transcript */}
-                  <textarea
-                    rows={6}
-                    value={editedText}
-                    onChange={(e) => handleEditChange(e.target.value)}
-                    placeholder="Transcript will appear here…"
-                    className="w-full rounded border border-[#233554] bg-[#070d1e] px-3 py-2 text-xs text-white placeholder-slate-500 focus:border-slate-400 focus:outline-none resize-y"
-                  />
+                      {/* Display segments with interim */}
+                      <div className="rounded border border-[#233554] bg-[#070d1e] p-3 max-h-48 overflow-y-auto text-xs leading-relaxed space-y-1">
+                        {finalSegments.map((seg) => (
+                          <p key={seg.id} className="text-slate-200">
+                            {seg.text}
+                          </p>
+                        ))}
+                        {interimText && (
+                          <p className="text-slate-500 italic">{interimText}</p>
+                        )}
+                      </div>
 
-                  {editedText !== (transcript!.raw_transcript ?? "") &&
-                    transcript!.raw_transcript && (
-                      <details className="text-[10px] text-slate-500">
-                        <summary className="cursor-pointer hover:text-slate-400">
-                          View original transcript
-                        </summary>
-                        <p className="mt-1 rounded border border-[#233554] bg-[#070d1e] p-2 leading-relaxed whitespace-pre-wrap">
-                          {transcript!.raw_transcript}
-                        </p>
-                      </details>
-                    )}
+                      {/* Editable consolidated view */}
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-slate-300">
+                        Edit Transcript
+                      </label>
+                      <textarea
+                        rows={5}
+                        value={editedText || finalTranscript}
+                        onChange={(e) => handleEditChange(e.target.value)}
+                        placeholder="Transcript will appear here…"
+                        className="w-full rounded border border-[#233554] bg-[#070d1e] px-3 py-2 text-xs text-white placeholder-slate-500 focus:border-slate-400 focus:outline-none resize-y"
+                      />
+                    </>
+                  )}
+
+                  {/* Show saved transcript if no live transcript */}
+                  {hasSavedTranscript && !hasLiveTranscript && (
+                    <>
+                      <div className="flex items-center justify-between">
+                        <label className="text-[11px] font-bold uppercase tracking-wider text-slate-300">
+                          Transcript
+                          {savedTranscript!.edited_transcript !== null && (
+                            <span className="ml-2 text-[9px] font-normal text-slate-500 normal-case">
+                              (edited)
+                            </span>
+                          )}
+                        </label>
+                        <span className="text-[10px] text-slate-500">
+                          {saveStatus === "saving" && (
+                            <span className="animate-pulse text-slate-400">Saving…</span>
+                          )}
+                          {saveStatus === "saved" && (
+                            <span className="text-emerald-500">Saved</span>
+                          )}
+                          {saveStatus === "error" && (
+                            <span className="text-rose-400">Save failed</span>
+                          )}
+                          {saveStatus === "idle" && "Auto-saved"}
+                        </span>
+                      </div>
+                      <textarea
+                        rows={6}
+                        value={displayText}
+                        onChange={(e) => handleEditChange(e.target.value)}
+                        placeholder="Transcript will appear here…"
+                        className="w-full rounded border border-[#233554] bg-[#070d1e] px-3 py-2 text-xs text-white placeholder-slate-500 focus:border-slate-400 focus:outline-none resize-y"
+                      />
+                    </>
+                  )}
 
                   {/* Action row */}
                   <div className="flex flex-wrap items-center gap-2">
-                    {onCopyToExactWords && editedText && (
+                    {onCopyToExactWords && (editedText || finalTranscript) && (
                       <button
                         type="button"
-                        onClick={() => onCopyToExactWords(editedText)}
+                        onClick={() =>
+                          onCopyToExactWords(editedText || finalTranscript)
+                        }
                         className="flex items-center space-x-1.5 rounded border border-[#0062ff]/50 bg-[#0062ff]/10 px-3 py-1.5 text-[11px] font-semibold text-[#60a5fa] hover:bg-[#0062ff]/20 transition-colors"
                       >
                         <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -478,35 +480,20 @@ export const TranscriptPanel: React.FC<TranscriptPanelProps> = ({
                         <span>Copy to Prospect's Exact Words</span>
                       </button>
                     )}
-                    <button
-                      type="button"
-                      onClick={handleRetry}
-                      className="rounded border border-[#233554] px-3 py-1.5 text-[11px] text-slate-400 hover:text-slate-200 hover:border-slate-500 transition-colors"
-                    >
-                      New Recording
-                    </button>
+                    {isIdle && (
+                      <button
+                        type="button"
+                        onClick={onStartRecording}
+                        className="rounded border border-[#0062ff]/40 bg-[#0062ff]/10 px-3 py-1.5 text-[11px] text-[#60a5fa] hover:bg-[#0062ff]/20 transition-colors"
+                      >
+                        {hasLiveTranscript || hasSavedTranscript
+                          ? "Continue Recording"
+                          : "Start Recording"}
+                      </button>
+                    )}
                   </div>
                 </div>
               )}
-
-              {/* Empty transcript (silence detected) */}
-              {transcript?.status === "completed" &&
-                transcript.raw_transcript === "" &&
-                !isTranscribing && (
-                  <div className="space-y-2">
-                    <p className="text-xs text-slate-400">
-                      No speech detected in the recording. The audio may have been
-                      silent or too quiet.
-                    </p>
-                    <button
-                      type="button"
-                      onClick={handleRetry}
-                      className="rounded border border-[#233554] px-3 py-1.5 text-[11px] text-slate-400 hover:text-slate-200 hover:border-slate-500 transition-colors"
-                    >
-                      Try Again
-                    </button>
-                  </div>
-                )}
             </>
           )}
         </div>

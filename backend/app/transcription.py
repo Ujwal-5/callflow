@@ -1,8 +1,14 @@
 """
-transcription.py — Audio transcription via Gemini 3.5 Transcribe.
+transcription.py — Audio transcription via Gemini.
 
-Uses GEMINI_API_KEY plus the optional GEMINI_API_KEY_2 backup key, rotated
-by the shared Gemini pool. No new paid dependencies required.
+Two modes are supported:
+
+1. Live WebSocket streaming  ─ run_live_transcription(audio_generator)
+   Feeds raw PCM audio chunks from the browser WebSocket through the Gemini
+   Live API and yields transcription events as dicts.
+
+2. Batch upload (legacy)  ─ transcribe_audio(audio_bytes, content_type)
+   Sends a complete audio file to Gemini for offline transcription.
 
 Note: gemini-3.5-transcribe-live is designed for real-time WebSocket
 streaming; it cannot process pre-recorded uploads through generate_content.
@@ -21,7 +27,7 @@ the event loop is not blocked.
 
 import asyncio
 import logging
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Any, Optional, Tuple, AsyncGenerator
 
 from backend.app.config import settings
 
@@ -34,6 +40,9 @@ MAX_AUDIO_BYTES = 20 * 1024 * 1024  # 20 MB
 
 # Primary Gemini model for transcription (backups live in gemini_pool).
 TRANSCRIBE_MODEL = "gemini-3.5-transcribe"
+
+# Model for live streaming transcription
+LIVE_TRANSCRIBE_MODEL = "gemini-3.5-transcribe-live"
 
 # MIME types accepted from the browser (MediaRecorder).
 ACCEPTED_MIME_TYPES = {
@@ -70,6 +79,147 @@ def validate_audio(audio_bytes: bytes, content_type: str) -> Optional[str]:
             f"Maximum allowed size is {MAX_AUDIO_BYTES // (1024 * 1024)} MB."
         )
     return None
+
+
+async def run_live_transcription(
+    audio_generator: AsyncGenerator[bytes, None],
+) -> AsyncGenerator[Dict[str, Any], None]:
+    """
+    Stream raw PCM audio chunks from the browser through the Gemini Live API
+    and yield transcription events as dicts.
+
+    Expected audio format from the browser:
+      - Encoding: signed 16-bit PCM (LINEAR16)
+      - Sample rate: 16,000 Hz
+      - Channels: mono (1 channel)
+
+    Yields dicts with one of these shapes:
+      {"type": "connected"}
+      {"type": "interim", "text": "..."}
+      {"type": "final", "text": "..."}
+      {"type": "error", "message": "..."}
+      {"type": "done"}
+    """
+    if not settings.gemini_configured:
+        yield {
+            "type": "error",
+            "message": (
+                "Gemini API key is not configured. "
+                "Set GEMINI_API_KEY on the server."
+            ),
+        }
+        return
+
+    # Use the first available API key
+    api_key = settings.gemini_api_keys[0]
+
+    try:
+        from google import genai
+        from google.genai import types as genai_types
+
+        client = genai.Client(api_key=api_key, http_options={"api_version": "v1alpha"})
+
+        # Configure the live session for audio input
+        config = genai_types.LiveConnectConfig(
+            response_modalities=["TEXT"],
+            speech_config=genai_types.SpeechConfig(
+                voice_config=genai_types.VoiceConfig(
+                    prebuilt_voice_config=genai_types.PrebuiltVoiceConfig(
+                        voice_name="Aoede"
+                    )
+                )
+            ),
+            system_instruction=genai_types.Content(
+                parts=[
+                    genai_types.Part(
+                        text=(
+                            "You are a real-time transcription assistant. "
+                            "Transcribe all spoken audio verbatim. "
+                            "When you detect a speaker change, prefix with 'CALLER: ' or 'PROSPECT: ' if identifiable. "
+                            "Otherwise use 'SPEAKER: '. "
+                            "Preserve filler words, hesitations, and pauses. "
+                            "Do not add commentary or summaries — transcription only."
+                        )
+                    )
+                ]
+            ),
+        )
+
+        yield {"type": "connected"}
+
+        async with client.aio.live.connect(
+            model=LIVE_TRANSCRIBE_MODEL, config=config
+        ) as session:
+            # Run sender and receiver concurrently
+            send_queue: asyncio.Queue[Optional[bytes]] = asyncio.Queue()
+
+            async def _sender():
+                """Feed PCM chunks from the browser into the Gemini session."""
+                try:
+                    async for chunk in audio_generator:
+                        if chunk:
+                            await session.send(
+                                input=genai_types.RealtimeInputConfig(
+                                    media_chunks=[
+                                        genai_types.Blob(
+                                            data=chunk,
+                                            mime_type="audio/pcm;rate=16000",
+                                        )
+                                    ]
+                                ),
+                                end_of_turn=False,
+                            )
+                except Exception as exc:
+                    logger.warning("Live transcription sender error: %s", exc)
+                finally:
+                    # Signal end of audio
+                    try:
+                        await session.send(input="[END]", end_of_turn=True)
+                    except Exception:
+                        pass
+
+            async def _receiver() -> AsyncGenerator[Dict[str, Any], None]:
+                """Receive transcription events from the Gemini session."""
+                accumulated = []
+                try:
+                    async for response in session.receive():
+                        if response.text:
+                            text = response.text.strip()
+                            if text:
+                                # Detect if this is an interim or final segment
+                                # Gemini Live sends turn_complete on final responses
+                                is_final = getattr(response, "turn_complete", False)
+                                if is_final:
+                                    yield {"type": "final", "text": text}
+                                else:
+                                    yield {"type": "interim", "text": text}
+                        elif getattr(response, "turn_complete", False):
+                            # Turn complete with no text means end of speech segment
+                            pass
+                except Exception as exc:
+                    logger.warning("Live transcription receiver error: %s", exc)
+                    yield {"type": "error", "message": str(exc)}
+
+            # Run sender in background, yield receiver events
+            sender_task = asyncio.create_task(_sender())
+            try:
+                async for event in _receiver():
+                    yield event
+            finally:
+                sender_task.cancel()
+                try:
+                    await sender_task
+                except (asyncio.CancelledError, Exception):
+                    pass
+
+        yield {"type": "done"}
+
+    except Exception as exc:
+        logger.error("Live transcription session error: %s", exc)
+        yield {
+            "type": "error",
+            "message": f"Live transcription failed: {exc}",
+        }
 
 
 def _run_transcription(audio_bytes: bytes, content_type: str) -> Tuple[str, Dict[str, Any]]:
