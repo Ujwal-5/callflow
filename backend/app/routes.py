@@ -312,6 +312,16 @@ async def summarize_call(call_id: str):
             detail=f"Call with ID '{call_id}' not found."
         )
 
+    # Summary generation is idempotent by default. This also protects against
+    # duplicate UI submissions and retry races after a successful generation.
+    if call.get("ai_summary"):
+        return {
+            "call_id": call_id,
+            "available": True,
+            "error": None,
+            "summary": call["ai_summary"],
+        }
+
     result = await generate_call_summary(call)
     if result.get("available") and result.get("summary"):
         # Persist generated summary to call record
@@ -787,7 +797,8 @@ async def analyze_conversation_gaps_endpoint(
 async def get_conversation_gaps_endpoint(call_id: str):
     """
     Retrieve existing conversation gap findings for a call.
-    If no findings exist yet and a transcript is available, runs initial analysis.
+    Analysis is explicit through the POST endpoint so a valid empty result does
+    not trigger a paid LLM request every time the review panel is opened.
     """
     call = db.get_call(call_id)
     if not call:
@@ -797,17 +808,6 @@ async def get_conversation_gaps_endpoint(call_id: str):
         )
 
     gaps = db.list_conversation_gaps(call_id)
-
-    # If no findings yet, run initial analysis if transcript exists
-    if not gaps:
-        transcript_rec = db.get_transcript(call_id)
-        has_dialogue = bool(
-            transcript_rec and (transcript_rec.get("edited_transcript") or transcript_rec.get("raw_transcript"))
-        ) or any(sr.get("prospect_exact_words") for sr in call.get("stage_results", []))
-
-        if has_dialogue:
-            res = await analyze_conversation_gaps_endpoint(call_id)
-            return res
 
     summary = (
         f"Tracking {len(gaps)} conversation gap finding(s)."

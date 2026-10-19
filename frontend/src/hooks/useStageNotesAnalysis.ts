@@ -92,15 +92,22 @@ export function useStageNotesAnalysis(): UseStageNotesAnalysisReturn {
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const lastAnalysisTimeRef = useRef<number>(0);
   const isAnalyzingRef = useRef(false);
+  const analysisGenerationRef = useRef(0);
 
   const isAnalyzing = stageNotesState.analyzing.size > 0;
 
   // ── Internal: run analysis request ───────────────────────────────────────
 
   const runAnalysis = useCallback(async (callId: string, text: string, segmentId: string) => {
-    if (!text.trim() || isAnalyzingRef.current) return;
+    if (!text.trim()) return;
+    // Serialize requests. Returning here used to discard flushed transcript
+    // chunks whenever another analysis request was still in flight.
+    while (isAnalyzingRef.current) {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
 
     isAnalyzingRef.current = true;
+    const generation = analysisGenerationRef.current;
     lastAnalysisTimeRef.current = Date.now();
 
     // Mark stages as analyzing
@@ -111,6 +118,7 @@ export function useStageNotesAnalysis(): UseStageNotesAnalysisReturn {
 
     try {
       const result = await api.analyzeStageNotes(callId, text, segmentId);
+      if (generation !== analysisGenerationRef.current) return;
 
       if (result.stage_notes && result.stage_notes.length > 0) {
         setStageNotesState((prev) => {
@@ -155,6 +163,7 @@ export function useStageNotesAnalysis(): UseStageNotesAnalysisReturn {
         });
       }
     } catch (err) {
+      if (generation !== analysisGenerationRef.current) return;
       const msg = err instanceof Error ? err.message : "Stage analysis failed";
       setStageNotesState((prev) => {
         const newAnalyzing = new Set(prev.analyzing);
@@ -168,7 +177,7 @@ export function useStageNotesAnalysis(): UseStageNotesAnalysisReturn {
 
   // ── Flush pending buffer ──────────────────────────────────────────────────
 
-  const flushPendingBuffer = useCallback((callId: string) => {
+  const flushPendingBuffer = useCallback(async (callId: string) => {
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
       debounceTimerRef.current = null;
@@ -182,7 +191,7 @@ export function useStageNotesAnalysis(): UseStageNotesAnalysisReturn {
 
     pendingBufferRef.current = [];
 
-    runAnalysis(callId, combinedText, combinedId);
+    await runAnalysis(callId, combinedText, combinedId);
   }, [runAnalysis]);
 
   // ── Feed a new finalized segment ─────────────────────────────────────────
@@ -223,17 +232,12 @@ export function useStageNotesAnalysis(): UseStageNotesAnalysisReturn {
   // ── Run final analysis when recording stops ───────────────────────────────
 
   const runFinalAnalysis = useCallback(async (callId: string, remainingText: string) => {
-    // Flush any pending buffer first
-    flushPendingBuffer(callId);
-
-    // Analyze any remaining text passed explicitly
-    if (remainingText.trim()) {
-      const finalId = `final_${Date.now()}`;
-      if (!analyzedSegmentIdsRef.current.has(finalId)) {
-        await runAnalysis(callId, remainingText, finalId);
-      }
-    }
-  }, [flushPendingBuffer, runAnalysis]);
+    // finalTranscript is assembled from finalSegments, which are already fed
+    // individually by page.tsx. Re-analyzing that whole string here repeats
+    // every prior segment and spends quota without adding new evidence.
+    void remainingText;
+    await flushPendingBuffer(callId);
+  }, [flushPendingBuffer]);
 
   // ── Mark note as reviewed ─────────────────────────────────────────────────
 
@@ -275,7 +279,7 @@ export function useStageNotesAnalysis(): UseStageNotesAnalysisReturn {
     pendingBufferRef.current = [];
     analyzedSegmentIdsRef.current = new Set();
     lastAnalysisTimeRef.current = 0;
-    isAnalyzingRef.current = false;
+    analysisGenerationRef.current += 1;
     setStageNotesState({
       notes: new Map(),
       analyzing: new Set(),

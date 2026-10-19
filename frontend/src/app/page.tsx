@@ -58,6 +58,7 @@ export default function Home() {
   const [isEndingCallModalOpen, setIsEndingCallModalOpen] = useState(false);
   const [initialModalOutcome, setInitialModalOutcome] = useState<string | undefined>(undefined);
   const [stageSuggestion, setStageSuggestion] = useState<StageSuggestion | null>(null);
+  const stageSuggestionRequestRef = useRef<{ callId: string; stage: number; transcript: string } | null>(null);
   const [isSubmittingClose, setIsSubmittingClose] = useState(false);
   const [serviceStatus, setServiceStatus] = useState<ServiceStatus>("online");
   const [wakingElapsed, setWakingElapsed] = useState(0);
@@ -469,29 +470,41 @@ export default function Home() {
     setStageSuggestion(null);
   }, []);
 
-  // Poll for AI stage suggestions
+  // Re-evaluate stage suggestions when the call/stage changes or new finalized
+  // transcript text arrives. Polling here re-ran Gemini against identical text.
   useEffect(() => {
     if (!activeCall) {
       setStageSuggestion(null);
       return;
     }
     let isMounted = true;
+    const transcript = liveTranscription.finalTranscript.trim();
+    const previousRequest = stageSuggestionRequestRef.current;
+    const sameContext = previousRequest?.callId === activeCall.id && previousRequest.stage === currentStageNumber;
+    if (
+      transcript && sameContext && previousRequest.transcript &&
+      transcript.length - previousRequest.transcript.length < 200
+    ) return;
     const checkSuggestion = async () => {
       try {
-        const sugg = await api.getStageSuggestion(activeCall.id);
+        stageSuggestionRequestRef.current = { callId: activeCall.id, stage: currentStageNumber, transcript };
+        const sugg = await api.getStageSuggestion(
+          activeCall.id,
+          transcript || undefined,
+          currentStageNumber
+        );
         if (isMounted) {
           setStageSuggestion(sugg);
         }
       } catch {}
     };
 
-    checkSuggestion();
-    const interval = setInterval(checkSuggestion, 10000);
+    const timeout = setTimeout(checkSuggestion, transcript ? 1200 : 0);
     return () => {
       isMounted = false;
-      clearInterval(interval);
+      clearTimeout(timeout);
     };
-  }, [activeCall?.id, currentStageNumber]);
+  }, [activeCall?.id, currentStageNumber, liveTranscription.finalTranscript]);
 
   const handleNextStage = useCallback(async () => {
     if (!activeCall) return;
