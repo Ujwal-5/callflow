@@ -218,6 +218,11 @@ export default function Home() {
               setActiveCall(callData);
               setCurrentStageNumber(callData.current_stage || 1);
               setActiveView("active");
+              const savedTranscript = await api.getTranscript(savedCallId).catch(() => null);
+              liveTranscription.restoreTranscript(
+                savedCallId,
+                savedTranscript?.edited_transcript || savedTranscript?.raw_transcript
+              );
             } else {
               localStorage.removeItem(ACTIVE_CALL_STORAGE_KEY);
             }
@@ -629,6 +634,10 @@ export default function Home() {
       await stageNotesAnalysis.runFinalAnalysis(capturedCallId, capturedTranscript).catch(() => {});
 
       const closedCall = await api.closeCall(activeCall.id, payload);
+      // The call is now permanently closed. Clear the browser's temporary
+      // live-transcript cache only after the close succeeds; refreshes before
+      // this point must keep the active transcript recoverable.
+      liveTranscription.reset();
       localStorage.removeItem(ACTIVE_CALL_STORAGE_KEY);
       setActiveCall(null);
       setIsEndingCallModalOpen(false);

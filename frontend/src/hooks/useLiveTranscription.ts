@@ -57,6 +57,8 @@ export interface UseLiveTranscriptionReturn {
   stopRecording: () => void;
   /** Reset all state (call after call ends) */
   reset: () => void;
+  /** Restore finalized transcript for an active call after a page refresh */
+  restoreTranscript: (callId: string, persistedTranscript?: string | null) => void;
   /** Whether microphone consent has been acknowledged */
   consentAcknowledged: boolean;
   /** Acknowledge the microphone consent notice */
@@ -68,6 +70,7 @@ const TARGET_SAMPLE_RATE = 16_000;
 
 /** PCM chunk size in samples (100ms at 16 kHz) */
 const CHUNK_SAMPLES = TARGET_SAMPLE_RATE / 10; // 1600 samples = 100ms
+const TRANSCRIPT_STORAGE_PREFIX = "callflow_live_transcript_";
 
 /** Derive WebSocket URL from API base URL */
 function getWebSocketUrl(callId: string): string {
@@ -138,6 +141,22 @@ export function useLiveTranscription(): UseLiveTranscriptionReturn {
 
   // Compute full transcript from final segments
   const finalTranscript = finalSegments.map((s) => s.text).join("\n");
+
+  // Keep the active call's finalized transcript in the browser as a crash and
+  // refresh safeguard. It is removed only by reset(), which is called when a
+  // call is explicitly ended or a new call is started.
+  useEffect(() => {
+    const callId = recordingCallIdRef.current;
+    if (typeof window === "undefined" || !callId || !finalTranscript.trim()) return;
+    try {
+      localStorage.setItem(
+        `${TRANSCRIPT_STORAGE_PREFIX}${callId}`,
+        JSON.stringify({ transcript: finalTranscript, updatedAt: Date.now() })
+      );
+    } catch {
+      // Storage may be unavailable; the server-side transcript remains the fallback.
+    }
+  }, [finalTranscript]);
 
   // ── Cleanup helpers ───────────────────────────────────────────────────────
 
@@ -257,7 +276,6 @@ export function useLiveTranscription(): UseLiveTranscriptionReturn {
     setError(null);
     isStoppingRef.current = false;
     errorShownRef.current = false;
-    seenFinalTextsRef.current = new Set();
 
     // 1. Request microphone permission
     setState("requesting");
@@ -535,6 +553,7 @@ export function useLiveTranscription(): UseLiveTranscriptionReturn {
   // ── Reset ─────────────────────────────────────────────────────────────────
 
   const reset = useCallback(() => {
+    const previousCallId = recordingCallIdRef.current;
     isStoppingRef.current = true;
     stopTimer();
     releaseAudio();
@@ -545,7 +564,49 @@ export function useLiveTranscription(): UseLiveTranscriptionReturn {
     setError(null);
     setElapsedSeconds(0);
     setState("idle");
+    recordingCallIdRef.current = null;
+    if (typeof window !== "undefined" && previousCallId) {
+      try {
+        localStorage.removeItem(`${TRANSCRIPT_STORAGE_PREFIX}${previousCallId}`);
+      } catch {}
+    }
   }, [stopTimer, releaseAudio, closeWebSocket]);
+
+  const restoreTranscript = useCallback((callId: string, persistedTranscript?: string | null) => {
+    if (!callId) return;
+
+    let localTranscript = "";
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem(`${TRANSCRIPT_STORAGE_PREFIX}${callId}`);
+        if (stored) {
+          const parsed = JSON.parse(stored) as { transcript?: string };
+          localTranscript = parsed.transcript || "";
+        }
+      } catch {}
+    }
+
+    const serverTranscript = (persistedTranscript || "").trim();
+    const transcript = localTranscript.length >= serverTranscript.length
+      ? localTranscript
+      : serverTranscript;
+    if (!transcript) return;
+
+    const segments = transcript
+      .split("\n")
+      .map((text) => text.trim())
+      .filter(Boolean)
+      .map((text, index) => ({
+        id: `restored_${callId}_${index}`,
+        type: "final" as const,
+        text,
+        timestamp: Date.now() + index,
+      }));
+    recordingCallIdRef.current = callId;
+    seenFinalTextsRef.current = new Set(segments.map((segment) => segment.text));
+    setFinalSegments(segments);
+    setInterimText("");
+  }, []);
 
   // ── Consent ───────────────────────────────────────────────────────────────
 
@@ -564,6 +625,7 @@ export function useLiveTranscription(): UseLiveTranscriptionReturn {
     startRecording,
     stopRecording,
     reset,
+    restoreTranscript,
     consentAcknowledged,
     acknowledgeConsent,
   };

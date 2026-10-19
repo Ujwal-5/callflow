@@ -1697,21 +1697,16 @@ class DatabaseAdapter:
 
     def list_prospects(self, search: Optional[str] = None) -> List[Dict[str, Any]]:
         """List all prospects, seeded and custom, sorted alphabetically by company name."""
-        # Ensure prospects are seeded in SQLite and Supabase (if table exists)
+        # Ensure prospects exist in the configured source of truth.
         self._ensure_prospects_seeded()
 
         if self.use_supabase and self.supabase_client:
-            try:
-                query = self.supabase_client.table("prospects").select("*").order("company_name")
-                if search and search.strip():
-                    term = search.strip()
-                    query = query.or_(f"company_name.ilike.%{term}%,contact_name.ilike.%{term}%,context.ilike.%{term}%")
-                res = query.execute()
-                if res.data is not None and (len(res.data) > 0 or (search and search.strip())):
-                    return [self._format_prospect_dict(r) for r in res.data]
-            except Exception as exc:
-                # Fallback to local SQLite if table does not exist or network fails
-                pass
+            query = self.supabase_client.table("prospects").select("*").order("company_name")
+            if search and search.strip():
+                term = search.strip()
+                query = query.or_(f"company_name.ilike.%{term}%,contact_name.ilike.%{term}%,context.ilike.%{term}%")
+            res = query.execute()
+            return [self._format_prospect_dict(r) for r in (res.data or [])]
 
         conn = self.get_sqlite_conn()
         cursor = conn.cursor()
@@ -1736,12 +1731,8 @@ class DatabaseAdapter:
         self._ensure_prospects_seeded()
 
         if self.use_supabase and self.supabase_client:
-            try:
-                res = self.supabase_client.table("prospects").select("*").eq("id", clean_id).execute()
-                if res.data:
-                    return self._format_prospect_dict(res.data[0])
-            except Exception:
-                pass
+            res = self.supabase_client.table("prospects").select("*").eq("id", clean_id).execute()
+            return self._format_prospect_dict(res.data[0]) if res.data else None
 
         conn = self.get_sqlite_conn()
         cursor = conn.cursor()
@@ -1759,12 +1750,8 @@ class DatabaseAdapter:
         self._ensure_prospects_seeded()
 
         if self.use_supabase and self.supabase_client:
-            try:
-                res = self.supabase_client.table("prospects").select("*").ilike("company_name", clean).execute()
-                if res.data:
-                    return self._format_prospect_dict(res.data[0])
-            except Exception:
-                pass
+            res = self.supabase_client.table("prospects").select("*").ilike("company_name", clean).execute()
+            return self._format_prospect_dict(res.data[0]) if res.data else None
 
         conn = self.get_sqlite_conn()
         cursor = conn.cursor()
@@ -1806,14 +1793,11 @@ class DatabaseAdapter:
         if self.use_supabase and self.supabase_client:
             try:
                 res = self.supabase_client.table("prospects").insert(payload).execute()
-                # Also mirror into local SQLite
-                self._insert_prospect_sqlite(payload)
                 return self._format_prospect_dict(res.data[0])
             except Exception as exc:
                 if "duplicate key" in str(exc).lower() or "unique constraint" in str(exc).lower():
                     raise ValueError(f"Prospect company '{company_clean}' already exists.")
-                # Fallback to local SQLite if table does not exist
-                pass
+                raise
 
         # Save into SQLite
         self._insert_prospect_sqlite(payload)
@@ -1839,16 +1823,11 @@ class DatabaseAdapter:
         conn.close()
 
     def delete_prospect(self, prospect_id: str) -> bool:
-        """Delete a prospect from both Supabase and SQLite."""
+        """Delete a prospect from the configured data store."""
         clean_id = str(prospect_id).strip()
         if self.use_supabase and self.supabase_client:
-            try:
-                self.supabase_client.table("prospects").delete().eq("id", clean_id).execute()
-            except Exception as exc:
-                if "PGRST205" in str(exc) or "not find the table" in str(exc):
-                    pass
-                else:
-                    pass
+            result = self.supabase_client.table("prospects").delete().eq("id", clean_id).execute()
+            return bool(result.data)
 
         conn = self.get_sqlite_conn()
         cursor = conn.cursor()
@@ -1860,12 +1839,7 @@ class DatabaseAdapter:
 
 
     def _ensure_prospects_seeded(self):
-        """Seed initial prospects from JSON/transcripts into SQLite and Supabase if empty."""
-        conn = self.get_sqlite_conn()
-        cursor = conn.cursor()
-        cursor.execute("SELECT COUNT(*) FROM prospects")
-        sqlite_count = cursor.fetchone()[0]
-
+        """Seed initial prospects into the active data store if it is empty."""
         import os
         seed_file = os.path.join(
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
@@ -1878,6 +1852,39 @@ class DatabaseAdapter:
                 seeds = json.load(f)
 
         now = get_utc_now_iso()
+
+        if self.use_supabase and self.supabase_client:
+            if not seeds:
+                return
+            try:
+                chk = self.supabase_client.table("prospects").select("id", count="exact").limit(1).execute()
+                if chk.count == 0:
+                    unique_seeds = {}
+                    for s in seeds:
+                        unique_seeds.setdefault(s["company_name"].strip().lower(), s)
+                    batch = [
+                        {
+                            "id": s["id"],
+                            "company_name": s["company_name"],
+                            "contact_name": s.get("contact_name"),
+                            "phone_number": s.get("phone_number"),
+                            "context": s.get("context"),
+                            "is_custom": False,
+                            "created_at": now,
+                            "updated_at": now,
+                        }
+                        for s in unique_seeds.values()
+                    ]
+                    for i in range(0, len(batch), 50):
+                        self.supabase_client.table("prospects").upsert(batch[i:i + 50]).execute()
+            except Exception:
+                raise
+            return
+
+        conn = self.get_sqlite_conn()
+        cursor = conn.cursor()
+        cursor.execute("SELECT COUNT(*) FROM prospects")
+        sqlite_count = cursor.fetchone()[0]
 
         if sqlite_count == 0 and seeds:
             for s in seeds:
@@ -1895,29 +1902,6 @@ class DatabaseAdapter:
                 ))
             conn.commit()
         conn.close()
-
-        # Check and seed Supabase table if it exists and has 0 rows
-        if self.use_supabase and self.supabase_client and seeds:
-            try:
-                chk = self.supabase_client.table("prospects").select("id", count="exact").limit(1).execute()
-                if chk.count == 0:
-                    batch = [
-                        {
-                            "id": s["id"],
-                            "company_name": s["company_name"],
-                            "contact_name": s.get("contact_name"),
-                            "phone_number": s.get("phone_number"),
-                            "context": s.get("context"),
-                            "is_custom": False,
-                            "created_at": now,
-                            "updated_at": now,
-                        }
-                        for s in seeds
-                    ]
-                    for i in range(0, len(batch), 50):
-                        self.supabase_client.table("prospects").upsert(batch[i:i + 50]).execute()
-            except Exception:
-                pass
 
 
 db = DatabaseAdapter()
