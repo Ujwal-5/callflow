@@ -242,6 +242,7 @@ export function useLiveTranscription(): UseLiveTranscriptionReturn {
 
     setError(null);
     isStoppingRef.current = false;
+    errorShownRef.current = false;
     seenFinalTextsRef.current = new Set();
 
     // 1. Request microphone permission
@@ -347,6 +348,9 @@ export function useLiveTranscription(): UseLiveTranscriptionReturn {
     };
 
     ws.onclose = () => {
+      // If the ref was already cleared, this close came from our own cleanup
+      // (stop, reset, or an error handler) — don't overwrite the real reason.
+      if (wsRef.current !== ws) return;
       if (!isStoppingRef.current && !errorShownRef.current && state !== "idle") {
         // Unexpected closure — but don't overwrite an error that was already shown
         setError(
@@ -373,7 +377,11 @@ export function useLiveTranscription(): UseLiveTranscriptionReturn {
       // have CHUNK_SAMPLES worth of 16 kHz audio
       const downsampleRatio = nativeSampleRate / TARGET_SAMPLE_RATE;
       const nativeChunkSize = Math.ceil(CHUNK_SAMPLES * downsampleRatio);
-      const bufferSize = Math.max(256, Math.min(16384, nativeChunkSize * 2));
+      // ScriptProcessorNode requires a power-of-two buffer size in [256, 16384].
+      // nativeChunkSize * 2 is not a power of two for common rates (e.g. 48 kHz
+      // yields 9600), which throws an IndexSizeError and breaks audio capture.
+      const idealBufferSize = Math.max(256, Math.min(16384, nativeChunkSize * 2));
+      const bufferSize = 2 ** Math.round(Math.log2(idealBufferSize));
 
       const processor = audioContext.createScriptProcessor(bufferSize, 1, 1);
       processorRef.current = processor;
@@ -432,6 +440,7 @@ export function useLiveTranscription(): UseLiveTranscriptionReturn {
       processor.connect(audioContext.destination);
     } catch (err) {
       console.error("[useLiveTranscription] AudioContext setup failed:", err);
+      errorShownRef.current = true;
       closeWebSocket(true);
       releaseAudio();
       setError("Failed to set up audio capture.");

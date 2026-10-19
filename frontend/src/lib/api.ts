@@ -43,6 +43,8 @@ export function isBackendSleepingError(err: unknown): boolean {
   );
 }
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 class ApiClient {
   private baseUrl: string;
   private unavailableListeners: Set<() => void> = new Set();
@@ -68,9 +70,45 @@ class ApiClient {
     });
   }
 
+  /**
+   * Verify whether the Render backend is genuinely inactive (sleeping/unreachable).
+   * Returns true ONLY if /health cannot be reached or returns gateway sleep status (502/503/504).
+   * Returns false if /health is reachable and healthy (service is alive).
+   */
+  public async isRenderReallyInactive(): Promise<boolean> {
+    const url = `${this.baseUrl}/health`;
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 6000);
+      const res = await fetch(url, {
+        signal: controller.signal,
+        headers: { Accept: "application/json" },
+      });
+      clearTimeout(timeoutId);
+
+      // If /health responded with 200 OK, the service is alive!
+      if (res.ok) {
+        return false;
+      }
+
+      // 502 Bad Gateway / 503 / 504 are Render proxy responses when backend is spinning down/asleep
+      if (res.status === 502 || res.status === 503 || res.status === 504) {
+        return true;
+      }
+
+      // Other status codes (like 500) mean the service is running HTTP
+      return false;
+    } catch {
+      // Network failure, Failed to fetch, Connection Refused, or timeout reaching /health
+      return true;
+    }
+  }
+
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
+    retries: number = 3,
+    delayMs: number = 1500
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint.startsWith("/") ? "" : "/"}${endpoint}`;
     const headers = {
@@ -78,58 +116,120 @@ class ApiClient {
       ...(options.headers || {}),
     };
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 12000);
+    let lastError: unknown = null;
 
-    try {
-      const response = await fetch(url, {
-        ...options,
-        headers,
-        signal: controller.signal,
-      });
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 12000);
 
-      clearTimeout(timeoutId);
+      try {
+        const response = await fetch(url, {
+          ...options,
+          headers,
+          signal: controller.signal,
+        });
 
-      if (!response.ok) {
-        if (response.status === 502 || response.status === 503 || response.status === 504) {
-          if (endpoint !== "/health") {
-            this.notifyServiceUnavailable();
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          // Client errors (4xx except 408) are intentional business/validation responses - do NOT retry
+          if (response.status >= 400 && response.status < 500 && response.status !== 408) {
+            let errorMessage = `HTTP error ${response.status}`;
+            try {
+              const errData = await response.json();
+              if (errData && errData.detail) {
+                errorMessage = typeof errData.detail === "string" 
+                  ? errData.detail 
+                  : JSON.stringify(errData.detail);
+              }
+            } catch {
+              // Non-JSON
+            }
+            throw new Error(errorMessage);
           }
-        }
-        let errorMessage = `HTTP error ${response.status}`;
-        try {
-          const errData = await response.json();
-          if (errData && errData.detail) {
-            errorMessage = typeof errData.detail === "string" 
-              ? errData.detail 
-              : JSON.stringify(errData.detail);
-          }
-        } catch {
-          // Response body was not JSON
-        }
-        throw new Error(errorMessage);
-      }
 
-      return await response.json();
-    } catch (err: unknown) {
-      clearTimeout(timeoutId);
-      if (endpoint !== "/health" && isBackendSleepingError(err)) {
-        this.notifyServiceUnavailable();
-      }
-      if (err instanceof Error) {
-        if (err.name === "AbortError") {
-          throw new Error("Request timed out. Please check if the backend server is reachable.");
+          // Server errors (500, 502, 503, 504)
+          let errorMessage = `HTTP error ${response.status}`;
+          try {
+            const errData = await response.json();
+            if (errData && errData.detail) {
+              errorMessage = typeof errData.detail === "string" 
+                ? errData.detail 
+                : JSON.stringify(errData.detail);
+            }
+          } catch {
+            // Non-JSON
+          }
+
+          lastError = new Error(errorMessage);
+
+          // Retry with delay if attempts remain
+          if (attempt < retries) {
+            await sleep(delayMs);
+            continue;
+          }
+
+          throw lastError;
         }
-        throw err;
+
+        return await response.json();
+      } catch (err: unknown) {
+        clearTimeout(timeoutId);
+
+        // Do not retry 4xx errors
+        if (
+          err instanceof Error &&
+          err.message.startsWith("HTTP error 4") &&
+          !err.message.startsWith("HTTP error 408")
+        ) {
+          throw err;
+        }
+
+        let formattedError: Error;
+        if (err instanceof Error) {
+          if (err.name === "AbortError") {
+            formattedError = new Error("Request timed out. Please check if the backend server is reachable.");
+          } else {
+            formattedError = err;
+          }
+        } else {
+          formattedError = new Error("An unexpected network error occurred.");
+        }
+
+        lastError = formattedError;
+
+        // Retry with delay if attempts remain
+        if (attempt < retries) {
+          await sleep(delayMs);
+          continue;
+        }
+
+        throw lastError;
       }
-      throw new Error("An unexpected network error occurred.");
     }
+
+    // All retries failed. Verify if Render is really inactive before triggering sleeping status
+    if (endpoint !== "/health") {
+      try {
+        const reallyInactive = await this.isRenderReallyInactive();
+        if (reallyInactive) {
+          this.notifyServiceUnavailable();
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    throw lastError || new Error("Request failed after retries.");
   }
 
 
-  async getHealth(): Promise<{ status: string; service: string; database_mode: string; gemini_configured: boolean }> {
-    return this.request("/health");
+  async getHealth(options: { retries?: number; delayMs?: number } = {}): Promise<{ status: string; service: string; database_mode: string; gemini_configured: boolean }> {
+    const retries = options.retries !== undefined ? options.retries : 3;
+    const delayMs = options.delayMs !== undefined ? options.delayMs : 1500;
+    return this.request("/health", {}, retries, delayMs);
   }
+
 
   async getStages(): Promise<StageDefinition[]> {
     return this.request("/stages");

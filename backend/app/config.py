@@ -13,6 +13,9 @@ class Settings(BaseSettings):
     # Optional backup key. Used automatically when the primary key hits its quota.
     GEMINI_API_KEY_2: str = ""
     FRONTEND_ORIGIN: str = "http://localhost:3000,http://127.0.0.1:3000"
+    # Optional regex for allowed origins (e.g. Vercel preview deployments).
+    # Matches the project's production and preview domains by default.
+    FRONTEND_ORIGIN_REGEX: str = r"https://callflow[a-z0-9-]*\.vercel\.app"
     SQLITE_DB_PATH: str = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "callflow.db")
     PORT: int = 8000
 
@@ -33,6 +36,10 @@ class Settings(BaseSettings):
             if d not in origins:
                 origins.append(d)
         return origins
+
+    @property
+    def cors_origin_regex(self) -> str:
+        return self.FRONTEND_ORIGIN_REGEX.strip()
 
     @property
     def supabase_key(self) -> str:

@@ -11,7 +11,9 @@ services:
       - key: PORT
         value: 10000
       - key: FRONTEND_ORIGIN
-        value: https://callflow.vercel.app,http://localhost:3000
+        value: https://callflow-gamma-opal.vercel.app,https://callflow.vercel.app,http://localhost:3000
+      - key: FRONTEND_ORIGIN_REGEX
+        value: https://callflow[a-z0-9-]*\.vercel\.app
       - key: GEMINI_API_KEY
         sync: false
       - key: GEMINI_API_KEY_2

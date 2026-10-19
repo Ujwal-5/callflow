@@ -167,26 +167,6 @@ export const CurrentStagePanel: React.FC<CurrentStagePanelProps> = ({
         <div className="flex flex-wrap items-center justify-between gap-2">
           {/* Stage badge & manual dropdown selector */}
           <div className="flex items-center space-x-2">
-            <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#0062ff]">
-              Stage {stage.stage_number} of {totalStages}
-            </span>
-
-            {/* Quick manual stage jump selector */}
-            {allStages.length > 0 && onSelectStage && (
-              <select
-                aria-label="Select stage"
-                value={stage.stage_number}
-                onChange={(e) => onSelectStage(Number(e.target.value))}
-                className="rounded border border-[#233554] bg-[#070d1e] px-2 py-0.5 text-[11px] font-medium text-slate-300 focus:border-[#0062ff] focus:outline-none"
-              >
-                {allStages.map((s) => (
-                  <option key={s.stage_number} value={s.stage_number}>
-                    Jump to: {s.stage_number}. {s.name}
-                  </option>
-                ))}
-              </select>
-            )}
-
             {currentStatus === "skipped" && (
               <span className="rounded border border-amber-500/40 bg-amber-950/40 px-2 py-0.5 text-[10px] font-semibold text-amber-300 uppercase tracking-wide">
                 Marked Skipped

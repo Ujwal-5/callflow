@@ -88,11 +88,16 @@ export default function Home() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [liveTranscription.finalSegments]);
 
-  const showError = useCallback((err: unknown, fallback: string) => {
-    if (isBackendSleepingError(err)) {
-      setServiceStatus("sleeping");
-      setGlobalError(null);
-      return;
+  const showError = useCallback(async (err: unknown, fallback: string) => {
+    try {
+      const isInactive = await api.isRenderReallyInactive();
+      if (isInactive) {
+        setServiceStatus("sleeping");
+        setGlobalError(null);
+        return;
+      }
+    } catch {
+      // ignore
     }
     setGlobalError(err instanceof Error ? err.message : fallback);
   }, []);
@@ -114,9 +119,13 @@ export default function Home() {
         const healthRes = await api.getHealth().catch(() => null);
         if (ignore) return;
         if (!healthRes) {
-          setServiceStatus("sleeping");
-          setIsLoadingInitial(false);
-          return;
+          const reallyInactive = await api.isRenderReallyInactive();
+          if (ignore) return;
+          if (reallyInactive) {
+            setServiceStatus("sleeping");
+            setIsLoadingInitial(false);
+            return;
+          }
         }
         setServiceStatus("online");
 
@@ -253,7 +262,7 @@ export default function Home() {
 
     const poll = async () => {
       try {
-        const healthRes = await api.getHealth().catch(() => null);
+        const healthRes = await api.getHealth({ retries: 0 }).catch(() => null);
         if (healthRes) {
           if (wakePollingRef.current) clearInterval(wakePollingRef.current);
           if (wakeElapsedRef.current) clearInterval(wakeElapsedRef.current);
@@ -741,7 +750,7 @@ export default function Home() {
         />
 
         {/* Global Error Banner */}
-        {globalError && serviceStatus !== "sleeping" && !isBackendSleepingError(globalError) && (
+        {globalError && serviceStatus !== "sleeping" && (
           <div className="border-b border-rose-500/50 bg-rose-950/70 px-4 py-2 text-xs text-rose-200">
             <div className="mx-auto flex max-w-6xl items-center justify-between">
               <span>{globalError}</span>
