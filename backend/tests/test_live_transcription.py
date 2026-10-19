@@ -303,16 +303,24 @@ class TestLiveTranscriptionSender(unittest.TestCase):
                 return False
 
         class FakeLive:
+            def __init__(self):
+                self.config = None
+
             def connect(self, model=None, config=None):
+                self.config = config
                 return FakeConnect()
 
         class FakeAio:
             def __init__(self):
                 self.live = FakeLive()
 
+        fake_client = None
+
         class FakeClient:
             def __init__(self, api_key=None, http_options=None):
+                nonlocal fake_client
                 self.aio = FakeAio()
+                fake_client = self
 
         async def audio_gen():
             yield chunk
@@ -339,6 +347,10 @@ class TestLiveTranscriptionSender(unittest.TestCase):
         self.assertEqual(blob.mime_type, "audio/pcm;rate=16000")
         self.assertTrue(session.realtime_inputs[-1].get("audio_stream_end"))
         self.assertEqual([e["type"] for e in received], ["connected", "done"])
+        self.assertEqual(
+            fake_client.aio.live.config.input_audio_transcription.mode.value,
+            "VERBATIM",
+        )
 
 
 if __name__ == "__main__":

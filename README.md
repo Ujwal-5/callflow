@@ -473,5 +473,5 @@ repeatedly calling exhausted models.
 
 Frequent workflow assistance uses a separate Gemma 4 pool (`gemma-4-26b-a4b-it`
 then `gemma-4-31b-it`). Higher-value summaries, commitment radar, conversation
-gap analysis, and transcription continue using their existing specialized or
-stronger model pools.
+gap analysis, and live transcription continue using their specialized model
+paths.

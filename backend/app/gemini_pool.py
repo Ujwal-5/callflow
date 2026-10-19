@@ -32,27 +32,6 @@ DEFAULT_LIGHT_TEXT_MODELS = [
 ]
 
 
-# Audio transcription models for pre-recorded uploads.
-# Note: gemini-3.5-transcribe-live is streaming-only (Live API / WebSocket) and
-# rejects one-shot generate_content calls, so it cannot be used for uploads.
-
-DEFAULT_AUDIO_MODELS = [
-    # The Dedicated Pure Speech-to-Text Model
-    "gemini-3.5-transcribe",
-    
-    # Multimodal Models (Accept Audio Input -> Output Text Transcript)
-    "gemini-3.8-flash",
-    "gemini-3.7-flash",
-    "gemini-3.6-flash",
-    "gemini-3.5-flash-lite",
-    
-    "gemini-3-flash",
-    "gemini-3.1-flash-lite",
-    "gemini-2.5-flash",
-    "gemini-2.5-flash-lite",
-]
-
-
 # How long a (key, model) pair is skipped after a 429/503 before it is retried.
 RATE_LIMIT_COOLDOWN_SECONDS = 60.0
 GEMINI_QUOTA_TIMEZONE = "America/Los_Angeles"
@@ -371,4 +350,3 @@ light_text_model_pool = GeminiModelPool(
     DEFAULT_LIGHT_TEXT_MODELS,
     task_name="Lightweight-Workflow-Assist",
 )
-audio_model_pool = GeminiModelPool(DEFAULT_AUDIO_MODELS, task_name="Audio-Transcription")

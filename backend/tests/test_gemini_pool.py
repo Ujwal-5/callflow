@@ -5,7 +5,6 @@ from unittest.mock import patch
 
 from backend.app.config import settings
 from backend.app.gemini_pool import (
-    DEFAULT_AUDIO_MODELS,
     DEFAULT_LIGHT_TEXT_MODELS,
     GeminiKeyPool,
     GeminiModelPool,
@@ -40,11 +39,6 @@ class TestGeminiPool(unittest.TestCase):
     def tearDown(self):
         for p in self._patches:
             p.stop()
-
-    def test_primary_audio_model_is_batch_transcribe(self):
-        # The Live variant only supports real-time WebSocket streaming.
-        self.assertEqual(DEFAULT_AUDIO_MODELS[0], "gemini-3.5-transcribe")
-        self.assertNotIn("gemini-3.5-transcribe-live", DEFAULT_AUDIO_MODELS)
 
     def test_lightweight_models_are_separate_from_important_text_pool(self):
         self.assertEqual(DEFAULT_LIGHT_TEXT_MODELS[0], "gemma-4-26b-a4b-it")
