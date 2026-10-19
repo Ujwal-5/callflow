@@ -120,6 +120,7 @@ export function useLiveTranscription(): UseLiveTranscriptionReturn {
   // Refs for cleanup and deduplication
   const wsRef = useRef<WebSocket | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const errorShownRef = useRef(false);
   const audioContextRef = useRef<AudioContext | null>(null);
   const processorRef = useRef<ScriptProcessorNode | null>(null);
   const sourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
@@ -338,6 +339,7 @@ export function useLiveTranscription(): UseLiveTranscriptionReturn {
           stopTimer();
           releaseAudio();
           wsRef.current = null;
+          errorShownRef.current = true;
         }
       } catch {
         // Non-JSON message — ignore
@@ -345,8 +347,8 @@ export function useLiveTranscription(): UseLiveTranscriptionReturn {
     };
 
     ws.onclose = () => {
-      if (!isStoppingRef.current && state !== "idle") {
-        // Unexpected closure
+      if (!isStoppingRef.current && !errorShownRef.current && state !== "idle") {
+        // Unexpected closure — but don't overwrite an error that was already shown
         setError(
           "Connection to transcription server lost. Transcript data is preserved."
         );
