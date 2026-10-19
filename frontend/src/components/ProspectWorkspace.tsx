@@ -14,6 +14,7 @@ interface ProspectWorkspaceProps {
   onCompleteFollowup: (followupId: string) => void;
   onRescheduleFollowup: (followup: FollowUpItem) => void;
   onCreateProspect: (payload: CreateProspectPayload) => Promise<Prospect>;
+  onDeleteProspect?: (prospectId: string) => void | Promise<void>;
 }
 
 export const ProspectWorkspace: React.FC<ProspectWorkspaceProps> = ({
@@ -27,6 +28,7 @@ export const ProspectWorkspace: React.FC<ProspectWorkspaceProps> = ({
   onCompleteFollowup,
   onRescheduleFollowup,
   onCreateProspect,
+  onDeleteProspect,
 }) => {
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState<"all" | "has_calls" | "has_followups">("all");
@@ -431,11 +433,30 @@ export const ProspectWorkspace: React.FC<ProspectWorkspaceProps> = ({
                       <span className={`font-bold truncate ${isSelected ? "text-white" : "text-slate-200"}`}>
                         {p.company_name}
                       </span>
-                      {p.is_custom && (
-                        <span className="rounded bg-indigo-950 border border-indigo-500/40 px-1 py-0.2 text-[9px] font-mono text-indigo-300">
-                          Custom
-                        </span>
-                      )}
+                      <div className="flex items-center space-x-1 shrink-0 ml-1">
+                        {p.is_custom && (
+                          <span className="rounded bg-indigo-950 border border-indigo-500/40 px-1 py-0.2 text-[9px] font-mono text-indigo-300">
+                            Custom
+                          </span>
+                        )}
+                        {onDeleteProspect && (
+                          <button
+                            type="button"
+                            title="Delete prospect"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (window.confirm(`Are you sure you want to delete prospect "${p.company_name}"?`)) {
+                                onDeleteProspect(p.id);
+                              }
+                            }}
+                            className="opacity-50 hover:opacity-100 p-0.5 rounded text-rose-400 hover:text-white hover:bg-rose-900/40 transition-opacity"
+                          >
+                            <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        )}
+                      </div>
                     </div>
 
                     {p.contact_name && (
@@ -507,17 +528,36 @@ export const ProspectWorkspace: React.FC<ProspectWorkspaceProps> = ({
                     </div>
                   </div>
 
-                  {/* Prominent Start Call CTA */}
-                  <button
-                    type="button"
-                    onClick={handleStartCall}
-                    className="flex items-center space-x-2 rounded-lg bg-[#0062ff] px-4 py-2 text-xs font-bold text-white hover:bg-[#0052d9] transition-all shadow-md shadow-[#0062ff]/30 shrink-0"
-                  >
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                    </svg>
-                    <span>Start Call with {activeProspect.company_name}</span>
-                  </button>
+                  <div className="flex items-center space-x-2 shrink-0">
+                    {onDeleteProspect && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (window.confirm(`Are you sure you want to delete prospect "${activeProspect.company_name}"? This cannot be undone.`)) {
+                            onDeleteProspect(activeProspect.id);
+                          }
+                        }}
+                        className="flex items-center space-x-1.5 rounded-lg border border-rose-500/40 bg-rose-950/30 px-3 py-2 text-xs font-semibold text-rose-300 hover:bg-rose-900/50 hover:text-white transition-colors"
+                      >
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        <span>Delete</span>
+                      </button>
+                    )}
+
+                    {/* Prominent Start Call CTA */}
+                    <button
+                      type="button"
+                      onClick={handleStartCall}
+                      className="flex items-center space-x-2 rounded-lg bg-[#0062ff] px-4 py-2 text-xs font-bold text-white hover:bg-[#0052d9] transition-all shadow-md shadow-[#0062ff]/30 shrink-0"
+                    >
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                      </svg>
+                      <span>Start Call with {activeProspect.company_name}</span>
+                    </button>
+                  </div>
                 </div>
 
                 {activeProspect.context && (

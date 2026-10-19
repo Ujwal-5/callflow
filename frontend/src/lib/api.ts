@@ -23,11 +23,49 @@ import {
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
+export function isBackendSleepingError(err: unknown): boolean {
+  if (!err) return false;
+  const msg = (err instanceof Error ? err.message : String(err)).toLowerCase();
+  return (
+    msg.includes("failed to fetch") ||
+    msg.includes("networkerror") ||
+    msg.includes("network error") ||
+    msg.includes("load failed") ||
+    msg.includes("timed out") ||
+    msg.includes("aborterror") ||
+    msg.includes("service unavailable") ||
+    msg.includes("bad gateway") ||
+    msg.includes("gateway timeout") ||
+    msg.includes("http error 502") ||
+    msg.includes("http error 503") ||
+    msg.includes("http error 504") ||
+    msg.includes("connection refused")
+  );
+}
+
 class ApiClient {
   private baseUrl: string;
+  private unavailableListeners: Set<() => void> = new Set();
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl.replace(/\/$/, "");
+  }
+
+  public onServiceUnavailable(listener: () => void): () => void {
+    this.unavailableListeners.add(listener);
+    return () => {
+      this.unavailableListeners.delete(listener);
+    };
+  }
+
+  private notifyServiceUnavailable() {
+    this.unavailableListeners.forEach((fn) => {
+      try {
+        fn();
+      } catch (e) {
+        console.error("Error notifying unavailable listener:", e);
+      }
+    });
   }
 
   private async request<T>(
@@ -53,6 +91,11 @@ class ApiClient {
       clearTimeout(timeoutId);
 
       if (!response.ok) {
+        if (response.status === 502 || response.status === 503 || response.status === 504) {
+          if (endpoint !== "/health") {
+            this.notifyServiceUnavailable();
+          }
+        }
         let errorMessage = `HTTP error ${response.status}`;
         try {
           const errData = await response.json();
@@ -70,6 +113,9 @@ class ApiClient {
       return await response.json();
     } catch (err: unknown) {
       clearTimeout(timeoutId);
+      if (endpoint !== "/health" && isBackendSleepingError(err)) {
+        this.notifyServiceUnavailable();
+      }
       if (err instanceof Error) {
         if (err.name === "AbortError") {
           throw new Error("Request timed out. Please check if the backend server is reachable.");
@@ -79,6 +125,7 @@ class ApiClient {
       throw new Error("An unexpected network error occurred.");
     }
   }
+
 
   async getHealth(): Promise<{ status: string; service: string; database_mode: string; gemini_configured: boolean }> {
     return this.request("/health");
@@ -378,11 +425,30 @@ class ApiClient {
     });
   }
 
+  async deleteCall(callId: string): Promise<{ deleted: boolean; id: string }> {
+    return this.request(`/calls/${callId}`, {
+      method: "DELETE",
+    });
+  }
+
+  async deleteProspect(prospectId: string): Promise<{ deleted: boolean; id: string }> {
+    return this.request(`/prospects/${prospectId}`, {
+      method: "DELETE",
+    });
+  }
+
+  async deleteFollowup(followupId: string): Promise<{ deleted: boolean; id: string }> {
+    return this.request(`/followups/${followupId}`, {
+      method: "DELETE",
+    });
+  }
+
   /**
    * Build a WebSocket URL for the live transcription endpoint.
    * Converts the HTTP base URL to ws:// or wss://.
    */
   getLiveTranscriptionWsUrl(callId: string): string {
+
     const wsBase = this.baseUrl
       .replace(/^https:\/\//, "wss://")
       .replace(/^http:\/\//, "ws://");

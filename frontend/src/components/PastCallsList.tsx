@@ -6,6 +6,7 @@ import { Call } from "@/types";
 interface PastCallsListProps {
   calls: Call[];
   onSelectCall: (callId: string) => void;
+  onDeleteCall?: (callId: string) => void | Promise<void>;
   isLoading?: boolean;
 }
 
@@ -36,6 +37,7 @@ const STAGE_OPTIONS = [
 export const PastCallsList: React.FC<PastCallsListProps> = ({
   calls,
   onSelectCall,
+  onDeleteCall,
   isLoading = false,
 }) => {
   const [search, setSearch] = useState("");
@@ -284,16 +286,35 @@ export const PastCallsList: React.FC<PastCallsListProps> = ({
                       )}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onSelectCall(c.id);
-                        }}
-                        className="rounded border border-[#233554] bg-[#070d1e] px-2.5 py-1 text-[11px] font-medium text-slate-300 hover:border-slate-400 hover:text-white"
-                      >
-                        Inspect Record
-                      </button>
+                      <div className="flex items-center justify-end space-x-2">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSelectCall(c.id);
+                          }}
+                          className="rounded border border-[#233554] bg-[#070d1e] px-2.5 py-1 text-[11px] font-medium text-slate-300 hover:border-slate-400 hover:text-white"
+                        >
+                          Inspect Record
+                        </button>
+                        {onDeleteCall && (
+                          <button
+                            type="button"
+                            title="Delete call record"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (window.confirm(`Are you sure you want to delete the call record for "${c.company_name}"? This cannot be undone.`)) {
+                                onDeleteCall(c.id);
+                              }
+                            }}
+                            className="rounded border border-rose-500/30 bg-rose-950/20 p-1 text-rose-400 hover:border-rose-400 hover:bg-rose-900/40 hover:text-white transition-colors"
+                          >
+                            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}

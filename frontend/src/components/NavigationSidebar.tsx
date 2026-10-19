@@ -80,6 +80,32 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
         </svg>
       ),
     },
+    ...(hasLiveCall
+      ? [
+          {
+            id: "active" as MainNavigationArea,
+            label: "Live Call",
+            badge: `Stage ${activeCall?.current_stage || 1}`,
+            badgeColor: "bg-emerald-950 border border-emerald-500/40 text-emerald-300 animate-pulse",
+            icon: (
+              <span className="relative flex h-3.5 w-3.5 items-center justify-center">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+              </span>
+            ),
+          },
+        ]
+      : [
+          {
+            id: "active" as MainNavigationArea,
+            label: "Start New Call",
+            icon: (
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+            ),
+          },
+        ]),
   ];
 
   const handleNavClick = (id: MainNavigationArea) => {
@@ -92,18 +118,18 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
       {/* ── Mobile Top Bar ── */}
       <div className="lg:hidden sticky top-0 z-40 border-b border-[#233554] bg-[#0b132b] px-4 py-3 flex items-center justify-between">
         <div className="flex items-center space-x-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded bg-[#0062ff] font-bold text-white shadow-sm shadow-[#0062ff]/30">
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-            </svg>
-          </div>
+          <img
+            src="/logo.svg"
+            alt="CallFlow Brand Logo"
+            className="h-8 w-8 rounded-lg shadow-sm shadow-[#0062ff]/30"
+          />
           <div>
             <div className="flex items-baseline space-x-1.5">
               <span className="text-base font-bold text-white">CallFlow</span>
-              <span className="text-[10px] font-semibold uppercase text-[#0062ff]">Pro</span>
             </div>
           </div>
         </div>
+
 
         <div className="flex items-center space-x-2">
           {hasLiveCall && (
@@ -160,18 +186,6 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
             );
           })}
 
-          <div className="pt-2 border-t border-[#1c2a47]">
-            <button
-              onClick={() => handleNavClick("active")}
-              className={`flex w-full items-center justify-center space-x-2 rounded px-3 py-2 text-xs font-bold transition-all ${
-                hasLiveCall
-                  ? "bg-emerald-600 text-white hover:bg-emerald-500 shadow-md shadow-emerald-900/30"
-                  : "bg-[#0062ff] text-white hover:bg-[#0052d9]"
-              }`}
-            >
-              <span>{hasLiveCall ? "● Return to Live Call" : "+ Start New Call"}</span>
-            </button>
-          </div>
         </div>
       )}
 
@@ -180,15 +194,14 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
         {/* Brand identity */}
         <div className="p-5 border-b border-[#233554]/70">
           <div className="flex items-center space-x-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#0062ff] font-bold text-white shadow-md shadow-[#0062ff]/30">
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-              </svg>
-            </div>
+            <img
+              src="/logo.svg"
+              alt="CallFlow Brand Logo"
+              className="h-9 w-9 rounded-lg shadow-md shadow-[#0062ff]/30"
+            />
             <div>
               <div className="flex items-baseline space-x-1.5">
                 <span className="text-lg font-bold tracking-tight text-white">CallFlow</span>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#0062ff]">Pro</span>
               </div>
               <p className="text-[11px] text-slate-400">Sales Workflow Assistant</p>
             </div>
@@ -232,84 +245,8 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
             );
           })}
         </nav>
-
-        {/* Persistent Active Call Action / Indicator Card */}
-        <div className="p-3 border-t border-[#233554]/70 bg-[#070d1e]/50">
-          {hasLiveCall ? (
-            <div className="rounded-lg border border-emerald-500/30 bg-emerald-950/30 p-3 space-y-2.5">
-              <div className="flex items-center justify-between">
-                <span className="flex items-center space-x-1.5 text-[11px] font-bold uppercase text-emerald-400 tracking-wider">
-                  <span className="relative flex h-2 w-2">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
-                  </span>
-                  <span>Active Call</span>
-                </span>
-                <span className="rounded bg-emerald-900/60 border border-emerald-500/30 px-1.5 py-0.2 text-[9px] font-mono text-emerald-300">
-                  Stage {activeCall?.current_stage || 1}/8
-                </span>
-              </div>
-
-              <div>
-                <p className="font-bold text-white text-xs truncate">
-                  {activeCall?.company_name}
-                </p>
-                {activeCall?.contact_name && (
-                  <p className="text-[11px] text-slate-300 truncate">
-                    {activeCall.contact_name}
-                  </p>
-                )}
-              </div>
-
-              <button
-                type="button"
-                onClick={() => handleNavClick("active")}
-                className="w-full flex items-center justify-center space-x-1.5 rounded bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-emerald-500 shadow-sm transition-all"
-              >
-                <span>Resume Active Call →</span>
-              </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => {
-                if (onStartNewCall) {
-                  onStartNewCall();
-                } else {
-                  handleNavClick("active");
-                }
-              }}
-              className="w-full flex items-center justify-center space-x-2 rounded-lg bg-[#0062ff] px-3.5 py-2 text-xs font-bold text-white hover:bg-[#0052d9] shadow-md shadow-[#0062ff]/20 transition-all"
-            >
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              <span>Start New Call</span>
-            </button>
-          )}
-
-          {/* System status footer */}
-          <div className="mt-3 flex items-center justify-between px-1 text-[11px] text-slate-400">
-            <span>Assistant Status</span>
-            {serviceStatus === "online" ? (
-              <span className="flex items-center space-x-1 text-emerald-400">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                <span>Online</span>
-              </span>
-            ) : serviceStatus === "waking" ? (
-              <span className="flex items-center space-x-1 text-amber-400">
-                <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
-                <span>Starting…</span>
-              </span>
-            ) : (
-              <span className="flex items-center space-x-1 text-slate-400">
-                <span className="h-1.5 w-1.5 rounded-full bg-slate-500" />
-                <span>Inactive</span>
-              </span>
-            )}
-          </div>
-        </div>
       </aside>
     </>
   );
 };
+

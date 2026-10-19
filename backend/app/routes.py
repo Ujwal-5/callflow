@@ -104,6 +104,20 @@ def get_call(call_id: str):
     return call
 
 
+@router.delete("/calls/{call_id}", tags=["Calls"])
+def delete_call_endpoint(call_id: str):
+    """Delete a call record and all associated transcripts, stage results, commitments, and opportunities."""
+    call = db.get_call(call_id)
+    if not call:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Call with ID '{call_id}' not found."
+        )
+    db.delete_call(call_id)
+    return {"deleted": True, "id": call_id}
+
+
+
 @router.put("/calls/{call_id}/stages/{stage_number}", response_model=StageResultResponse, tags=["Stages"])
 def update_stage_result(call_id: str, stage_number: int, payload: StageResultUpdate):
     """Create or update a stage result for a call. Validates stage number 1-8."""
@@ -990,6 +1004,20 @@ def get_prospect_calls_endpoint(prospect_id: str):
     return matched
 
 
+@router.delete("/prospects/{prospect_id}", tags=["Prospects"])
+def delete_prospect_endpoint(prospect_id: str):
+    """Delete a prospect from the directory."""
+    p = db.get_prospect(prospect_id)
+    if not p:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Prospect with ID '{prospect_id}' not found."
+        )
+    db.delete_prospect(prospect_id)
+    return {"deleted": True, "id": prospect_id}
+
+
+
 # ──────────────────────────────────────────────────────────────────────────
 # Follow-up Management Endpoints
 # ──────────────────────────────────────────────────────────────────────────
@@ -1135,6 +1163,31 @@ def update_followup_endpoint(followup_id: str, payload: FollowUpUpdate):
         "updated_at": updated.get("updated_at"),
         "source": "commitment",
     }
+
+
+@router.delete("/followups/{followup_id}", tags=["Followups"])
+def delete_followup_endpoint(followup_id: str):
+    """Delete a follow-up item. If synthesized from a call, clears call followup; if a commitment, removes it."""
+    if followup_id.startswith("call_"):
+        call_id = followup_id.replace("call_", "", 1)
+        call = db.get_call(call_id)
+        if not call:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Originating call for follow-up '{followup_id}' not found."
+            )
+        db.clear_call_followup(call_id)
+        return {"deleted": True, "id": followup_id}
+
+    comm = db.get_commitment(followup_id)
+    if not comm:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Follow-up with ID '{followup_id}' not found."
+        )
+    db.delete_commitment(followup_id)
+    return {"deleted": True, "id": followup_id}
+
 
 
 # ──────────────────────────────────────────────────────────────────────────────

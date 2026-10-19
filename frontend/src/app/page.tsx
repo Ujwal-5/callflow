@@ -17,7 +17,7 @@ import { StageAINotesPanel } from "@/components/StageAINotesPanel";
 import { useLiveTranscription } from "@/hooks/useLiveTranscription";
 import { useStageNotesAnalysis } from "@/hooks/useStageNotesAnalysis";
 
-import { api } from "@/lib/api";
+import { api, isBackendSleepingError } from "@/lib/api";
 import {
   StageDefinition,
   Call,
@@ -87,6 +87,24 @@ export default function Home() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [liveTranscription.finalSegments]);
+
+  const showError = useCallback((err: unknown, fallback: string) => {
+    if (isBackendSleepingError(err)) {
+      setServiceStatus("sleeping");
+      setGlobalError(null);
+      return;
+    }
+    setGlobalError(err instanceof Error ? err.message : fallback);
+  }, []);
+
+  // Listen for background service inactivity from API client
+  useEffect(() => {
+    const unsub = api.onServiceUnavailable(() => {
+      setServiceStatus("sleeping");
+      setGlobalError(null);
+    });
+    return unsub;
+  }, []);
 
   // Initial data loading
   useEffect(() => {
@@ -292,9 +310,7 @@ export default function Home() {
       // Refresh calls in background
       api.listCalls().then(setCallsHistory).catch(() => {});
     } catch (err: unknown) {
-      setGlobalError(
-        err instanceof Error ? err.message : "Failed to start call."
-      );
+      showError(err, "Failed to start call.");
     } finally {
       setIsStartingCall(false);
     }
@@ -567,9 +583,7 @@ export default function Home() {
         })();
       }
     } catch (err: unknown) {
-      setGlobalError(
-        err instanceof Error ? err.message : "Failed to close call."
-      );
+      showError(err, "Failed to close call.");
     } finally {
       setIsSubmittingClose(false);
     }
@@ -615,9 +629,7 @@ export default function Home() {
       const fullCall = await api.getCall(callId);
       setSelectedHistoryCall(fullCall);
     } catch (err: unknown) {
-      setGlobalError(
-        err instanceof Error ? err.message : "Failed to load call details."
-      );
+      showError(err, "Failed to load call details.");
     }
   };
 
@@ -656,6 +668,46 @@ export default function Home() {
     return created;
   };
 
+  // Delete handlers
+  const handleDeleteCall = async (callId: string) => {
+    try {
+      await api.deleteCall(callId);
+      setCallsHistory((prev) => prev.filter((c) => c.id !== callId));
+      if (selectedHistoryCall?.id === callId) {
+        setSelectedHistoryCall(null);
+      }
+      if (activeCall?.id === callId) {
+        setActiveCall(null);
+        localStorage.removeItem(ACTIVE_CALL_STORAGE_KEY);
+      }
+      setFollowups((prev) => prev.filter((f) => f.call_id !== callId));
+    } catch (err: unknown) {
+      showError(err, "Failed to delete call record.");
+    }
+  };
+
+  const handleDeleteProspect = async (prospectId: string) => {
+    try {
+      await api.deleteProspect(prospectId);
+      setProspects((prev) => prev.filter((p) => p.id !== prospectId));
+      if (selectedProspectId === prospectId) {
+        setSelectedProspectId(null);
+      }
+    } catch (err: unknown) {
+      showError(err, "Failed to delete prospect.");
+    }
+  };
+
+  const handleDeleteFollowup = async (followupId: string) => {
+    try {
+      await api.deleteFollowup(followupId);
+      setFollowups((prev) => prev.filter((f) => f.id !== followupId));
+    } catch (err: unknown) {
+      showError(err, "Failed to delete follow-up.");
+    }
+  };
+
+
   const currentStageDef = stages.find(
     (s) => s.stage_number === currentStageNumber
   ) || stages[0];
@@ -689,7 +741,7 @@ export default function Home() {
         />
 
         {/* Global Error Banner */}
-        {globalError && (
+        {globalError && serviceStatus !== "sleeping" && !isBackendSleepingError(globalError) && (
           <div className="border-b border-rose-500/50 bg-rose-950/70 px-4 py-2 text-xs text-rose-200">
             <div className="mx-auto flex max-w-6xl items-center justify-between">
               <span>{globalError}</span>
@@ -774,6 +826,7 @@ export default function Home() {
                 handleRescheduleFollowup(item.id, "Rescheduled");
               }}
               onCreateProspect={handleCreateProspect}
+              onDeleteProspect={handleDeleteProspect}
             />
           ) : activeView === "followups" ? (
             /* ══════════════════════════════════════════════
@@ -790,6 +843,7 @@ export default function Home() {
               }}
               onInspectCall={handleInspectHistoryCall}
               onStartCallWithProspect={handleStartCallWithProspect}
+              onDeleteFollowup={handleDeleteFollowup}
             />
           ) : activeView === "history" ? (
             /* ══════════════════════════════════════════════
@@ -816,6 +870,7 @@ export default function Home() {
               <PastCallsList
                 calls={callsHistory}
                 onSelectCall={handleInspectHistoryCall}
+                onDeleteCall={handleDeleteCall}
               />
             </div>
           ) : (
@@ -1021,6 +1076,7 @@ export default function Home() {
           isAutoAnalyzing={isAutoAnalyzing}
           onRetryAnalysis={handleRetryAnalysis}
           autoAnalysisError={autoAnalysisError}
+          onDeleteCall={handleDeleteCall}
         />
       )}
 

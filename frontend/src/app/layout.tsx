@@ -4,6 +4,14 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "CallFlow — AI-Powered Cold Call Assistant",
   description: "Stay on track. Make every call count.",
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "32x32" },
+    ],
+    apple: "/icon.svg",
+    shortcut: "/icon.svg",
+  },
 };
 
 export default function RootLayout({

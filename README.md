@@ -2,7 +2,7 @@
 
 > **Stay on track. Make every call count.**
 
-CallFlow is an editorial-style, real-time web application built for B2B sales development representatives and account executives. It guides callers through a high-velocity 8-stage cold-call workflow with single-click outcome logging, prominent verbatim prospect note capture, early exit capability from any stage, structured call history search, and Google Gemini AI summarization.
+CallFlow is an editorial-style, real-time web application built for B2B sales development representatives and account executives. It guides callers through a high-velocity 8-stage cold-call workflow with single-click outcome logging, prominent verbatim prospect note capture, early exit capability from any stage, structured call history search, Google Gemini AI summarization, commitment radar, conversation gap detection, prospect management, and follow-up tracking.
 
 ---
 
@@ -16,30 +16,41 @@ CallFlow is architected with a decoupled frontend and backend:
   - **Production**: Supabase (PostgreSQL) using the relational schema in `backend/sql/schema.sql` with UUID keys, unique constraints on `(call_id, stage_number)`, and performance indexing.
   - **Local Development / Offline Fallback**: Fully isolated SQLite database (`backend/callflow.db`) automatically activated when Supabase credentials are not configured, requiring zero external infrastructure to run locally.
 - **LLM Synthesis**: Google Gen AI SDK (`google-genai` 2.31.0) using Gemini (`gemini-2.5-flash`) for structured JSON call summarization and next action extraction. The core calling workflow remains 100% operational even when the Gemini API is unconfigured or unreachable.
+- **Commitment Radar**: AI-powered analysis of call transcripts to extract candidate commitments, detect missed opportunities, and find historical comparisons from the 100-call dataset.
+- **Conversation Gap Detector**: AI analysis of call dialogue to identify unresolved questions, unconfirmed agreements, unaddressed objections, and unexplored referrals.
+- **Stage Notes Analysis**: AI classification of transcript segments into the 8 cold-call stages with evidence-backed notes.
+- **Live Transcription**: Real-time audio transcription via Gemini Live API through WebSocket.
 
-```
-                      +-----------------------------+
-                      |   Next.js 16 Web Client     |
-                      |  - Active 8-Stage Call UI   |
-                      |  - Historical Past Calls    |
-                      +--------------+--------------+
-                                     |
-                             REST / JSON (CORS)
-                                     |
-                      +--------------v--------------+
-                      |     FastAPI Backend         |
-                      |  - /stages, /calls          |
-                      |  - /calls/{id}/stages/{n}   |
-                      |  - /calls/{id}/summary      |
-                      +-------+--------------+------+
-                              |              |
-                +-------------+              +-------------+
-                |                                          |
-     +----------v----------+                    +----------v----------+
-     | Persistence Adapter |                    |  Gemini AI Engine   |
-     | - Supabase (Prod)   |                    |  (gemini-2.5-flash) |
-     | - SQLite (Fallback) |                    |  - Structured Brief |
-     +---------------------+                    +---------------------+
+```mermaid
+graph TD
+    subgraph Frontend
+        A[Next.js 16 Web Client]
+        B[Active 8-Stage Call UI]
+        C[Historical Past Calls]
+        D[Commitment Radar Panel]
+        E[Gap Detector Panel]
+        F[Stage Notes Panel]
+        G[Live Transcription]
+    end
+
+    subgraph Backend
+        H[FastAPI]
+        I[SQLite / Supabase]
+        J[Gemini AI]
+        K[Radar Engine]
+        L[Gap Detector]
+        M[Stage Notes Classifier]
+        N[Transcription Engine]
+    end
+
+    A -- REST / JSON (CORS) --> H
+    C -- REST / JSON (CORS) --> H
+    H --> I
+    H --> J
+    H --> K
+    H --> L
+    H --> M
+    H --> N
 ```
 
 ---
@@ -52,7 +63,7 @@ CallFlow is architected with a decoupled frontend and backend:
 | **2** | **Purpose** | Explain why you called in 1-2 repeatable sentences. | Asks what company does, asks where number was found, identifies sales call. | Asked what we do, Asked about the number, Identified it as a sales call, Purpose understood |
 | **3** | **Permission** | Establish whether prospect is willing to speak now. | Requests callback, agrees but remains quiet, speaks without agreeing. | Agreed to talk, Requested callback, Asked for a message, Did not agree to proceed |
 | **4** | **Their business** | Understand company and work before pitching offering. | Describes work briefly, corrects assumption, asks about caller business first. | Explained their business, Corrected our assumption, Asked about our business, No useful information |
-| **5** | **Their need, in their words** | Discover goals, struggles, and operational bottlenecks. | Mentions goal/problem, claims no need, asks what caller can offer. *(Prominent Verbatim Field)* | Identified a need, No current need, Asked what we can offer, Need unclear |
+| **5** | **Their need, in their words** | Discover goals, struggles, and operational bottlenecks. | Mentions goal/problem, claims no need, asks what caller can offer. (*Prominent Verbatim Field*) | Identified a need, No current need, Asked what we can offer, Need unclear |
 | **6** | **Objection** | Understand reason for hesitation/refusal before countering. | Has agency/internal team, refers to other decision-maker, asks for info in writing. | Existing provider, Wrong decision-maker, Requested written information, Other objection |
 | **7** | **Next step** | Agree on one concrete next action with time, date, or channel. | WhatsApp/Email report, callback scheduled, meeting agreed. | Document requested, Callback scheduled, Meeting agreed, No next step |
 | **8** | **Close** | Record outcome, next step, and prospect's words from stage 5. | Follow-up agreed, not interested, referred to another person. | Follow-up agreed, Not interested, Referred to another person, Call ended unexpectedly |
@@ -72,17 +83,41 @@ callflow/
 │   │   ├── llm.py              # Google Gen AI Gemini summary engine
 │   │   ├── models.py           # Pydantic request/response schemas
 │   │   ├── routes.py           # FastAPI router for all endpoints
-│   │   └── stages_data.py      # Eight cold-call stages definition & options
-│   ├── cold-call-transcripts-100/ # 100 real cold-call transcripts dataset
+│   │   ├── stages_data.py      # Eight cold-call stages definition & options
+│   │   ├── radar.py            # Commitment radar analysis engine
+│   │   ├── gap_detector.py     # Conversation gap detection engine
+│   │   ├── stage_suggester.py  # AI stage suggestion from transcript
+│   │   ├── gemini_pool.py      # Gemini API key pooling / failover
+│   │   ├── transcription.py    # Audio transcription (file & live WebSocket)
+│   │   ├── historical_radar.py # Historical call matching
+│   │   ├── stage_notes.py      # Stage notes analysis from transcript
+│   │   ├── routes/
+│   │   │   ├── commitments.py  # Commitment CRUD endpoints
+│   │   │   ├── gaps.py         # Conversation gap endpoints
+│   │   │   ├── prospects.py    # Prospect management endpoints
+│   │   │   ├── followups.py    # Follow-up management endpoints
+│   │   │   └── stage_notes.py  # Stage notes analysis endpoint
 │   ├── sql/
 │   │   └── schema.sql          # PostgreSQL / Supabase relational schema
+│   ├── cold-call-transcripts-100/ # 100 real cold-call transcripts dataset
 │   ├── tests/
-│   │   └── test_api.py         # Automated test suite (unittest / TestClient)
+│   │   ├── test_api.py         # API endpoint and SQLite fallback tests
+│   │   ├── test_supabase_operations.py  # Supabase database operations tests
+│   │   ├── test_transcription.py   # Transcription tests
+│   │   ├── test_radar.py           # Commitment radar tests
+│   │   ├── test_gap_detector.py    # Gap detector tests
+│   │   ├── test_prospects.py       # Prospect management tests
+│   │   ├── test_gemini_pool.py     # Gemini key pooling tests
+│   │   ├── test_live_transcription.py  # Live transcription WebSocket tests
+│   │   └── test_delete_endpoints.py # Call/deletion endpoint tests
 │   ├── .env.example            # Backend env documentation
 │   ├── main.py                 # FastAPI application entrypoint & CORS
-│   └── requirements.txt        # Pinned Python dependencies
+│   ├── requirements.txt        # Pinned Python dependencies
+│   └── scripts/
+│       └── verify_supabase.py  # Supabase connection verification script
 ├── docs/
 │   └── transcript-findings.md  # Rigorous auditable analysis of 100 transcripts
+│   └── demo.md                 # Demo configuration and setup
 ├── frontend/
 │   ├── public/                 # Static assets
 │   ├── src/
@@ -99,7 +134,10 @@ callflow/
 │   │   │   ├── PastCallsList.tsx     # Historical calls table with filters
 │   │   │   ├── ProspectNotesField.tsx# Verbatim exact-words text area
 │   │   │   ├── StageProgress.tsx     # 8-stage stepper indicator
-│   │   │   └── StartCallPanel.tsx    # Prospect setup form
+│   │   │   ├── StartCallPanel.tsx    # Prospect setup form
+│   │   │   ├── CommitmentRadar.tsx   # Commitment analysis panel
+│   │   │   ├── GapDetector.tsx       # Gap detection panel
+│   │   │   └── StageNotesPanel.tsx   # Stage notes classification
 │   │   ├── lib/
 │   │   │   └── api.ts          # Strongly typed client for FastAPI
 │   │   └── types/
@@ -145,6 +183,7 @@ python -m uvicorn main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
 The backend starts at `http://127.0.0.1:8000`. Test health:
+
 ```bash
 curl http://127.0.0.1:8000/health
 ```
@@ -198,29 +237,32 @@ Open `http://localhost:3000` in your web browser.
 ## 6. Database Schema Setup
 
 ### Supabase / PostgreSQL (Production)
+
 Run the migration script located at `backend/sql/schema.sql` directly inside the **Supabase Dashboard > SQL Editor**:
 
-```sql
--- Creates calls and call_stage_results tables
--- Enforces UNIQUE(call_id, stage_number)
--- Sets up indexes for fast history search and RLS policies
-```
+The schema creates:
 
-The migration creates:
 - `calls`: Stores call records, status (`in_progress`, `completed`), current and highest stages (1–8), final outcome, next action, follow-up timing, and JSONB AI summaries.
 - `call_stage_results`: Stores stage number (1–8), mutually exclusive outcome, verbatim prospect exact words (especially prominent in Stage 5), and notes.
+- `call_commitments`: Commitment Radar extracted commitments with action, responsible party, due dates, evidence quotes, and status.
+- `call_missed_opportunities`: Commitment Radar missed opportunity tracking with type, severity, evidence, and suggested actions.
+- `call_conversation_gaps`: Conversation Gap Detector findings with type, severity, title, description, evidence, context, and suggested actions.
 - Unique constraint `uq_call_stage UNIQUE (call_id, stage_number)` ensuring revisiting a stage updates rather than duplicates records.
 - Performance indexes on `started_at`, `company_name`, `status`, `final_outcome`, `highest_stage`, and `(call_id, stage_number)`.
 - Row Level Security (RLS) policies allowing full server-side backend operations.
 
 #### Verifying Live Supabase Connection
+
 After executing the SQL migration in Supabase, run the verification script:
+
 ```bash
 ./backend/.venv/bin/python backend/scripts/verify_supabase.py
 ```
+
 This script validates table presence, tests call creation, stage outcome logging, verbatim note capture, stage revisit updates, call history retrieval, call completion, and cleanup.
 
 ### SQLite Fallback (Local Development)
+
 When `SUPABASE_URL` or `SUPABASE_SECRET_KEY` is omitted, CallFlow automatically creates and initializes `backend/callflow.db` with identical schemas and constraints upon startup. Zero configuration required.
 
 ---
@@ -228,10 +270,12 @@ When `SUPABASE_URL` or `SUPABASE_SECRET_KEY` is omitted, CallFlow automatically 
 ## 7. API Reference
 
 ### Health & Stages
+
 - `GET /health`: Service status, active database mode (`supabase` or `sqlite_fallback`), and Gemini configuration status.
 - `GET /stages`: Returns all 8 cold-call stage specifications, purpose, common responses, and outcome buttons.
 
 ### Calls
+
 - `POST /calls`: Create a new call session.
   - Body: `{"company_name": "Acme Inc", "contact_name": "Jane", "phone_number": "+1...", "context": "Inbound"}`
 - `GET /calls`: List saved calls. Supports query parameters `?search=...`, `?outcome=...`, `?stage=...`, `?status=...`.
@@ -241,6 +285,47 @@ When `SUPABASE_URL` or `SUPABASE_SECRET_KEY` is omitted, CallFlow automatically 
 - `POST /calls/{call_id}/close`: Conclude call and record final outcome, next action, follow-up timing, and channel.
 - `POST /calls/{call_id}/summary`: Generate AI call summary and suggested next steps using Google Gemini.
 
+### Commitment Radar
+
+- `POST /calls/{call_id}/radar/analyze`: Analyze conversation dialogue to extract candidate commitments, detect missed opportunities, and find historical comparisons. Idempotent: repeated analysis updates details without duplicating records.
+- `GET /calls/{call_id}/radar`: Retrieve current extracted commitments and potential missed opportunities for a call.
+- `POST /calls/{call_id}/commitments`: Manually add a confirmed or tracked commitment to a call.
+- `PATCH /calls/{call_id}/commitments/{commitment_id}`: Update a commitment status (confirm, edit, complete, dismiss).
+- `DELETE /calls/{call_id}/commitments/{commitment_id}`: Delete a commitment record.
+
+### Conversation Gap Detector
+
+- `POST /calls/{call_id}/gaps/analyze`: Analyze call dialogue to detect potential missed discovery opportunities, unresolved questions, unconfirmed agreements, unaddressed objections, and unexplored referrals. Idempotent.
+- `GET /calls/{call_id}/gaps`: Retrieve existing conversation gap findings for a call. Runs initial analysis if transcript exists and no findings yet.
+- `PATCH /calls/{call_id}/gaps/{gap_id}`: Update finding status (open, resolved, dismissed) or details.
+- `POST /calls/{call_id}/gaps/{gap_id}/create-followup`: Create a concrete follow-up commitment from a conversation gap finding, linking the commitment to the finding and marking the gap as resolved.
+- `DELETE /calls/{call_id}/gaps/{gap_id}`: Delete a conversation gap finding.
+
+### Prospects
+
+- `GET /prospects`: Retrieve list of all available prospects populated from transcripts and added prospects.
+- `POST /prospects`: Create a new prospect and save to database. Rejects duplicate company names.
+- `GET /prospects/{prospect_id}`: Retrieve details for a single prospect.
+- `GET /prospects/{prospect_id}/calls`: Retrieve all historical calls associated with a given prospect.
+- `DELETE /prospects/{prospect_id}`: Delete a prospect from the directory.
+
+### Follow-ups
+
+- `GET /followups`: List all follow-up actions and commitments across all calls with prospect information.
+- `PATCH /followups/{followup_id}`: Update follow-up status (e.g. mark completed, reschedule).
+- `DELETE /followups/{followup_id}`: Delete a follow-up item.
+
+### Live Transcription WebSocket
+
+- `WS /calls/{call_id}/transcribe-live`: Real-time audio transcription via Gemini Live API.
+  - Protocol: JSON messages with `{"audio": "<base64>"}` or `{"control": "stop"}`
+  - Responses: `{"type": "connected" | "interim" | "final" | "error" | "done"}`
+  - Persists accumulated transcript to database when session ends.
+
+### Stage Notes Analysis
+
+- `POST /calls/{call_id}/analyze-stage-notes`: Classify transcript segments into the 8 cold-call stages and generate concise, evidence-backed notes for each stage. Never invents statements, distinguishes explicit agreements from vague expressions, preserves exact prospect wording.
+
 ---
 
 ## 8. Transcript Analysis Findings
@@ -248,6 +333,7 @@ When `SUPABASE_URL` or `SUPABASE_SECRET_KEY` is omitted, CallFlow automatically 
 The workspace contains 100 cold-call transcripts (`T001.txt` to `T100.txt`). An auditable analysis was performed using Python and documented in `docs/transcript-findings.md`.
 
 Key Findings:
+
 1. **Median call duration is 93.5 seconds** (mean: 135.6s), proving callers need rapid, single-click outcome logging rather than lengthy manual input.
 2. **13% of legacy calls had no outcome logged at all** (`not_logged`), and 0% captured verbatim quotes.
 3. **Over 55% of cold calls terminate early** (18% at Stage 1, 10% at Stage 2-3, 17% at Stage 6).
@@ -258,6 +344,7 @@ Key Findings:
 ## 9. Deployment Instructions
 
 ### Backend on Render
+
 1. Push this repository to GitHub.
 2. In Render, select **New > Web Service** and connect the repository (or use the included `render.yaml` blueprint).
 3. Configuration:
@@ -273,6 +360,7 @@ Key Findings:
    - `FRONTEND_ORIGIN`: Your deployed Vercel frontend URL.
 
 ### Frontend on Vercel
+
 1. In Vercel, click **Add New Project** and select the repository.
 2. Set **Root Directory** to `frontend`.
 3. Set Environment Variable:
@@ -280,6 +368,7 @@ Key Findings:
 4. Deploy.
 
 ### Production URLs
+
 - **Frontend (Vercel)**: `https://callflow-app.vercel.app`
 - **Backend (Render)**: `https://callflow-api.onrender.com`
 
@@ -288,6 +377,7 @@ Key Findings:
 ## 10. Automated Tests
 
 Run the full backend test suite:
+
 ```bash
 # Run API endpoint and SQLite fallback tests:
 ./backend/.venv/bin/python -m unittest backend/tests/test_api.py -v
@@ -295,11 +385,33 @@ Run the full backend test suite:
 # Run Supabase database operations tests:
 ./backend/.venv/bin/python -m unittest backend/tests/test_supabase_operations.py -v
 
+# Run transcription tests:
+./backend/.venv/bin/python -m unittest backend/tests/test_transcription.py -v
+
+# Run commitment radar tests:
+./backend/.venv/bin/python -m unittest backend/tests/test_radar.py -v
+
+# Run gap detector tests:
+./backend/.venv/bin/python -m unittest backend/tests/test_gap_detector.py -v
+
+# Run prospect management tests:
+./backend/.venv/bin/python -m unittest backend/tests/test_prospects.py -v
+
+# Run Gemini pool tests:
+./backend/.venv/bin/python -m unittest backend/tests/test_gemini_pool.py -v
+
+# Run live transcription WebSocket tests:
+./backend/.venv/bin/python -m unittest backend/tests/test_live_transcription.py -v
+
+# Run delete endpoints tests:
+./backend/.venv/bin/python -m unittest backend/tests/test_delete_endpoints.py -v
+
 # Run live end-to-end Supabase verification (once SQL migration is applied):
 ./backend/.venv/bin/python backend/scripts/verify_supabase.py
 ```
 
 The test suites verify:
+
 - Service health check
 - Exact 8-stage sequence and metadata
 - Call session creation and validation
@@ -311,3 +423,40 @@ The test suites verify:
 - Boundary validation (rejecting invalid stages 0 and 9)
 - Graceful Gemini summary fallback when unconfigured
 - Supabase create call, update stage, load history, and close call workflows
+- Commitment radar analysis and persistence
+- Missed opportunity detection and tracking
+- Conversation gap detection and resolution
+- Prospect creation, listing, and deletion
+- Follow-up management across calls
+- Live transcription WebSocket connectivity and persistence
+- Stage notes analysis classification
+- Stage suggestion provides evidence without mutating stage
+- Non-linear flow: skipping, revisiting, manual jumping
+
+---
+
+## 11. Transcript Preprocessing
+
+The 100 cold-call transcripts in `backend/cold-call-transcripts-100/` have been preprocessed and analyzed. The preprocessing script is available at `backend/scripts/preprocess_transcripts.py`. The analyzed findings are documented in `docs/transcript-findings.md` and include stage classification, identified needs, objections, and commitments extracted from the real-world call data.
+
+---
+
+## 12. Stage Data Definition
+
+The eight cold-call stages are defined in `backend/app/stages_data.py` with the following properties for each stage:
+
+- `stage_number`: Integer 1-8
+- `name`: Display name (e.g., "Opening", "Purpose")
+- `title`: Short title for UI
+- `purpose`: Description of stage purpose
+- `common_responses`: List of 4 mutually exclusive outcome options
+- `outcome_options`: List of 4 possible outcomes
+- `next_stage_name`: Name of the next stage (where applicable)
+- `has_exact_words_prominent`: Whether this stage prominently features verbatim prospect words (Stage 5)
+- `common_responses_detail`: Detailed list of common prospect situational responses
+
+---
+
+## 13. Gemini AI Key Pooling
+
+The backend supports dual Gemini API key configuration via `GEMINI_API_KEY` and `GEMINI_API_KEY_2`. When the primary key hits its quota/rate limit, the system automatically fails over to the backup key. This ensures continuous AI summarization and transcription capability without manual intervention. Key pooling status can be checked via the `/health` endpoint (`gemini_configured` field).

@@ -19,6 +19,7 @@ interface CallDetailModalProps {
   onRetryAnalysis?: () => void;
   /** AI-summary error passed in from the parent after auto-analysis attempt */
   autoAnalysisError?: string | null;
+  onDeleteCall?: (callId: string) => void | Promise<void>;
 }
 
 export const CallDetailModal: React.FC<CallDetailModalProps> = ({
@@ -26,6 +27,7 @@ export const CallDetailModal: React.FC<CallDetailModalProps> = ({
   stages,
   onClose,
   onResumeCall,
+  onDeleteCall,
   isAutoAnalyzing = false,
   onRetryAnalysis,
   autoAnalysisError = null,
@@ -459,6 +461,20 @@ export const CallDetailModal: React.FC<CallDetailModalProps> = ({
           </p>
 
           <div className="flex items-center space-x-2">
+            {onDeleteCall && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (window.confirm(`Are you sure you want to delete the call record for "${currentCall.company_name}"? This cannot be undone.`)) {
+                    onDeleteCall(currentCall.id);
+                    onClose();
+                  }
+                }}
+                className="rounded border border-rose-500/40 bg-rose-950/30 px-3 py-1.5 text-xs font-semibold text-rose-300 hover:bg-rose-900/50 hover:text-white transition-colors"
+              >
+                Delete Call
+              </button>
+            )}
             {onResumeCall && currentCall.status === "in_progress" && (
               <button
                 type="button"

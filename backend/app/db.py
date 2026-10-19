@@ -556,6 +556,70 @@ class DatabaseAdapter:
         conn.close()
         return self.get_call(call_id)
 
+    def delete_call(self, call_id: str) -> bool:
+        """Delete a call record and all related stage results, transcripts, gaps, commitments, and opportunities."""
+        clean_id = str(call_id).strip()
+        if self.use_supabase and self.supabase_client:
+            for tbl in [
+                "call_stage_results",
+                "call_transcripts",
+                "call_conversation_gaps",
+                "call_commitments",
+                "call_missed_opportunities",
+                "calls",
+            ]:
+                try:
+                    self.supabase_client.table(tbl).delete().eq("call_id" if tbl != "calls" else "id", clean_id).execute()
+                except Exception as exc:
+                    if "PGRST205" in str(exc) or "not find the table" in str(exc):
+                        pass
+                    else:
+                        pass
+
+        conn = self.get_sqlite_conn()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM call_stage_results WHERE call_id = ?", (clean_id,))
+        cursor.execute("DELETE FROM call_transcripts WHERE call_id = ?", (clean_id,))
+        cursor.execute("DELETE FROM call_conversation_gaps WHERE call_id = ?", (clean_id,))
+        cursor.execute("DELETE FROM call_commitments WHERE call_id = ?", (clean_id,))
+        cursor.execute("DELETE FROM call_missed_opportunities WHERE call_id = ?", (clean_id,))
+        cursor.execute("DELETE FROM calls WHERE id = ?", (clean_id,))
+        rc = cursor.rowcount
+        conn.commit()
+        conn.close()
+        return rc > 0
+
+    def clear_call_followup(self, call_id: str) -> bool:
+        """Clear next action and follow up scheduling fields from a call."""
+        clean_id = str(call_id).strip()
+        now = get_utc_now_iso()
+        if self.use_supabase and self.supabase_client:
+            try:
+                self.supabase_client.table("calls").update({
+                    "next_action": None,
+                    "follow_up_time": None,
+                    "follow_up_channel": None,
+                    "updated_at": now,
+                }).eq("id", clean_id).execute()
+            except Exception as exc:
+                if "PGRST205" in str(exc) or "not find the table" in str(exc):
+                    pass
+                else:
+                    pass
+
+        conn = self.get_sqlite_conn()
+        cursor = conn.cursor()
+        cursor.execute("""
+            UPDATE calls
+            SET next_action = NULL, follow_up_time = NULL, follow_up_channel = NULL, updated_at = ?
+            WHERE id = ?
+        """, (now, clean_id))
+        rc = cursor.rowcount
+        conn.commit()
+        conn.close()
+        return rc > 0
+
+
     def _format_call_dict(self, row: Dict[str, Any]) -> Dict[str, Any]:
         d = dict(row)
         if "ai_summary" in d and d["ai_summary"]:
@@ -1767,6 +1831,27 @@ class DatabaseAdapter:
         ))
         conn.commit()
         conn.close()
+
+    def delete_prospect(self, prospect_id: str) -> bool:
+        """Delete a prospect from both Supabase and SQLite."""
+        clean_id = str(prospect_id).strip()
+        if self.use_supabase and self.supabase_client:
+            try:
+                self.supabase_client.table("prospects").delete().eq("id", clean_id).execute()
+            except Exception as exc:
+                if "PGRST205" in str(exc) or "not find the table" in str(exc):
+                    pass
+                else:
+                    pass
+
+        conn = self.get_sqlite_conn()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM prospects WHERE id = ?", (clean_id,))
+        rc = cursor.rowcount
+        conn.commit()
+        conn.close()
+        return rc > 0
+
 
     def _ensure_prospects_seeded(self):
         """Seed initial prospects from JSON/transcripts into SQLite and Supabase if empty."""
