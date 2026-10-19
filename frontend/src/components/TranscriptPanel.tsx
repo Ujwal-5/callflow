@@ -299,6 +299,8 @@ export const TranscriptPanel: React.FC<TranscriptPanelProps> = ({
                   <span className="text-xs text-slate-400">
                     {recordingState === "requesting"
                       ? "Requesting microphone permission…"
+                      : transcriptionError
+                      ? "Live connection interrupted. Reconnecting; microphone audio is being buffered…"
                       : "Connecting to transcription server…"}
                   </span>
                 </div>

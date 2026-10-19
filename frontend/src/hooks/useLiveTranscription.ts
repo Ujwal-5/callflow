@@ -130,6 +130,11 @@ export function useLiveTranscription(): UseLiveTranscriptionReturn {
   const seenFinalTextsRef = useRef<Set<string>>(new Set());
   const pcmBufferRef = useRef<Float32Array[]>([]);
   const pcmBufferLenRef = useRef(0);
+  const reconnectTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const reconnectStableTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const reconnectAttemptsRef = useRef(0);
+  const recordingCallIdRef = useRef<string | null>(null);
+  const connectionGenerationRef = useRef(0);
 
   // Compute full transcript from final segments
   const finalTranscript = finalSegments.map((s) => s.text).join("\n");
@@ -182,6 +187,15 @@ export function useLiveTranscription(): UseLiveTranscriptionReturn {
   }, []);
 
   const closeWebSocket = useCallback((sendStop = true) => {
+    if (reconnectTimerRef.current) {
+      clearTimeout(reconnectTimerRef.current);
+      reconnectTimerRef.current = null;
+    }
+    if (reconnectStableTimerRef.current) {
+      clearTimeout(reconnectStableTimerRef.current);
+      reconnectStableTimerRef.current = null;
+    }
+    connectionGenerationRef.current += 1;
     const ws = wsRef.current;
     if (!ws) return;
     wsRef.current = null;
@@ -302,8 +316,54 @@ export function useLiveTranscription(): UseLiveTranscriptionReturn {
       return;
     }
 
-    // 3. Set up WebSocket message handler
-    ws.onmessage = (event) => {
+    recordingCallIdRef.current = callId;
+    reconnectAttemptsRef.current = 0;
+    const generation = connectionGenerationRef.current;
+
+    const scheduleReconnect = (failedSocket: WebSocket, message: string) => {
+      if (wsRef.current !== failedSocket || generation !== connectionGenerationRef.current || isStoppingRef.current) return;
+      wsRef.current = null;
+      if (reconnectTimerRef.current) return;
+      reconnectAttemptsRef.current += 1;
+      if (reconnectAttemptsRef.current > 4) {
+        errorShownRef.current = true;
+        setError("Live transcription could not reconnect. Captured transcript is preserved; use Retry Recording to continue.");
+        setState("error");
+        stopTimer();
+        releaseAudio();
+        return;
+      }
+      setError(message);
+      setState("connecting");
+      reconnectTimerRef.current = setTimeout(() => {
+        reconnectTimerRef.current = null;
+        const activeCallId = recordingCallIdRef.current;
+        if (!activeCallId || isStoppingRef.current || generation !== connectionGenerationRef.current) return;
+        const replacement = new WebSocket(getWebSocketUrl(activeCallId));
+        wsRef.current = replacement;
+        replacement.onopen = () => {
+          if (wsRef.current !== replacement || generation !== connectionGenerationRef.current) {
+            replacement.close();
+            return;
+          }
+          errorShownRef.current = false;
+          setError(null);
+          setState("recording");
+          if (reconnectStableTimerRef.current) clearTimeout(reconnectStableTimerRef.current);
+          reconnectStableTimerRef.current = setTimeout(() => {
+            reconnectAttemptsRef.current = 0;
+            reconnectStableTimerRef.current = null;
+          }, 20_000);
+          installSocketHandlers(replacement);
+          flushPcmBuffer();
+        };
+        replacement.onerror = () => scheduleReconnect(replacement, "Transcription connection interrupted. Reconnecting…");
+        replacement.onclose = () => scheduleReconnect(replacement, "Transcription connection interrupted. Reconnecting…");
+      }, Math.min(500 * 2 ** (reconnectAttemptsRef.current - 1), 4000));
+    };
+
+    const installSocketHandlers = (socket: WebSocket) => {
+    socket.onmessage = (event) => {
       try {
         const msg = JSON.parse(event.data as string);
         const type = msg.type as string;
@@ -328,40 +388,22 @@ export function useLiveTranscription(): UseLiveTranscriptionReturn {
         } else if (type === "done") {
           setInterimText("");
           if (!isStoppingRef.current) {
-            // Server initiated close
-            setState("idle");
-            stopTimer();
-            releaseAudio();
-            wsRef.current = null;
+            scheduleReconnect(socket, "Transcription stream ended. Reconnecting…");
           }
         } else if (type === "error") {
-          setError(msg.message || "Transcription error");
-          setState("error");
-          stopTimer();
-          releaseAudio();
-          wsRef.current = null;
-          errorShownRef.current = true;
+          scheduleReconnect(socket, "Transcription interrupted. Reconnecting…");
         }
       } catch {
         // Non-JSON message — ignore
       }
     };
 
-    ws.onclose = () => {
-      // If the ref was already cleared, this close came from our own cleanup
-      // (stop, reset, or an error handler) — don't overwrite the real reason.
-      if (wsRef.current !== ws) return;
-      if (!isStoppingRef.current && !errorShownRef.current && state !== "idle") {
-        // Unexpected closure — but don't overwrite an error that was already shown
-        setError(
-          "Connection to transcription server lost. Transcript data is preserved."
-        );
-        setState("error");
-        stopTimer();
-        releaseAudio();
-        wsRef.current = null;
-      }
+    socket.onerror = () => scheduleReconnect(socket, "Transcription connection interrupted. Reconnecting…");
+    socket.onclose = () => {
+      scheduleReconnect(socket, "Transcription connection interrupted. Reconnecting…");
     };
+    };
+    installSocketHandlers(ws);
 
     // 4. Set up AudioContext with resampler
     try {
@@ -390,8 +432,6 @@ export function useLiveTranscription(): UseLiveTranscriptionReturn {
       let residualPhase = 0.0;
 
       processor.onaudioprocess = (event) => {
-        if (ws.readyState !== WebSocket.OPEN) return;
-
         const inputData = event.inputBuffer.getChannelData(0);
 
         // Simple linear interpolation downsampling
@@ -430,6 +470,13 @@ export function useLiveTranscription(): UseLiveTranscriptionReturn {
         // Buffer and send in chunks
         pcmBufferRef.current.push(actualResampled);
         pcmBufferLenRef.current += actualResampled.length;
+
+        // Keep at most ten seconds queued while reconnecting so a brief
+        // Gemini/WebSocket outage does not immediately discard microphone audio.
+        while (pcmBufferLenRef.current > TARGET_SAMPLE_RATE * 10 && pcmBufferRef.current.length > 1) {
+          const oldest = pcmBufferRef.current.shift();
+          if (oldest) pcmBufferLenRef.current -= oldest.length;
+        }
 
         if (pcmBufferLenRef.current >= CHUNK_SAMPLES) {
           flushPcmBuffer();
