@@ -13,6 +13,35 @@ interface ServiceStatusBannerProps {
   wakingElapsed: number;
 }
 
+interface RenderPowerButtonProps {
+  enabled: boolean;
+  onClick: () => void;
+}
+
+const RenderPowerButton: React.FC<RenderPowerButtonProps> = ({ enabled, onClick }) => {
+  const action = enabled ? "Stop Render" : "Start Render";
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={action}
+      aria-label={action}
+      aria-pressed={enabled}
+      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-colors ${
+        enabled
+          ? "border-rose-500/50 bg-rose-950/30 text-rose-300 hover:border-rose-400 hover:bg-rose-950/60"
+          : "border-[#0062ff]/60 bg-[#0062ff]/15 text-[#60a5fa] hover:border-[#0062ff] hover:bg-[#0062ff]/30 hover:text-white"
+      }`}
+    >
+      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2v10" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.36 6.64a9 9 0 1 1-12.73 0" />
+      </svg>
+    </button>
+  );
+};
+
 /**
  * ServiceStatusBanner
  *
@@ -20,9 +49,9 @@ interface ServiceStatusBannerProps {
  * backend's current availability without exposing internal technical details.
  *
  * States:
- *  - sleeping  → service is unreachable; show a gentle notice + "Start service" button
+ *  - sleeping  → service is unreachable; show a gentle notice + "Start Render" button
  *  - waking    → wake request sent; show animated progress + elapsed time
- *  - online    → service responded; show a brief confirmation then fade out
+ *  - online    → service responded; keep the Render start/stop control visible
  */
 export const ServiceStatusBanner: React.FC<ServiceStatusBannerProps> = ({
   status,
@@ -49,9 +78,6 @@ export const ServiceStatusBanner: React.FC<ServiceStatusBannerProps> = ({
     };
   }, [status]);
 
-  // Nothing to show when fully online and past the confirmation window
-  if (status === "online" && !showOnlineConfirm && !keepAliveEnabled) return null;
-
   // ── Online confirmation (briefly shown after waking up) ──────────────────
   if (status === "online" && showOnlineConfirm) {
     return (
@@ -77,13 +103,7 @@ export const ServiceStatusBanner: React.FC<ServiceStatusBannerProps> = ({
             Service is ready. You&apos;re good to go.
           </p>
           </div>
-          <button
-            type="button"
-            onClick={onToggleKeepAlive}
-            className="shrink-0 rounded border border-emerald-500/30 px-2.5 py-1 text-[11px] font-semibold text-emerald-300 transition-colors hover:border-emerald-400/60 hover:bg-emerald-500/10"
-          >
-            {keepAliveEnabled ? "Stop keep-alive" : "Keep service awake"}
-          </button>
+          <RenderPowerButton enabled={keepAliveEnabled} onClick={onToggleKeepAlive} />
         </div>
       </div>
     );
@@ -144,20 +164,10 @@ export const ServiceStatusBanner: React.FC<ServiceStatusBannerProps> = ({
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
           <p className="text-[11px] text-slate-400">
             {keepAliveEnabled
-              ? "Keep-alive is active. The service will be pinged periodically while this page is open."
-              : "The service may sleep after a period of inactivity."}
+              ? "Render is running and will be kept awake while this page is open."
+              : "Render is running. Stop it when you are done; it will sleep after inactivity."}
           </p>
-          <button
-            type="button"
-            onClick={onToggleKeepAlive}
-            className={`shrink-0 rounded border px-3 py-1.5 text-[11px] font-semibold transition-colors ${
-              keepAliveEnabled
-                ? "border-rose-500/40 bg-rose-950/20 text-rose-300 hover:border-rose-400/70 hover:bg-rose-950/40"
-                : "border-[#0062ff]/50 bg-[#0062ff]/10 text-[#60a5fa] hover:border-[#0062ff] hover:bg-[#0062ff]/20 hover:text-white"
-            }`}
-          >
-            {keepAliveEnabled ? "Stop keep-alive" : "Keep service awake"}
-          </button>
+          <RenderPowerButton enabled={keepAliveEnabled} onClick={onToggleKeepAlive} />
         </div>
       </div>
     );
@@ -194,37 +204,7 @@ export const ServiceStatusBanner: React.FC<ServiceStatusBannerProps> = ({
           </div>
         </div>
 
-        <div className="flex shrink-0 items-center gap-2">
-          {keepAliveEnabled && (
-            <button
-              type="button"
-              onClick={onToggleKeepAlive}
-              className="rounded border border-rose-500/30 px-2.5 py-1.5 text-[11px] font-semibold text-rose-300 transition-colors hover:border-rose-400/60 hover:bg-rose-950/30"
-            >
-              Stop keep-alive
-            </button>
-          )}
-          <button
-            type="button"
-            onClick={onWake}
-            className="flex items-center space-x-1.5 rounded border border-[#0062ff]/50 bg-[#0062ff]/10 px-3 py-1.5 text-xs font-semibold text-[#60a5fa] transition-all hover:border-[#0062ff] hover:bg-[#0062ff]/20 hover:text-white"
-          >
-            <svg
-              className="h-3 w-3"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M13 10V3L4 14h7v7l9-11h-7z"
-              />
-            </svg>
-            <span>Start service</span>
-          </button>
-        </div>
+        <RenderPowerButton enabled={false} onClick={onWake} />
       </div>
     </div>
   );
