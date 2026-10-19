@@ -339,7 +339,11 @@ export const CallDetailModal: React.FC<CallDetailModalProps> = ({
 
           {/* Merged Conversation Review Section (gaps + commitments + radar) */}
           <ConversationReview
+            key={`${currentCall.id}-${currentCall.updated_at}`}
             callId={currentCall.id}
+            initialFindings={currentCall.conversation_gaps || []}
+            initialCommitments={currentCall.commitments || []}
+            initialMissedOpportunities={currentCall.missed_opportunities || []}
             isReadOnly={false}
             isAutoAnalyzing={isAutoAnalyzing}
             className="border-[#233554] bg-[#101c3d]/40"

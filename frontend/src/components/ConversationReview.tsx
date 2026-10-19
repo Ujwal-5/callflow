@@ -14,6 +14,10 @@ import { api } from "@/lib/api";
 
 interface ConversationReviewProps {
   callId: string;
+  /** Persisted findings already returned with the historical call record. */
+  initialFindings?: ConversationGap[];
+  initialCommitments?: Commitment[];
+  initialMissedOpportunities?: MissedOpportunity[];
   isReadOnly?: boolean;
   onFollowupCreated?: (gap: ConversationGap) => void;
   onCommitmentsChange?: (commitments: Commitment[]) => void;
@@ -26,6 +30,9 @@ interface ConversationReviewProps {
 
 export const ConversationReview: React.FC<ConversationReviewProps> = ({
   callId,
+  initialFindings = [],
+  initialCommitments = [],
+  initialMissedOpportunities = [],
   isReadOnly = false,
   onFollowupCreated,
   onCommitmentsChange,
@@ -34,7 +41,7 @@ export const ConversationReview: React.FC<ConversationReviewProps> = ({
   onRequestAnalysis,
 }) => {
   // ── Gap findings state ──
-  const [findings, setFindings] = useState<ConversationGap[]>([]);
+  const [findings, setFindings] = useState<ConversationGap[]>(initialFindings);
   const [summary, setSummary] = useState<string>("");
   const [isLoadingGaps, setIsLoadingGaps] = useState<boolean>(true);
   const [isAnalyzingGaps, setIsAnalyzingGaps] = useState<boolean>(false);
@@ -45,8 +52,8 @@ export const ConversationReview: React.FC<ConversationReviewProps> = ({
   const [isCreatingFollowup, setIsCreatingFollowup] = useState<string | null>(null);
 
   // ── Commitment / Radar state ──
-  const [commitments, setCommitments] = useState<Commitment[]>([]);
-  const [missedOpps, setMissedOpps] = useState<MissedOpportunity[]>([]);
+  const [commitments, setCommitments] = useState<Commitment[]>(initialCommitments);
+  const [missedOpps, setMissedOpps] = useState<MissedOpportunity[]>(initialMissedOpportunities);
   const [historicalMatches, setHistoricalMatches] = useState<HistoricalMatch[]>([]);
   const [radarSummary, setRadarSummary] = useState<string>("");
   const [isLoadingRadar, setIsLoadingRadar] = useState<boolean>(true);

@@ -675,6 +675,15 @@ export default function Home() {
                   : "AI summary generation failed."
               );
             }
+            // Re-read the call after all analyzers finish so the historical
+            // record contains the persisted commitments and conversation gaps
+            // even if the user closes and immediately reopens the panel.
+            const refreshedCall = await api.getCall(callId).catch(() => null);
+            if (refreshedCall) {
+              setSelectedHistoryCall((prev) =>
+                prev && prev.id === callId ? refreshedCall : prev
+              );
+            }
             // Refresh follow-ups with freshly extracted commitments
             api.listFollowups().then(setFollowups).catch(() => {});
           } catch {
@@ -713,6 +722,12 @@ export default function Home() {
           prev && prev.id === callId
             ? { ...prev, ai_summary: summaryRes.value.summary! }
             : prev
+        );
+      }
+      const refreshedCall = await api.getCall(callId).catch(() => null);
+      if (refreshedCall) {
+        setSelectedHistoryCall((prev) =>
+          prev && prev.id === callId ? refreshedCall : prev
         );
       }
       api.listFollowups().then(setFollowups).catch(() => {});

@@ -53,12 +53,25 @@ def main():
         print("\n👉 ACTION REQUIRED: Run the SQL in backend/sql/schema.sql in your Supabase SQL Editor.")
         sys.exit(2)
 
-    try:
-        db.supabase_client.table("call_transcripts").select("id").limit(1).execute()
-        print("  ✓ Table 'call_transcripts' exists.")
-    except Exception as e:
-        print(f"  ⚠️  Table 'call_transcripts' not created on Supabase yet.")
-        print("  👉 Run backend/sql/migration_transcripts.sql in your Supabase SQL Editor to enable remote transcripts storage.")
+    required_tables = [
+        "call_transcripts",
+        "call_commitments",
+        "call_missed_opportunities",
+        "call_conversation_gaps",
+        "prospects",
+    ]
+    missing_tables = []
+    for table_name in required_tables:
+        try:
+            db.supabase_client.table(table_name).select("id").limit(1).execute()
+            print(f"  ✓ Table '{table_name}' exists.")
+        except Exception:
+            missing_tables.append(table_name)
+            print(f"  ❌ Table '{table_name}' is missing.")
+
+    if missing_tables:
+        print("\n👉 ACTION REQUIRED: Run backend/sql/migration_supabase_missing_tables.sql in your Supabase SQL Editor.")
+        sys.exit(2)
 
     # 2. Test create call
     print("\n2. Testing call creation...")

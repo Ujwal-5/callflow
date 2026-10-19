@@ -46,7 +46,13 @@ class DatabaseAdapter:
 
     def init_db(self):
         self.init_client()
-        # Ensure SQLite schema is always initialized for fallback and local testing
+        # Supabase is the source of truth when configured. Do not create or
+        # touch a local SQLite file in that mode; this prevents deployments
+        # from silently falling back to an ephemeral database after migration.
+        if self.use_supabase and self.supabase_client:
+            return
+
+        # Ensure SQLite schema is initialized for local development and tests.
         conn = self.get_sqlite_conn()
         cursor = conn.cursor()
 
