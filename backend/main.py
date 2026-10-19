@@ -9,8 +9,7 @@ from backend.app.models import HealthResponse
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Initialize SQLite or Supabase connection on startup
-    db.init_db()
+    # The adapter owns the Supabase client; schema management belongs in Supabase migrations.
     yield
 
 
@@ -35,7 +34,7 @@ app.add_middleware(
 # Core health endpoint
 @app.get("/health", response_model=HealthResponse, tags=["Health"])
 def health():
-    db_mode = "supabase" if db.use_supabase else "sqlite_fallback"
+    db_mode = "supabase" if db.use_supabase else "unconfigured"
     return {
         "status": "ok",
         "service": "callflow-api",

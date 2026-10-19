@@ -142,6 +142,29 @@ class TestSupabaseOperations(unittest.TestCase):
         query_mock.eq.assert_any_call("highest_stage", 7)
         query_mock.eq.assert_any_call("status", "completed")
 
+    def test_list_prospects_uses_supabase_without_local_database(self):
+        prospects_table = MagicMock()
+        self.mock_client.table.return_value = prospects_table
+
+        # The seed check and the list query both belong to PostgREST.  A
+        # production-configured adapter must never need the local schema.
+        count_response = MagicMock(count=1)
+        prospects_table.select.return_value.limit.return_value.execute.return_value = count_response
+        list_query = prospects_table.select.return_value.order.return_value
+        list_query.execute.return_value.data = [{
+            "id": "prospect-1",
+            "company_name": "Acme Industrial",
+            "contact_name": "Rohan Patel",
+            "is_custom": False,
+        }]
+
+        prospects = self.db.list_prospects()
+
+        self.assertEqual(prospects[0]["company_name"], "Acme Industrial")
+        self.assertFalse(any(name for name in dir(self.db) if "sqlite" in name.lower()))
+        prospects_table.select.assert_any_call("id", count="exact")
+        prospects_table.select.assert_any_call("*")
+
     def test_get_call_with_stage_history(self):
         call_id = str(uuid.uuid4())
         mock_calls_table = MagicMock()

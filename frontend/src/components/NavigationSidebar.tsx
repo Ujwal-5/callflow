@@ -13,6 +13,9 @@ interface NavigationSidebarProps {
   followupsCount?: number;
   overdueCount?: number;
   serviceStatus: ServiceStatus;
+  keepAliveEnabled: boolean;
+  onToggleKeepAlive: () => void;
+  onWake: () => void;
   onStartNewCall?: () => void;
 }
 
@@ -25,6 +28,9 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
   followupsCount = 0,
   overdueCount = 0,
   serviceStatus,
+  keepAliveEnabled,
+  onToggleKeepAlive,
+  onWake,
   onStartNewCall,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -133,6 +139,23 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
 
 
         <div className="flex items-center space-x-2">
+          <button
+            type="button"
+            onClick={serviceStatus === "sleeping" ? onWake : onToggleKeepAlive}
+            title={serviceStatus === "sleeping" ? "Start Render" : keepAliveEnabled ? "Stop Render" : "Start Render"}
+            aria-label={serviceStatus === "sleeping" ? "Start Render" : keepAliveEnabled ? "Stop Render" : "Start Render"}
+            aria-pressed={serviceStatus !== "sleeping" && keepAliveEnabled}
+            className={`flex h-8 w-8 items-center justify-center rounded-full border transition-colors ${
+              keepAliveEnabled
+                ? "border-rose-500/50 bg-rose-950/30 text-rose-300 hover:border-rose-400 hover:bg-rose-950/60"
+                : "border-[#0062ff]/60 bg-[#0062ff]/15 text-[#60a5fa] hover:border-[#0062ff] hover:bg-[#0062ff]/30 hover:text-white"
+            }`}
+          >
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2v10" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.36 6.64a9 9 0 1 1-12.73 0" />
+            </svg>
+          </button>
           {hasLiveCall && (
             <button
               onClick={() => handleNavClick("active")}
@@ -207,6 +230,23 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
               <p className="text-[11px] text-slate-400">Sales Workflow Assistant</p>
             </div>}
           </div>
+          <button
+            type="button"
+            onClick={serviceStatus === "sleeping" ? onWake : onToggleKeepAlive}
+            title={serviceStatus === "sleeping" ? "Start Render" : keepAliveEnabled ? "Stop Render" : "Start Render"}
+            aria-label={serviceStatus === "sleeping" ? "Start Render" : keepAliveEnabled ? "Stop Render" : "Start Render"}
+            aria-pressed={serviceStatus !== "sleeping" && keepAliveEnabled}
+            className={`absolute ${collapsed ? "bottom-2 right-2" : "right-12 top-5"} flex h-8 w-8 items-center justify-center rounded-full border transition-colors ${
+              keepAliveEnabled
+                ? "border-rose-500/50 bg-rose-950/30 text-rose-300 hover:border-rose-400 hover:bg-rose-950/60"
+                : "border-[#0062ff]/60 bg-[#0062ff]/15 text-[#60a5fa] hover:border-[#0062ff] hover:bg-[#0062ff]/30 hover:text-white"
+            }`}
+          >
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2v10" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.36 6.64a9 9 0 1 1-12.73 0" />
+            </svg>
+          </button>
           <button type="button" onClick={() => setCollapsed((value) => !value)} aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"} title={collapsed ? "Expand sidebar" : "Collapse sidebar"} className={`mt-3 rounded p-1.5 text-slate-400 hover:bg-[#101c3d] hover:text-white ${collapsed ? "mt-2" : "absolute right-3 top-3"}`}>
             <svg className={`h-4 w-4 transition-transform ${collapsed ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
           </button>

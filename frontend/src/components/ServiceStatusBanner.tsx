@@ -6,41 +6,10 @@ export type ServiceStatus = "online" | "sleeping" | "waking";
 
 interface ServiceStatusBannerProps {
   status: ServiceStatus;
-  onWake: () => void;
   keepAliveEnabled: boolean;
-  onToggleKeepAlive: () => void;
   /** Seconds elapsed since the wake request was sent */
   wakingElapsed: number;
 }
-
-interface RenderPowerButtonProps {
-  enabled: boolean;
-  onClick: () => void;
-}
-
-const RenderPowerButton: React.FC<RenderPowerButtonProps> = ({ enabled, onClick }) => {
-  const action = enabled ? "Stop Render" : "Start Render";
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      title={action}
-      aria-label={action}
-      aria-pressed={enabled}
-      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-colors ${
-        enabled
-          ? "border-rose-500/50 bg-rose-950/30 text-rose-300 hover:border-rose-400 hover:bg-rose-950/60"
-          : "border-[#0062ff]/60 bg-[#0062ff]/15 text-[#60a5fa] hover:border-[#0062ff] hover:bg-[#0062ff]/30 hover:text-white"
-      }`}
-    >
-      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2v10" />
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.36 6.64a9 9 0 1 1-12.73 0" />
-      </svg>
-    </button>
-  );
-};
 
 /**
  * ServiceStatusBanner
@@ -49,15 +18,13 @@ const RenderPowerButton: React.FC<RenderPowerButtonProps> = ({ enabled, onClick 
  * backend's current availability without exposing internal technical details.
  *
  * States:
- *  - sleeping  → service is unreachable; show a gentle notice + "Start Render" button
+ *  - sleeping  → service is unreachable; show a gentle notice
  *  - waking    → wake request sent; show animated progress + elapsed time
- *  - online    → service responded; keep the Render start/stop control visible
+ *  - online    → service responded; status messaging remains visible
  */
 export const ServiceStatusBanner: React.FC<ServiceStatusBannerProps> = ({
   status,
-  onWake,
   keepAliveEnabled,
-  onToggleKeepAlive,
   wakingElapsed,
 }) => {
   // Brief "just came online" confirmation state
@@ -103,7 +70,6 @@ export const ServiceStatusBanner: React.FC<ServiceStatusBannerProps> = ({
             Service is ready. You&apos;re good to go.
           </p>
           </div>
-          <RenderPowerButton enabled={keepAliveEnabled} onClick={onToggleKeepAlive} />
         </div>
       </div>
     );
@@ -167,7 +133,6 @@ export const ServiceStatusBanner: React.FC<ServiceStatusBannerProps> = ({
               ? "Render is running and will be kept awake while this page is open."
               : "Render is running. Stop it when you are done; it will sleep after inactivity."}
           </p>
-          <RenderPowerButton enabled={keepAliveEnabled} onClick={onToggleKeepAlive} />
         </div>
       </div>
     );
@@ -204,7 +169,6 @@ export const ServiceStatusBanner: React.FC<ServiceStatusBannerProps> = ({
           </div>
         </div>
 
-        <RenderPowerButton enabled={false} onClick={onWake} />
       </div>
     </div>
   );

@@ -14,9 +14,8 @@ CallFlow is architected with a decoupled frontend and backend:
 
 - **Frontend**: Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4. Designed with an editorial navy (`#070d1e`), slate-card, and vivid electric-blue (`#0062ff`) palette. Real-time active call state is kept in memory with debounced auto-save to backend and resilient local storage recovery across browser reloads.
 - **Backend**: FastAPI (Python 3.13), Pydantic v2 validation models, Uvicorn ASGI server, structured logging, and automated test suite.
-- **Persistence Layer**: Dual-mode storage architecture:
+- **Persistence Layer**: Supabase/PostgreSQL storage through the server-side PostgREST adapter:
   - **Production**: Supabase (PostgreSQL) using the relational schema in `backend/sql/schema.sql` with UUID keys, unique constraints on `(call_id, stage_number)`, and performance indexing.
-  - **Local Development / Offline Fallback**: Fully isolated SQLite database (`backend/callflow.db`) automatically activated when Supabase credentials are not configured, requiring zero external infrastructure to run locally.
 - **LLM Synthesis**: Google Gen AI SDK (`google-genai` 2.31.0) using Gemini (`gemini-2.5-flash`) for structured JSON call summarization and next action extraction. The core calling workflow remains 100% operational even when the Gemini API is unconfigured or unreachable.
 - **Commitment Radar**: AI-powered analysis of call transcripts to extract candidate commitments, detect missed opportunities, and find historical comparisons from the 100-call dataset.
 - **Conversation Gap Detector**: AI analysis of call dialogue to identify unresolved questions, unconfirmed agreements, unaddressed objections, and unexplored referrals.
@@ -37,7 +36,7 @@ graph TD
 
     subgraph Backend
         H[FastAPI]
-        I[SQLite / Supabase]
+        I[Supabase / PostgREST]
         J[Gemini AI]
         K[Radar Engine]
         L[Gap Detector]
@@ -81,7 +80,7 @@ callflow/
 ├── backend/
 │   ├── app/
 │   │   ├── config.py           # Pydantic Settings & environment variables
-│   │   ├── db.py               # Supabase + SQLite database adapter
+│   │   ├── db.py               # Supabase/PostgREST database adapter
 │   │   ├── llm.py              # Google Gen AI Gemini summary engine
 │   │   ├── models.py           # Pydantic request/response schemas
 │   │   ├── routes.py           # FastAPI router for all endpoints
@@ -103,7 +102,7 @@ callflow/
 │   │   └── schema.sql          # PostgreSQL / Supabase relational schema
 │   ├── cold-call-transcripts-100/ # 100 real cold-call transcripts dataset
 │   ├── tests/
-│   │   ├── test_api.py         # API endpoint and SQLite fallback tests
+│   │   ├── test_api.py         # API endpoint tests
 │   │   ├── test_supabase_operations.py  # Supabase database operations tests
 │   │   ├── test_transcription.py   # Transcription tests
 │   │   ├── test_radar.py           # Commitment radar tests
@@ -226,7 +225,6 @@ Open `http://localhost:3000` in your web browser.
 | `SUPABASE_URL` | No | `""` | Supabase project URL (e.g. `https://your-project.supabase.co`) |
 | `SUPABASE_SECRET_KEY` | No | `""` | Supabase backend secret key (preferred, server-side only) |
 | `SUPABASE_SERVICE_ROLE_KEY` | No | `""` | Alternative Supabase service role secret key |
-| `DATABASE_URL` | No | `""` | Optional direct PostgreSQL connection string |
 
 ### Frontend (`frontend/.env.local`)
 
@@ -263,17 +261,13 @@ After executing the SQL migration in Supabase, run the verification script:
 
 This script validates table presence, tests call creation, stage outcome logging, verbatim note capture, stage revisit updates, call history retrieval, call completion, and cleanup.
 
-### SQLite Fallback (Local Development)
-
-When `SUPABASE_URL` or `SUPABASE_SECRET_KEY` is omitted, CallFlow automatically creates and initializes `backend/callflow.db` with identical schemas and constraints upon startup. Zero configuration required.
-
 ---
 
 ## 7. API Reference
 
 ### Health & Stages
 
-- `GET /health`: Service status, active database mode (`supabase` or `sqlite_fallback`), and Gemini configuration status.
+- `GET /health`: Service status, active database mode (`supabase` or `unconfigured`), and Gemini configuration status.
 - `GET /stages`: Returns all 8 cold-call stage specifications, purpose, common responses, and outcome buttons.
 
 ### Calls
@@ -381,7 +375,7 @@ Key Findings:
 Run the full backend test suite:
 
 ```bash
-# Run API endpoint and SQLite fallback tests:
+# Run API endpoint tests:
 ./backend/.venv/bin/python -m unittest backend/tests/test_api.py -v
 
 # Run Supabase database operations tests:

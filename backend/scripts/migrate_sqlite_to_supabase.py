@@ -20,6 +20,9 @@ if ROOT_DIR not in sys.path:
 from backend.app.config import settings
 from backend.app.db import db
 
+# This is a one-time import utility only. SQLite is not part of the runtime
+# application adapter; the source file must be supplied by the operator.
+DEFAULT_SQLITE_DB_PATH = os.path.join(ROOT_DIR, "backend", "callflow.db")
 
 TABLES = [
     "calls",
@@ -87,7 +90,7 @@ def main() -> int:
         print("Supabase is not configured. Set SUPABASE_URL and a Supabase secret key.")
         return 1
 
-    conn = sqlite3.connect(settings.SQLITE_DB_PATH)
+    conn = sqlite3.connect(DEFAULT_SQLITE_DB_PATH)
     conn.row_factory = sqlite3.Row
     try:
         all_rows = {table: read_rows(conn, table) for table in TABLES}

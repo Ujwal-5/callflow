@@ -855,6 +855,9 @@ export default function Home() {
         followupsCount={followups.length}
         overdueCount={overdueCount}
         serviceStatus={serviceStatus}
+        keepAliveEnabled={keepAliveEnabled}
+        onToggleKeepAlive={handleToggleKeepAlive}
+        onWake={handleWakeService}
         onStartNewCall={handleStartNewCall}
       />
 
@@ -863,9 +866,7 @@ export default function Home() {
         {/* Service Status Banner (sleeping / waking) */}
         <ServiceStatusBanner
           status={serviceStatus}
-          onWake={handleWakeService}
           keepAliveEnabled={keepAliveEnabled}
-          onToggleKeepAlive={handleToggleKeepAlive}
           wakingElapsed={wakingElapsed}
         />
 
@@ -912,7 +913,7 @@ export default function Home() {
               <div>
                 <p className="text-sm font-semibold text-slate-200">Assistant is sleeping</p>
                 <p className="mt-1 text-xs text-slate-400 max-w-xs">
-                  Wake the assistant using the banner above to load your active calls and data.
+                  Use the power control in the navigation bar to wake the assistant and load your active calls and data.
                 </p>
               </div>
             </div>
@@ -1060,7 +1061,16 @@ export default function Home() {
                         </div>
                       </div>
 
-                      <div className="flex items-center space-x-2">
+                      <div className="flex flex-wrap items-center justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setIsLiveAssistVisible((visible) => !visible)}
+                          aria-expanded={isLiveAssistVisible}
+                          className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors ${isLiveAssistVisible ? "border-blue-500/40 bg-blue-950/30 text-blue-200 hover:bg-blue-900/40" : "border-[#233554] bg-[#0b132b] text-slate-300 hover:border-blue-500/40 hover:text-white"}`}
+                        >
+                          {isLiveAssistVisible ? "Hide Live Assist" : liveTranscription.state === "idle" && liveTranscription.finalTranscript ? "Review Live Assist" : "Enable Live Transcription"}
+                          {liveTranscription.state === "recording" && <span className="ml-2 text-rose-300">● LIVE</span>}
+                        </button>
                         <button
                           type="button"
                           onClick={() => {
@@ -1085,18 +1095,6 @@ export default function Home() {
                         </span>
                       </div>
                     )}
-                  </div>
-
-                  <div className="flex justify-end">
-                    <button
-                      type="button"
-                      onClick={() => setIsLiveAssistVisible((visible) => !visible)}
-                      aria-expanded={isLiveAssistVisible}
-                      className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors ${isLiveAssistVisible ? "border-blue-500/40 bg-blue-950/30 text-blue-200 hover:bg-blue-900/40" : "border-[#233554] bg-[#0b132b] text-slate-300 hover:border-blue-500/40 hover:text-white"}`}
-                    >
-                      {isLiveAssistVisible ? "Hide Live Assist" : liveTranscription.state === "idle" && liveTranscription.finalTranscript ? "Review Live Assist" : "Enable Live Transcription"}
-                      {liveTranscription.state === "recording" && <span className="ml-2 text-rose-300">● LIVE</span>}
-                    </button>
                   </div>
 
                   <div className={`grid items-start gap-4 transition-[grid-template-columns] duration-300 ease-in-out ${isLiveAssistVisible ? "grid-cols-1 lg:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.85fr)]" : "grid-cols-1"}`}>

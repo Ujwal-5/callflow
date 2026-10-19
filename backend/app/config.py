@@ -8,7 +8,6 @@ class Settings(BaseSettings):
     SUPABASE_SECRET_KEY: str = ""
     SUPABASE_SERVICE_ROLE_KEY: str = ""
     SUPABASE_KEY: str = ""
-    DATABASE_URL: str = ""
     GEMINI_API_KEY: str = ""
     # Optional backup key. Used automatically when the primary key hits its quota.
     GEMINI_API_KEY_2: str = ""
@@ -16,7 +15,6 @@ class Settings(BaseSettings):
     # Optional regex for allowed origins (e.g. Vercel preview deployments).
     # Matches the project's production and preview domains by default.
     FRONTEND_ORIGIN_REGEX: str = r"https://callflow[a-z0-9-]*\.vercel\.app"
-    SQLITE_DB_PATH: str = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "callflow.db")
     PORT: int = 8000
 
     class Config:
