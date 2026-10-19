@@ -62,6 +62,13 @@ export default function Home() {
   const [serviceStatus, setServiceStatus] = useState<ServiceStatus>("online");
   const [wakingElapsed, setWakingElapsed] = useState(0);
   const [globalError, setGlobalError] = useState<string | null>(null);
+  const [isLiveAssistVisible, setIsLiveAssistVisible] = useState(false);
+
+  useEffect(() => {
+    if (["requesting", "connecting", "recording", "stopping"].includes(liveTranscription.state)) {
+      setIsLiveAssistVisible(true);
+    }
+  }, [liveTranscription.state]);
 
   // Auto-analysis state (triggered after call close)
   const [isAutoAnalyzing, setIsAutoAnalyzing] = useState(false);
@@ -765,7 +772,7 @@ export default function Home() {
         )}
 
         {/* ── Main View Content ── */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+        <main className={`flex-1 p-4 sm:p-6 lg:p-8 w-full mx-auto ${activeView === "active" ? "max-w-[1600px]" : "max-w-7xl"}`}>
           {isLoadingInitial && serviceStatus !== "sleeping" ? (
             <div className="flex h-96 flex-col items-center justify-center space-y-3">
               <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#0062ff] border-t-transparent"></div>
@@ -967,6 +974,20 @@ export default function Home() {
                     )}
                   </div>
 
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setIsLiveAssistVisible((visible) => !visible)}
+                      aria-expanded={isLiveAssistVisible}
+                      className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors ${isLiveAssistVisible ? "border-blue-500/40 bg-blue-950/30 text-blue-200 hover:bg-blue-900/40" : "border-[#233554] bg-[#0b132b] text-slate-300 hover:border-blue-500/40 hover:text-white"}`}
+                    >
+                      {isLiveAssistVisible ? "Hide Live Assist" : liveTranscription.state === "idle" && liveTranscription.finalTranscript ? "Review Live Assist" : "Enable Live Transcription"}
+                      {liveTranscription.state === "recording" && <span className="ml-2 text-rose-300">● LIVE</span>}
+                    </button>
+                  </div>
+
+                  <div className={`grid items-start gap-4 transition-[grid-template-columns] duration-300 ease-in-out ${isLiveAssistVisible ? "grid-cols-1 lg:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.85fr)]" : "grid-cols-1"}`}>
+                  <div className="min-w-0 space-y-4">
                   {/* Eight-Stage Stepper Progress */}
                   <StageProgress
                     stages={stages}
@@ -1022,23 +1043,20 @@ export default function Home() {
                     )}
                   </div>
 
-                  {/* AI-Captured Stage Notes */}
-                  <div className="mx-auto max-w-4xl">
+                  </div>
+
+                  {/* Live Audio Transcription Panel */}
+                  <aside aria-hidden={!isLiveAssistVisible} className={`min-w-0 lg:sticky lg:top-4 transition-opacity duration-200 ${isLiveAssistVisible ? "opacity-100" : "hidden"}`}>
+                    <div className="mx-auto max-w-4xl">
                     <StageAINotesPanel
                       stageNumber={currentStageNumber}
                       stageName={currentStageDef?.name || ""}
                       notes={stageNotesAnalysis.getStageNotes(currentStageNumber)}
                       isAnalyzing={stageNotesAnalysis.stageIsAnalyzing(currentStageNumber)}
-                      onMarkReviewed={(idx) =>
-                        stageNotesAnalysis.markNoteReviewed(currentStageNumber, idx)
-                      }
-                      onDismiss={(idx) =>
-                        stageNotesAnalysis.dismissNote(currentStageNumber, idx)
-                      }
+                      onMarkReviewed={(idx) => stageNotesAnalysis.markNoteReviewed(currentStageNumber, idx)}
+                      onDismiss={(idx) => stageNotesAnalysis.dismissNote(currentStageNumber, idx)}
                     />
                   </div>
-
-                  {/* Live Audio Transcription Panel */}
                   <div className="mx-auto max-w-4xl pt-2">
                     <TranscriptPanel
                       callId={activeCall.id}
@@ -1062,6 +1080,8 @@ export default function Home() {
                         }
                       }}
                     />
+                  </div>
+                  </aside>
                   </div>
                 </div>
               )}

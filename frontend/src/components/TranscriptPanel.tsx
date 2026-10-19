@@ -74,7 +74,7 @@ export const TranscriptPanel: React.FC<TranscriptPanelProps> = ({
   onTranscriptChange,
 }) => {
   // Panel open/collapsed
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
 
   // Existing persisted transcript (from before live recording)
   const [savedTranscript, setSavedTranscript] = useState<Transcript | null>(null);
@@ -86,6 +86,7 @@ export const TranscriptPanel: React.FC<TranscriptPanelProps> = ({
 
   // Track whether we've already saved the live transcript to the DB
   const savedLiveRef = useRef(false);
+  const hasManualEditsRef = useRef(false);
 
   // ── Fetch existing transcript on mount or callId changes ─────────────────
   useEffect(() => {
@@ -114,7 +115,7 @@ export const TranscriptPanel: React.FC<TranscriptPanelProps> = ({
 
   // ── Sync editedText when live finalTranscript changes ────────────────────
   useEffect(() => {
-    if (finalTranscript && !savedTranscript) {
+    if (finalTranscript && !savedTranscript && !hasManualEditsRef.current) {
       setEditedText(finalTranscript);
       if (onTranscriptChange) {
         onTranscriptChange(finalTranscript);
@@ -132,6 +133,7 @@ export const TranscriptPanel: React.FC<TranscriptPanelProps> = ({
   // ── Autosave edited transcript (debounced) ────────────────────────────────
   const handleEditChange = useCallback(
     (value: string) => {
+      hasManualEditsRef.current = true;
       setEditedText(value);
       setSaveStatus("saving");
       if (saveDebounceRef.current) clearTimeout(saveDebounceRef.current);
