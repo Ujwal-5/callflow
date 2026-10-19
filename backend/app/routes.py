@@ -30,6 +30,8 @@ from backend.app.models import (
     ProspectResponse,
     StageSuggestion,
     StageSuggestPayload,
+    StageAssistPayload,
+    StageAssistRecommendation,
     FollowUpResponse,
     FollowUpUpdate,
 )
@@ -41,6 +43,8 @@ from backend.app.radar import analyze_transcript_with_radar
 from backend.app.historical_radar import find_relevant_historical_matches
 from backend.app.gap_detector import analyze_transcript_for_gaps
 from backend.app.stage_suggester import suggest_stage_from_transcript
+from backend.app.radar import verify_quote_in_transcript
+from backend.app.config import settings
 
 import asyncio
 import base64
@@ -265,6 +269,95 @@ async def post_stage_suggestion(call_id: str, payload: Optional[StageSuggestPayl
         current_stage=current_st,
     )
     return suggestion
+
+
+@router.post(
+    "/calls/{call_id}/stage-assist",
+    response_model=StageAssistRecommendation,
+    tags=["Stages"],
+)
+async def get_stage_assist_recommendation(call_id: str, payload: StageAssistPayload):
+    """Return advisory, quote-grounded help for the currently viewed stage.
+
+    This endpoint never writes a stage result. The caller must explicitly copy
+    an excerpt or confirm an outcome in the UI.
+    """
+    call = db.get_call(call_id)
+    if not call:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Call with ID '{call_id}' not found.")
+
+    transcript = payload.transcript.strip()
+    stage = next((item for item in STAGES if item["stage_number"] == payload.stage_number), None)
+    empty = {
+        "stage_number": payload.stage_number,
+        "suggested_excerpt": None,
+        "excerpt_speaker": "unknown",
+        "excerpt_uncertain": False,
+        "suggested_outcome": None,
+        "outcome_reason": None,
+        "evidence_quote": None,
+        "confidence": 0.0,
+    }
+    if not transcript or not stage or not settings.gemini_configured:
+        return empty
+
+    from google.genai import types as genai_types
+    from backend.app.gemini_pool import text_model_pool
+
+    prompt = f'''You are assisting a cold-call representative. Review the FINALIZED transcript for this one workflow stage.
+Stage {stage["stage_number"]}: {stage["name"]}
+Purpose: {stage["purpose"]}
+Allowed outcomes: {json.dumps(stage["outcome_options"])}
+
+Return strict JSON with this schema:
+{{
+  "suggested_excerpt": "an exact verbatim prospect quote relevant to this stage, or null",
+  "excerpt_speaker": "prospect" | "caller" | "unknown",
+  "excerpt_uncertain": true | false,
+  "suggested_outcome": "one allowed outcome or null",
+  "outcome_reason": "brief evidence-based reason or null",
+  "evidence_quote": "exact verbatim quote supporting the outcome or null",
+  "confidence": 0.0
+}}
+
+Rules: Do not paraphrase or invent. Prefer prospect speech. If speaker identity is unclear, set excerpt_uncertain=true. Return null outcome when evidence is insufficient or conflicting. A transition between stages is never proof of an outcome.
+
+Transcript:
+{transcript}'''
+    try:
+        def _call(client, model_name: str):
+            return client.models.generate_content(
+                model=model_name,
+                contents=prompt,
+                config=genai_types.GenerateContentConfig(temperature=0.0, response_mime_type="application/json"),
+            )
+        response = text_model_pool.execute_with_fallback(_call)
+        data = json.loads((getattr(response, "text", "") or "{}").strip())
+    except Exception as exc:
+        _logger.warning("Stage assist recommendation failed for %s: %s", call_id, exc)
+        return empty
+
+    excerpt = (data.get("suggested_excerpt") or "").strip()
+    evidence = (data.get("evidence_quote") or "").strip()
+    if not excerpt or not verify_quote_in_transcript(excerpt, transcript):
+        excerpt = None
+    if not evidence or not verify_quote_in_transcript(evidence, transcript):
+        evidence = None
+    has_speaker_labels = any(line.lstrip().upper().startswith(("PROSPECT:", "CALLER:", "REPRESENTATIVE:", "CUSTOMER:", "AGENT:")) for line in transcript.splitlines())
+    outcome = data.get("suggested_outcome")
+    if outcome not in stage["outcome_options"] or not evidence:
+        outcome = None
+
+    return {
+        "stage_number": payload.stage_number,
+        "suggested_excerpt": excerpt,
+        "excerpt_speaker": data.get("excerpt_speaker") if data.get("excerpt_speaker") in {"prospect", "caller", "unknown"} else "unknown",
+        "excerpt_uncertain": bool(data.get("excerpt_uncertain", False)) or not has_speaker_labels,
+        "suggested_outcome": outcome,
+        "outcome_reason": (data.get("outcome_reason") or "").strip() or None,
+        "evidence_quote": evidence,
+        "confidence": max(0.0, min(1.0, float(data.get("confidence", 0.0) or 0.0))),
+    }
 
 
 @router.post("/calls/{call_id}/close", response_model=CallDetailResponse, tags=["Calls"])
@@ -1482,10 +1575,25 @@ Only include stages where meaningful content was found. Keep notes concise and f
         except json.JSONDecodeError:
             analysis = {"stage_notes": [], "unclassified_segments": []}
 
+        # Reject unsupported evidence before it reaches the client. The UI can
+        # only offer notes that are traceable to the finalized segment sent here.
+        verified_stage_notes = []
+        for item in analysis.get("stage_notes", []):
+            try:
+                stage_number = int(item.get("stage_number"))
+            except (TypeError, ValueError):
+                continue
+            quote = str(item.get("evidence_quote") or "").strip()
+            if stage_number < 1 or stage_number > 8 or not quote or not verify_quote_in_transcript(quote, transcript_segment):
+                continue
+            item["stage_number"] = stage_number
+            item["evidence_quote"] = quote
+            verified_stage_notes.append(item)
+
         return {
             "call_id": call_id,
             "segment_id": payload.segment_id,
-            "stage_notes": analysis.get("stage_notes", []),
+            "stage_notes": verified_stage_notes,
             "unclassified_segments": analysis.get("unclassified_segments", []),
         }
 

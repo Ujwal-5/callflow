@@ -15,6 +15,7 @@ import {
   Prospect,
   CreateProspectPayload,
   StageSuggestion,
+  StageAssistRecommendation,
   FollowUpItem,
   UpdateFollowUpPayload,
 } from "@/types";
@@ -300,6 +301,17 @@ class ApiClient {
       });
     }
     return this.request(`/calls/${callId}/stage-suggestion`);
+  }
+
+  async getStageAssistRecommendation(
+    callId: string,
+    stageNumber: number,
+    transcript: string
+  ): Promise<StageAssistRecommendation> {
+    return this.request(`/calls/${callId}/stage-assist`, {
+      method: "POST",
+      body: JSON.stringify({ stage_number: stageNumber, transcript }),
+    });
   }
 
   async advanceCallStage(callId: string, stageNumber: number): Promise<Call> {

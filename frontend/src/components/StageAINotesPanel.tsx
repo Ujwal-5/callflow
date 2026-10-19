@@ -15,25 +15,22 @@ import React, { useState } from "react";
 import type { StageNoteItem } from "@/hooks/useStageNotesAnalysis";
 
 interface StageAINotesPanelProps {
-  stageNumber: number;
-  stageName: string;
   notes: StageNoteItem[];
   isAnalyzing: boolean;
-  onMarkReviewed: (index: number) => void;
   onDismiss: (index: number) => void;
+  onAcceptToStageNotes: (index: number, note: string) => void;
 }
 
 export const StageAINotesPanel: React.FC<StageAINotesPanelProps> = ({
-  stageNumber,
-  stageName,
   notes,
   isAnalyzing,
-  onMarkReviewed,
   onDismiss,
+  onAcceptToStageNotes,
 }) => {
   const [expanded, setExpanded] = useState(true);
 
-  if (!isAnalyzing && notes.length === 0) return null;
+  const pendingNotes = notes.filter((note) => !note.manually_edited);
+  if (!isAnalyzing && pendingNotes.length === 0) return null;
 
   return (
     <div className="rounded border border-indigo-500/30 bg-indigo-950/20 mt-3">
@@ -46,7 +43,7 @@ export const StageAINotesPanel: React.FC<StageAINotesPanelProps> = ({
         <div className="flex items-center space-x-2">
           <span className="text-indigo-400">✦</span>
           <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-300">
-            AI-Captured Notes
+            Review queue
           </span>
           {isAnalyzing && (
             <span className="flex items-center space-x-1 text-[10px] text-indigo-400 animate-pulse">
@@ -54,12 +51,12 @@ export const StageAINotesPanel: React.FC<StageAINotesPanelProps> = ({
               <span>Analyzing…</span>
             </span>
           )}
-          {notes.length > 0 && (
+          {pendingNotes.length > 0 && (
             <span className="rounded bg-indigo-900/60 px-1.5 py-0.5 text-[10px] font-mono text-indigo-300">
-              {notes.length}
+              {pendingNotes.length}
             </span>
           )}
-          {notes.some((n) => n.needs_review && !n.manually_edited) && (
+          {pendingNotes.some((n) => n.needs_review) && (
             <span className="rounded bg-amber-950/50 border border-amber-500/30 px-1.5 py-0.5 text-[10px] font-semibold text-amber-400">
               Review needed
             </span>
@@ -78,13 +75,13 @@ export const StageAINotesPanel: React.FC<StageAINotesPanelProps> = ({
       {/* Body */}
       {expanded && (
         <div className="border-t border-indigo-500/20 px-3 py-2 space-y-2">
-          {notes.length === 0 && isAnalyzing && (
+          {pendingNotes.length === 0 && isAnalyzing && (
             <p className="text-[11px] text-indigo-400/70 italic">
               Classifying transcript into stage notes…
             </p>
           )}
 
-          {notes.map((note, idx) => (
+          {notes.map((note, idx) => !note.manually_edited && (
             <div
               key={`${note.source_segment_id}_${idx}`}
               className={`rounded border px-2.5 py-2 space-y-1 ${
@@ -100,9 +97,10 @@ export const StageAINotesPanel: React.FC<StageAINotesPanelProps> = ({
 
               {/* Evidence quote */}
               {note.evidence_quote && (
-                <p className="text-[10px] italic text-slate-400 border-l-2 border-indigo-500/30 pl-2">
-                  &ldquo;{note.evidence_quote}&rdquo;
-                </p>
+                <details className="text-[10px] text-slate-400">
+                  <summary className="cursor-pointer text-indigo-300 hover:text-white">Inspect source evidence</summary>
+                  <p className="mt-1 border-l-2 border-indigo-500/30 pl-2 italic">&ldquo;{note.evidence_quote}&rdquo;</p>
+                </details>
               )}
 
               {/* Footer: confidence + actions */}
@@ -123,11 +121,11 @@ export const StageAINotesPanel: React.FC<StageAINotesPanelProps> = ({
                   <div className="flex items-center space-x-1">
                     <button
                       type="button"
-                      onClick={() => onMarkReviewed(idx)}
-                      title="Mark as reviewed"
+                      onClick={() => onAcceptToStageNotes(idx, note.note)}
+                      title="Add this suggestion to stage notes"
                       className="rounded px-1.5 py-0.5 text-[9px] font-semibold text-emerald-400 hover:bg-emerald-950/40 border border-emerald-500/20 transition-colors"
                     >
-                      ✓ Accept
+                      Add to notes
                     </button>
                     <button
                       type="button"
@@ -144,7 +142,7 @@ export const StageAINotesPanel: React.FC<StageAINotesPanelProps> = ({
           ))}
 
           <p className="text-[9px] text-indigo-400/50 pt-1">
-            AI notes are suggestions. Verify before use — manual notes take priority.
+            Accepted suggestions move into Stage Notes. Expand a card to inspect its quote and review status.
           </p>
         </div>
       )}

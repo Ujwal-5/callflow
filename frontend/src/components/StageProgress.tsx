@@ -15,6 +15,8 @@ interface StageProgressProps {
   stagesNeedingReview?: Set<number>;
   /** Stages currently being analyzed by AI */
   stagesAnalyzing?: Set<number>;
+  /** Stages with an advisory AI outcome that has not been caller-confirmed. */
+  stagesWithRecommendations?: Set<number>;
 }
 
 export const StageProgress: React.FC<StageProgressProps> = ({
@@ -26,13 +28,14 @@ export const StageProgress: React.FC<StageProgressProps> = ({
   stagesWithNotes = new Set(),
   stagesNeedingReview = new Set(),
   stagesAnalyzing = new Set(),
+  stagesWithRecommendations = new Set(),
 }) => {
   // Map of stage status: completed | skipped | not_applicable
   const stageStatusMap = new Map<number, "completed" | "skipped" | "not_applicable">();
   stageResults.forEach((sr) => {
     if (sr.status === "skipped" || sr.status === "not_applicable") {
       stageStatusMap.set(sr.stage_number, sr.status);
-    } else if (sr.selected_outcome || sr.prospect_exact_words || sr.notes) {
+    } else if (sr.selected_outcome) {
       stageStatusMap.set(sr.stage_number, "completed");
     }
   });
@@ -66,6 +69,7 @@ export const StageProgress: React.FC<StageProgressProps> = ({
             const needsReview = stagesNeedingReview.has(stage.stage_number);
             const isAnalyzing = stagesAnalyzing.has(stage.stage_number) ||
               (stagesAnalyzing.has(-1) && hasNotes); // global analyzing indicator
+            const hasRecommendation = stagesWithRecommendations.has(stage.stage_number) && !isCompleted;
 
             return (
               <button
@@ -157,7 +161,7 @@ export const StageProgress: React.FC<StageProgressProps> = ({
                 </span>
 
                 {/* AI note indicators — bottom row */}
-                {(hasNotes || isAnalyzing) && (
+                {(hasNotes || isAnalyzing || hasRecommendation) && (
                   <div className="mt-1 flex items-center gap-1">
                     {isAnalyzing && (
                       <span
@@ -182,6 +186,11 @@ export const StageProgress: React.FC<StageProgressProps> = ({
                         }`}
                       >
                         {needsReview ? "review" : "notes"}
+                      </span>
+                    )}
+                    {hasRecommendation && (
+                      <span title="AI outcome recommendation needs caller confirmation" className="inline-flex items-center gap-1 text-[8px] font-semibold text-violet-300">
+                        <span className="inline-flex h-1.5 w-1.5 rounded-full bg-violet-400" /> recommend
                       </span>
                     )}
                   </div>

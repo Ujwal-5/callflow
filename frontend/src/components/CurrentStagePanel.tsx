@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { StageDefinition, StageResult, StageSuggestion } from "@/types";
+import { StageAssistRecommendation, StageDefinition, StageResult, StageSuggestion } from "@/types";
 import { OutcomeButtons } from "./OutcomeButtons";
 import { ProspectNotesField } from "./ProspectNotesField";
 
@@ -21,6 +21,10 @@ interface CurrentStagePanelProps {
   stageSuggestion?: StageSuggestion | null;
   onApplyStageSuggestion?: (stageNumber: number) => void;
   onDismissStageSuggestion?: () => void;
+  stageAssistRecommendation?: StageAssistRecommendation | null;
+  onConfirmOutcomeSuggestion?: (outcome: string) => void;
+  onDismissOutcomeSuggestion?: () => void;
+  onShowTranscriptEvidence?: (quote: string) => void;
   isSaving: boolean;
   isLastStage: boolean;
   /** Called once on mount so the parent can read the panel's latest local text. */
@@ -30,6 +34,8 @@ interface CurrentStagePanelProps {
    * text into the exactWords field without lifting state to the page.
    */
   onRegisterCopyExactWords?: (fn: (text: string) => void) => void;
+  /** Lets the AI review queue append accepted suggestions to this stage's notes. */
+  onRegisterAppendNotes?: (fn: (text: string) => void) => void;
 }
 
 export const CurrentStagePanel: React.FC<CurrentStagePanelProps> = ({
@@ -48,10 +54,15 @@ export const CurrentStagePanel: React.FC<CurrentStagePanelProps> = ({
   stageSuggestion,
   onApplyStageSuggestion,
   onDismissStageSuggestion,
+  stageAssistRecommendation,
+  onConfirmOutcomeSuggestion,
+  onDismissOutcomeSuggestion,
+  onShowTranscriptEvidence,
   isSaving,
   isLastStage,
   onRegisterFlush,
   onRegisterCopyExactWords,
+  onRegisterAppendNotes,
 }) => {
   // Local optimistic state – decoupled from the server-owned stageResult prop.
   const [localOutcome, setLocalOutcome] = useState<string | null>(
@@ -97,6 +108,17 @@ export const CurrentStagePanel: React.FC<CurrentStagePanelProps> = ({
       });
     }
   }, [onRegisterCopyExactWords]);
+
+  useEffect(() => {
+    onRegisterAppendNotes?.((text: string) => {
+      const next = localNotesRef.current.trim()
+        ? `${localNotesRef.current.trim()}\n• ${text}`
+        : `• ${text}`;
+      setLocalNotes(next);
+      localNotesRef.current = next;
+      onUpdateNotes(next);
+    });
+  }, [onRegisterAppendNotes, onUpdateNotes]);
 
   // Re-sync local state when switching stages (stage_number changes).
   useEffect(() => {
@@ -288,7 +310,44 @@ export const CurrentStagePanel: React.FC<CurrentStagePanelProps> = ({
           options={stage.outcome_options}
           selectedOutcome={localOutcome}
           onSelectOutcome={handleOutcomeClick}
+          suggestedOutcome={stageAssistRecommendation?.suggested_outcome}
         />
+
+        {!localOutcome && stageAssistRecommendation?.suggested_outcome && (
+          <div className="rounded border border-indigo-500/30 bg-indigo-950/20 px-3 py-2.5 text-xs">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <p className="font-semibold text-indigo-200">Suggested outcome: {stageAssistRecommendation.suggested_outcome}</p>
+                {stageAssistRecommendation.outcome_reason && <p className="mt-0.5 text-slate-300">{stageAssistRecommendation.outcome_reason}</p>}
+                {stageAssistRecommendation.evidence_quote && <button type="button" onClick={() => onShowTranscriptEvidence?.(stageAssistRecommendation.evidence_quote!)} className="mt-1 text-left italic text-indigo-300 hover:text-white">“{stageAssistRecommendation.evidence_quote}” · Show in transcript</button>}
+              </div>
+              <div className="flex gap-2"><button type="button" onClick={() => {
+                const outcome = stageAssistRecommendation.suggested_outcome!;
+                setLocalOutcome(outcome);
+                onConfirmOutcomeSuggestion?.(outcome);
+              }} className="rounded bg-indigo-600 px-3 py-1.5 text-[11px] font-bold text-white hover:bg-indigo-500">Confirm</button><button type="button" onClick={onDismissOutcomeSuggestion} className="rounded border border-slate-600 px-2.5 py-1.5 text-[11px] font-semibold text-slate-300 hover:bg-slate-800">Change</button></div>
+            </div>
+          </div>
+        )}
+
+        {!localOutcome && stageAssistRecommendation && !stageAssistRecommendation.suggested_outcome && stageAssistRecommendation.confidence > 0 && (
+          <p className="rounded border border-slate-700 bg-slate-900/30 px-3 py-2 text-xs text-slate-400">Evidence is insufficient or conflicting. Choose an outcome when you’re ready.</p>
+        )}
+
+        <div className="rounded border border-indigo-500/25 bg-indigo-950/15 p-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-indigo-300">Suggested Answer from Transcript</p>
+              {stageAssistRecommendation?.suggested_excerpt ? (
+                <>
+                  <p className="mt-1 text-xs italic leading-relaxed text-slate-200">“{stageAssistRecommendation.suggested_excerpt}”</p>
+                  <p className="mt-1 text-[10px] text-slate-400">{stageAssistRecommendation.excerpt_uncertain ? "Speaker identity is uncertain — verify before using." : `${stageAssistRecommendation.excerpt_speaker === "prospect" ? "Prospect" : "Speaker"} excerpt, verbatim.`}</p>
+                </>
+              ) : <p className="mt-1 text-xs text-slate-400">No clear answer found yet.</p>}
+            </div>
+            {stageAssistRecommendation?.suggested_excerpt && <div className="flex gap-2"><button type="button" onClick={() => handleExactWordsChange(stageAssistRecommendation.suggested_excerpt!)} className="rounded border border-indigo-400/40 px-2.5 py-1.5 text-[11px] font-semibold text-indigo-200 hover:bg-indigo-900/40">Copy Excerpt</button><button type="button" onClick={() => onShowTranscriptEvidence?.(stageAssistRecommendation.suggested_excerpt!)} className="rounded border border-slate-700 px-2.5 py-1.5 text-[11px] text-slate-300 hover:bg-slate-800">Show in Transcript</button></div>}
+          </div>
+        </div>
 
         {/* Prospect exact words & notes field — driven by LOCAL state */}
         <ProspectNotesField

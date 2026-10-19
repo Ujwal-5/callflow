@@ -69,17 +69,20 @@ export const ProspectNotesField: React.FC<ProspectNotesFieldProps> = ({
         </p>
       </div>
 
-      {/* Internal notes field */}
+      {/* One caller-owned stage notes field for manual context and accepted AI suggestions. */}
       <div>
-        <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-slate-400">
-          Internal Notes & Context
-        </label>
-        <input
-          type="text"
+        <div className="mb-1 flex items-center justify-between">
+          <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            Stage Notes
+          </label>
+          <span className="text-[10px] text-slate-500">Manual notes take priority</span>
+        </div>
+        <textarea
+          rows={3}
           value={notes}
           onChange={(e) => onNotesChange(e.target.value)}
-          placeholder="Brief observations, tone, follow-up notes, or next person mentioned..."
-          className="w-full rounded border border-[#233554] bg-[#070d1e] px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:border-slate-400 focus:outline-none"
+          placeholder="Add context, observations, follow-up details, or accept an AI suggestion here…"
+          className="w-full resize-y rounded border border-[#233554] bg-[#070d1e] px-3 py-2 text-xs text-white placeholder-slate-500 focus:border-slate-400 focus:outline-none"
         />
       </div>
     </div>

@@ -25,6 +25,7 @@ import {
   CloseCallPayload,
   StageResult,
   StageSuggestion,
+  StageAssistRecommendation,
   Prospect,
   FollowUpItem,
   CreateProspectPayload,
@@ -58,6 +59,8 @@ export default function Home() {
   const [isEndingCallModalOpen, setIsEndingCallModalOpen] = useState(false);
   const [initialModalOutcome, setInitialModalOutcome] = useState<string | undefined>(undefined);
   const [stageSuggestion, setStageSuggestion] = useState<StageSuggestion | null>(null);
+  const [stageAssistRecommendations, setStageAssistRecommendations] = useState<Map<number, StageAssistRecommendation>>(new Map());
+  const [transcriptHighlight, setTranscriptHighlight] = useState<string | null>(null);
   const stageSuggestionRequestRef = useRef<{ callId: string; stage: number; transcript: string } | null>(null);
   const [isSubmittingClose, setIsSubmittingClose] = useState(false);
   const [serviceStatus, setServiceStatus] = useState<ServiceStatus>("online");
@@ -85,6 +88,8 @@ export default function Home() {
   >(null);
 
   const copyToExactWordsRef = useRef<((text: string) => void) | null>(null);
+  const appendStageNotesRef = useRef<((text: string) => void) | null>(null);
+  const stageAssistRequestRef = useRef<Map<number, number>>(new Map());
 
   // Feed each new final segment to stage-note analysis (deduplication is inside the hook)
   useEffect(() => {
@@ -95,6 +100,30 @@ export default function Home() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [liveTranscription.finalSegments]);
+
+  // One advisory stage-assist request only after meaningful finalized evidence.
+  // It never writes notes or outcomes; confirmed caller choices remain untouched.
+  useEffect(() => {
+    if (!activeCall) return;
+    const transcript = liveTranscription.finalTranscript.trim();
+    if (transcript.length < 80) return;
+    const priorLength = stageAssistRequestRef.current.get(currentStageNumber) || 0;
+    if (transcript.length - priorLength < 200 && priorLength !== 0) return;
+    const timeout = setTimeout(async () => {
+      stageAssistRequestRef.current.set(currentStageNumber, transcript.length);
+      try {
+        const recommendation = await api.getStageAssistRecommendation(activeCall.id, currentStageNumber, transcript);
+        setStageAssistRecommendations((previous) => {
+          const next = new Map(previous);
+          next.set(currentStageNumber, recommendation);
+          return next;
+        });
+      } catch {
+        // Assistive suggestions must not disrupt the call UI.
+      }
+    }, 1200);
+    return () => clearTimeout(timeout);
+  }, [activeCall?.id, currentStageNumber, liveTranscription.finalTranscript]);
 
   const showError = useCallback(async (err: unknown, fallback: string) => {
     try {
@@ -247,6 +276,7 @@ export default function Home() {
         })
         .catch((err: unknown) => {
           console.error("Failed to save stage result:", err);
+          setGlobalError("Couldn’t save this stage yet. Your edits remain in the form; try again or navigate away and back to retry.");
         });
     },
     []
@@ -323,6 +353,8 @@ export default function Home() {
       // Reset live transcription and AI note state for the new call
       liveTranscription.reset();
       stageNotesAnalysis.resetNotes();
+      setStageAssistRecommendations(new Map());
+      stageAssistRequestRef.current = new Map();
 
       // Refresh calls in background
       api.listCalls().then(setCallsHistory).catch(() => {});
@@ -1009,9 +1041,14 @@ export default function Home() {
                     stageResults={activeCall.stage_results}
                     onSelectStage={handleSelectStage}
                     stagesWithNotes={new Set(
-                      [...stageNotesAnalysis.stageNotesState.notes.entries()]
-                        .filter(([, notes]) => notes.length > 0)
-                        .map(([k]) => k)
+                      [
+                        ...[...stageNotesAnalysis.stageNotesState.notes.entries()]
+                          .filter(([, notes]) => notes.some((note) => !note.manually_edited))
+                          .map(([k]) => k),
+                        ...(activeCall.stage_results || [])
+                          .filter((result) => Boolean(result.notes?.trim()))
+                          .map((result) => result.stage_number),
+                      ]
                     )}
                     stagesNeedingReview={stageNotesAnalysis.stageNotesState.needsReview}
                     stagesAnalyzing={
@@ -1019,6 +1056,11 @@ export default function Home() {
                         ? new Set(stages.map((s) => s.stage_number))
                         : new Set<number>()
                     }
+                    stagesWithRecommendations={new Set(
+                      [...stageAssistRecommendations.entries()]
+                        .filter(([stageNumber, recommendation]) => recommendation.suggested_outcome && !(activeCall.stage_results || []).some((result) => result.stage_number === stageNumber && result.selected_outcome))
+                        .map(([stageNumber]) => stageNumber)
+                    )}
                   />
 
                   {/* Current Stage Panel */}
@@ -1044,6 +1086,22 @@ export default function Home() {
                         stageSuggestion={stageSuggestion}
                         onApplyStageSuggestion={handleApplyStageSuggestion}
                         onDismissStageSuggestion={handleDismissStageSuggestion}
+                        stageAssistRecommendation={stageAssistRecommendations.get(currentStageNumber) || null}
+                        onConfirmOutcomeSuggestion={(outcome) => {
+                          handleSelectOutcome(outcome);
+                          const evidence = stageAssistRecommendations.get(currentStageNumber)?.evidence_quote;
+                          if (evidence) appendStageNotesRef.current?.(`Outcome confirmed from transcript evidence: “${evidence}”`);
+                        }}
+                        onDismissOutcomeSuggestion={() => setStageAssistRecommendations((previous) => {
+                          const next = new Map(previous);
+                          const current = next.get(currentStageNumber);
+                          if (current) next.set(currentStageNumber, { ...current, suggested_outcome: null, outcome_reason: null, evidence_quote: null });
+                          return next;
+                        })}
+                        onShowTranscriptEvidence={(quote) => {
+                          setTranscriptHighlight(quote);
+                          setIsLiveAssistVisible(true);
+                        }}
                         isSaving={false}
                         isLastStage={currentStageNumber === stages.length}
                         onRegisterFlush={(fn) => {
@@ -1051,6 +1109,9 @@ export default function Home() {
                         }}
                         onRegisterCopyExactWords={(fn) => {
                           copyToExactWordsRef.current = fn;
+                        }}
+                        onRegisterAppendNotes={(fn) => {
+                          appendStageNotesRef.current = fn;
                         }}
                       />
                     )}
@@ -1062,12 +1123,13 @@ export default function Home() {
                   <aside aria-hidden={!isLiveAssistVisible} className={`min-w-0 lg:sticky lg:top-4 transition-opacity duration-200 ${isLiveAssistVisible ? "opacity-100" : "hidden"}`}>
                     <div className="mx-auto max-w-4xl">
                     <StageAINotesPanel
-                      stageNumber={currentStageNumber}
-                      stageName={currentStageDef?.name || ""}
                       notes={stageNotesAnalysis.getStageNotes(currentStageNumber)}
                       isAnalyzing={stageNotesAnalysis.stageIsAnalyzing(currentStageNumber)}
-                      onMarkReviewed={(idx) => stageNotesAnalysis.markNoteReviewed(currentStageNumber, idx)}
                       onDismiss={(idx) => stageNotesAnalysis.dismissNote(currentStageNumber, idx)}
+                      onAcceptToStageNotes={(idx, note) => {
+                        appendStageNotesRef.current?.(note);
+                        stageNotesAnalysis.markNoteReviewed(currentStageNumber, idx);
+                      }}
                     />
                   </div>
                   <div className="mx-auto max-w-4xl pt-2">
@@ -1087,11 +1149,12 @@ export default function Home() {
                       onAcknowledgeConsent={() =>
                         liveTranscription.acknowledgeConsent()
                       }
-                      onCopyToExactWords={(text: string) => {
+                      onTranscriptSelection={(text: string) => {
                         if (copyToExactWordsRef.current) {
                           copyToExactWordsRef.current(text);
                         }
                       }}
+                      highlightText={transcriptHighlight}
                     />
                   </div>
                   </aside>

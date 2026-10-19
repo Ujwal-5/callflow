@@ -86,6 +86,22 @@ class StageSuggestPayload(BaseModel):
     current_stage: Optional[int] = Field(None, ge=1, le=8, description="Current stage number to compare against.")
 
 
+class StageAssistPayload(BaseModel):
+    transcript: str = Field(..., min_length=1, description="Finalized transcript text to evaluate.")
+    stage_number: int = Field(..., ge=1, le=8)
+
+
+class StageAssistRecommendation(BaseModel):
+    stage_number: int
+    suggested_excerpt: Optional[str] = None
+    excerpt_speaker: str = "unknown"
+    excerpt_uncertain: bool = False
+    suggested_outcome: Optional[str] = None
+    outcome_reason: Optional[str] = None
+    evidence_quote: Optional[str] = None
+    confidence: float = 0.0
+
+
 
 class StageDefinition(BaseModel):
     stage_number: int

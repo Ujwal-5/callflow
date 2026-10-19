@@ -6,6 +6,7 @@ interface OutcomeButtonsProps {
   options: string[];
   selectedOutcome: string | null;
   onSelectOutcome: (outcome: string) => void;
+  suggestedOutcome?: string | null;
   disabled?: boolean;
 }
 
@@ -13,6 +14,7 @@ export const OutcomeButtons: React.FC<OutcomeButtonsProps> = ({
   options,
   selectedOutcome,
   onSelectOutcome,
+  suggestedOutcome = null,
   disabled = false,
 }) => {
   return (
@@ -35,6 +37,7 @@ export const OutcomeButtons: React.FC<OutcomeButtonsProps> = ({
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         {options.map((option) => {
           const isSelected = selectedOutcome === option;
+          const isSuggested = !selectedOutcome && suggestedOutcome === option;
           return (
             <button
               key={option}
@@ -44,10 +47,12 @@ export const OutcomeButtons: React.FC<OutcomeButtonsProps> = ({
               className={`flex items-center justify-between rounded border px-3.5 py-2.5 text-left text-xs font-medium transition-all ${
                 isSelected
                   ? "border-[#0062ff] bg-[#0062ff]/20 text-white ring-1 ring-[#0062ff] shadow-sm shadow-[#0062ff]/20"
+                  : isSuggested
+                  ? "border-indigo-400/70 bg-indigo-950/50 text-indigo-100 ring-1 ring-indigo-400/40"
                   : "border-[#233554] bg-[#101c3d] text-slate-300 hover:border-slate-500 hover:bg-[#16254e] hover:text-white"
               } ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
             >
-              <span>{option}</span>
+              <span className="flex items-center gap-2">{option}{isSuggested && <span className="rounded bg-indigo-500/20 px-1.5 py-0.5 text-[9px] font-bold uppercase text-indigo-300">AI suggested</span>}</span>
               <div
                 className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${
                   isSelected

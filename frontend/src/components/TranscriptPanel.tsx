@@ -38,8 +38,10 @@ interface TranscriptPanelProps {
   onStartRecording: () => void;
   onStopRecording: () => void;
   onAcknowledgeConsent: () => void;
-  /** Called when the user clicks "Copy to Prospect's Exact Words" */
-  onCopyToExactWords?: (text: string) => void;
+  /** Applies a caller-selected transcript passage to the active stage. */
+  onTranscriptSelection?: (text: string) => void;
+  /** Exact source passage to reveal in the transcript. */
+  highlightText?: string | null;
   /** Called when transcript text changes (for stage suggestion updates) */
   onTranscriptChange?: (text: string) => void;
 }
@@ -62,7 +64,6 @@ export const TranscriptPanel: React.FC<TranscriptPanelProps> = ({
   callId,
   recordingState,
   elapsedSeconds,
-  finalSegments,
   interimText,
   finalTranscript,
   transcriptionError,
@@ -70,7 +71,8 @@ export const TranscriptPanel: React.FC<TranscriptPanelProps> = ({
   onStartRecording,
   onStopRecording,
   onAcknowledgeConsent,
-  onCopyToExactWords,
+  onTranscriptSelection,
+  highlightText,
   onTranscriptChange,
 }) => {
   // Panel open/collapsed
@@ -84,9 +86,20 @@ export const TranscriptPanel: React.FC<TranscriptPanelProps> = ({
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
   const saveDebounceRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Track whether we've already saved the live transcript to the DB
-  const savedLiveRef = useRef(false);
   const hasManualEditsRef = useRef(false);
+  const lastSyncedTranscriptRef = useRef("");
+  const transcriptTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  useEffect(() => {
+    if (!highlightText || !transcriptTextareaRef.current) return;
+    const transcript = editedText || finalTranscript;
+    const start = transcript.toLowerCase().indexOf(highlightText.toLowerCase());
+    if (start < 0) return;
+    const input = transcriptTextareaRef.current;
+    input.focus();
+    input.setSelectionRange(start, start + highlightText.length);
+    input.scrollTop = Math.max(0, (start / Math.max(transcript.length, 1)) * input.scrollHeight - input.clientHeight / 2);
+  }, [highlightText, editedText, finalTranscript]);
 
   // ── Fetch existing transcript on mount or callId changes ─────────────────
   useEffect(() => {
@@ -115,12 +128,21 @@ export const TranscriptPanel: React.FC<TranscriptPanelProps> = ({
 
   // ── Sync editedText when live finalTranscript changes ────────────────────
   useEffect(() => {
-    if (finalTranscript && !savedTranscript && !hasManualEditsRef.current) {
+    if (!finalTranscript) return;
+    const previousTranscript = lastSyncedTranscriptRef.current;
+    if (!hasManualEditsRef.current) {
       setEditedText(finalTranscript);
-      if (onTranscriptChange) {
-        onTranscriptChange(finalTranscript);
+    } else if (
+      previousTranscript && finalTranscript.startsWith(previousTranscript) &&
+      finalTranscript.length > previousTranscript.length
+    ) {
+      const newlyFinalizedText = finalTranscript.slice(previousTranscript.length).trim();
+      if (newlyFinalizedText) {
+        setEditedText((previous) => `${previous.trimEnd()}\n${newlyFinalizedText}`.trim());
       }
     }
+    lastSyncedTranscriptRef.current = finalTranscript;
+    onTranscriptChange?.(finalTranscript);
   }, [finalTranscript, savedTranscript, onTranscriptChange]);
 
   // ── Auto-open when recording starts ──────────────────────────────────────
@@ -135,25 +157,31 @@ export const TranscriptPanel: React.FC<TranscriptPanelProps> = ({
     (value: string) => {
       hasManualEditsRef.current = true;
       setEditedText(value);
-      setSaveStatus("saving");
-      if (saveDebounceRef.current) clearTimeout(saveDebounceRef.current);
-      saveDebounceRef.current = setTimeout(async () => {
-        try {
-          const saved = await api.saveEditedTranscript(callId, value);
-          setSavedTranscript(saved);
-          setSaveStatus("saved");
-          if (onTranscriptChange) {
-            const text =
-              saved.edited_transcript ?? saved.raw_transcript ?? value;
-            if (text) onTranscriptChange(text);
-          }
-        } catch {
-          setSaveStatus("error");
-        }
-      }, 800);
+      const isCapturing = ["recording", "connecting", "stopping"].includes(recordingState);
+      setSaveStatus(isCapturing ? "idle" : "saving");
+      onTranscriptChange?.(value);
     },
-    [callId, onTranscriptChange]
+    [recordingState, onTranscriptChange]
   );
+
+  // Save edits after capture has stopped. While the microphone is active,
+  // keep edits local so we don't race transcript creation on the server.
+  useEffect(() => {
+    if (["recording", "connecting", "stopping"].includes(recordingState) || !hasManualEditsRef.current || !editedText.trim()) return;
+    if (saveDebounceRef.current) clearTimeout(saveDebounceRef.current);
+    saveDebounceRef.current = setTimeout(async () => {
+      try {
+        const saved = await api.saveEditedTranscript(callId, editedText);
+        setSavedTranscript(saved);
+        setSaveStatus("saved");
+      } catch {
+        setSaveStatus("error");
+      }
+    }, 800);
+    return () => {
+      if (saveDebounceRef.current) clearTimeout(saveDebounceRef.current);
+    };
+  }, [callId, editedText, recordingState]);
 
   // ── Derived state ─────────────────────────────────────────────────────────
 
@@ -329,23 +357,22 @@ export const TranscriptPanel: React.FC<TranscriptPanelProps> = ({
                     </button>
                   </div>
 
-                  {/* Live transcript display */}
-                  <div className="rounded border border-[#233554] bg-[#070d1e] p-3 min-h-[80px] max-h-64 overflow-y-auto text-xs leading-relaxed space-y-1">
-                    {/* Finalized segments */}
-                    {finalSegments.map((seg) => (
-                      <p key={seg.id} className="text-slate-200">
-                        {seg.text}
-                      </p>
-                    ))}
-                    {/* Current interim text */}
-                    {interimText && (
-                      <p className="text-slate-500 italic">{interimText}</p>
-                    )}
-                    {finalSegments.length === 0 && !interimText && (
-                      <p className="text-slate-600 italic">
-                        Listening… Start speaking to see live transcription
-                      </p>
-                    )}
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-slate-300">Live Transcript</label>
+                    <textarea
+                      ref={transcriptTextareaRef}
+                      rows={5}
+                      value={editedText || finalTranscript}
+                      onChange={(event) => handleEditChange(event.target.value)}
+                      onMouseUp={(event) => {
+                        const input = event.currentTarget;
+                        const selection = input.value.slice(input.selectionStart, input.selectionEnd).trim();
+                        if (selection) onTranscriptSelection?.(selection);
+                      }}
+                      placeholder="Listening… Start speaking to see live transcription"
+                      className="w-full min-h-[100px] max-h-64 rounded border border-[#233554] bg-[#070d1e] p-3 text-xs leading-relaxed text-slate-200 placeholder-slate-600 focus:border-blue-500 focus:outline-none resize-y"
+                    />
+                    {interimText && <p className="text-xs italic text-slate-500">Hearing: {interimText}</p>}
                   </div>
                 </div>
               )}
@@ -407,17 +434,18 @@ export const TranscriptPanel: React.FC<TranscriptPanelProps> = ({
                         </span>
                       </div>
 
-                      {/* Display segments with interim */}
-                      <div className="rounded border border-[#233554] bg-[#070d1e] p-3 max-h-48 overflow-y-auto text-xs leading-relaxed space-y-1">
-                        {finalSegments.map((seg) => (
-                          <p key={seg.id} className="text-slate-200">
-                            {seg.text}
-                          </p>
-                        ))}
-                        {interimText && (
-                          <p className="text-slate-500 italic">{interimText}</p>
-                        )}
-                      </div>
+                      <textarea
+                        ref={transcriptTextareaRef}
+                        rows={6}
+                        value={editedText || finalTranscript}
+                        onChange={(event) => handleEditChange(event.target.value)}
+                        onMouseUp={(event) => {
+                          const input = event.currentTarget;
+                          const selection = input.value.slice(input.selectionStart, input.selectionEnd).trim();
+                          if (selection) onTranscriptSelection?.(selection);
+                        }}
+                        className="w-full resize-y rounded border border-[#233554] bg-[#070d1e] p-3 text-xs leading-relaxed text-slate-200 focus:border-blue-500 focus:outline-none"
+                      />
 
                     </>
                   )}
@@ -447,28 +475,24 @@ export const TranscriptPanel: React.FC<TranscriptPanelProps> = ({
                           {saveStatus === "idle" && "Auto-saved"}
                         </span>
                       </div>
-                      <div className="rounded border border-[#233554] bg-[#070d1e] p-3 max-h-48 overflow-y-auto whitespace-pre-wrap text-xs leading-relaxed text-slate-200">
-                        {displayText}
-                      </div>
+                      <textarea
+                        ref={transcriptTextareaRef}
+                        rows={6}
+                        value={displayText}
+                        onChange={(event) => handleEditChange(event.target.value)}
+                        onMouseUp={(event) => {
+                          const input = event.currentTarget;
+                          const selection = input.value.slice(input.selectionStart, input.selectionEnd).trim();
+                          if (selection) onTranscriptSelection?.(selection);
+                        }}
+                        placeholder="Transcript will appear here…"
+                        className="w-full rounded border border-[#233554] bg-[#070d1e] px-3 py-2 text-xs text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none resize-y"
+                      />
                     </>
                   )}
 
                   {/* Action row */}
                   <div className="flex flex-wrap items-center gap-2">
-                    {onCopyToExactWords && (editedText || finalTranscript) && (
-                      <button
-                        type="button"
-                        onClick={() =>
-                          onCopyToExactWords(editedText || finalTranscript)
-                        }
-                        className="flex items-center space-x-1.5 rounded border border-[#0062ff]/50 bg-[#0062ff]/10 px-3 py-1.5 text-[11px] font-semibold text-[#60a5fa] hover:bg-[#0062ff]/20 transition-colors"
-                      >
-                        <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                        </svg>
-                        <span>Copy to Prospect's Exact Words</span>
-                      </button>
-                    )}
                     {isIdle && (
                       <button
                         type="button"

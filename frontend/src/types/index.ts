@@ -87,6 +87,17 @@ export interface StageSuggestion {
   confidence: number;
 }
 
+export interface StageAssistRecommendation {
+  stage_number: number;
+  suggested_excerpt: string | null;
+  excerpt_speaker: "prospect" | "caller" | "unknown";
+  excerpt_uncertain: boolean;
+  suggested_outcome: string | null;
+  outcome_reason: string | null;
+  evidence_quote: string | null;
+  confidence: number;
+}
+
 export interface SummaryResponse {
   call_id: string;
   available: boolean;

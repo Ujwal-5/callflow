@@ -131,7 +131,7 @@ export function useStageNotesAnalysis(): UseStageNotesAnalysisReturn {
             const existing = newNotes.get(note.stage_number) || [];
             // Don't add duplicate notes (same evidence_quote)
             const isDuplicate = existing.some(
-              (e) => e.evidence_quote === note.evidence_quote && !e.manually_edited
+              (e) => e.evidence_quote.trim().toLowerCase() === (note.evidence_quote || "").trim().toLowerCase()
             );
             if (!isDuplicate) {
               const newNote: StageNoteItem = {
