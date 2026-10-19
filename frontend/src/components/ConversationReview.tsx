@@ -7,6 +7,7 @@ import {
   ConversationGapStatus,
   Commitment,
   MissedOpportunity,
+  HistoricalMatch,
   CommitmentRecordStatus,
 } from "@/types";
 import { api } from "@/lib/api";
@@ -46,6 +47,7 @@ export const ConversationReview: React.FC<ConversationReviewProps> = ({
   // ── Commitment / Radar state ──
   const [commitments, setCommitments] = useState<Commitment[]>([]);
   const [missedOpps, setMissedOpps] = useState<MissedOpportunity[]>([]);
+  const [historicalMatches, setHistoricalMatches] = useState<HistoricalMatch[]>([]);
   const [radarSummary, setRadarSummary] = useState<string>("");
   const [isLoadingRadar, setIsLoadingRadar] = useState<boolean>(true);
   const [isAnalyzingRadar, setIsAnalyzingRadar] = useState<boolean>(false);
@@ -87,6 +89,7 @@ export const ConversationReview: React.FC<ConversationReviewProps> = ({
       const res = await api.getRadar(callId);
       setCommitments(res.commitments || []);
       setMissedOpps(res.missed_opportunities || []);
+      setHistoricalMatches(res.historical_matches || []);
       setRadarSummary(res.analysis_summary || "");
       if (onCommitmentsChange) onCommitmentsChange(res.commitments || []);
     } catch (err: unknown) {
@@ -126,6 +129,7 @@ export const ConversationReview: React.FC<ConversationReviewProps> = ({
       if (radarRes.status === "fulfilled") {
         setCommitments(radarRes.value.commitments || []);
         setMissedOpps(radarRes.value.missed_opportunities || []);
+        setHistoricalMatches(radarRes.value.historical_matches || []);
         setRadarSummary(radarRes.value.analysis_summary || "");
         if (onCommitmentsChange) onCommitmentsChange(radarRes.value.commitments || []);
       } else {
@@ -718,6 +722,46 @@ export const ConversationReview: React.FC<ConversationReviewProps> = ({
                   </div>
                 )}
               </div>
+
+              {/* ── Historical Precedents (Grounded in 100 Cold Calls) ── */}
+              {historicalMatches && historicalMatches.length > 0 && (
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
+                      Historical Cold-Call Precedents (100 Calls Dataset)
+                    </span>
+                    <span className="text-[10px] font-mono text-slate-400">
+                      Audited & Grounded
+                    </span>
+                  </div>
+                  <div className="space-y-2">
+                    {historicalMatches.map((m, idx) => (
+                      <div
+                        key={`${m.transcript_id}-${idx}`}
+                        className="rounded border border-[#233554] bg-[#070d1e] p-3 text-xs space-y-1.5"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <span className="rounded bg-[#0062ff]/20 border border-[#0062ff]/40 px-1.5 py-0.5 font-mono text-[10px] font-bold text-[#0062ff]">
+                              {m.transcript_id}
+                            </span>
+                            {m.company && (
+                              <span className="font-semibold text-white">
+                                {m.company}
+                              </span>
+                            )}
+                          </div>
+                          <span className="rounded bg-slate-800 px-1.5 py-0.5 text-[10px] text-slate-300">
+                            Outcome: {m.recorded_outcome}
+                          </span>
+                        </div>
+                        <p className="italic text-slate-300">&ldquo;{m.quote}&rdquo;</p>
+                        <p className="text-[11px] text-[#60a5fa]">{m.relevance}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

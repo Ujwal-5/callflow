@@ -15,6 +15,8 @@ import {
   Prospect,
   CreateProspectPayload,
   StageSuggestion,
+  FollowUpItem,
+  UpdateFollowUpPayload,
 } from "@/types";
 
 
@@ -317,10 +319,32 @@ class ApiClient {
     return this.request(`/prospects${qs}`);
   }
 
+  async getProspect(prospectId: string): Promise<Prospect> {
+    return this.request(`/prospects/${prospectId}`);
+  }
+
+  async getProspectCalls(prospectId: string): Promise<Call[]> {
+    return this.request(`/prospects/${prospectId}/calls`);
+  }
+
   async createProspect(payload: CreateProspectPayload): Promise<Prospect> {
     return this.request("/prospects", {
       method: "POST",
       body: JSON.stringify(payload),
+    });
+  }
+
+  async listFollowups(): Promise<FollowUpItem[]> {
+    return this.request("/followups");
+  }
+
+  async updateFollowup(
+    followupId: string,
+    updates: UpdateFollowUpPayload
+  ): Promise<FollowUpItem> {
+    return this.request(`/followups/${followupId}`, {
+      method: "PATCH",
+      body: JSON.stringify(updates),
     });
   }
 }

@@ -300,4 +300,31 @@ class ProspectResponse(BaseModel):
     updated_at: str
 
 
+class FollowUpResponse(BaseModel):
+    id: str
+    call_id: str
+    company_name: str
+    contact_name: Optional[str] = None
+    phone_number: Optional[str] = None
+    action: str
+    due_at: Optional[str] = None
+    relative_due: Optional[str] = None
+    channel: Optional[str] = None
+    evidence_quote: Optional[str] = None
+    confidence: Optional[float] = 1.0
+    status: str  # pending, confirmed, completed, dismissed
+    created_at: str
+    updated_at: Optional[str] = None
+    source: str = "commitment"  # commitment | call_next_action
+
+
+class FollowUpUpdate(BaseModel):
+    status: Optional[str] = None
+    due_at: Optional[str] = None
+    relative_due: Optional[str] = None
+    action: Optional[str] = None
+    channel: Optional[str] = None
+
+
+
 

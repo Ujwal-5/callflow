@@ -29,6 +29,8 @@ from backend.app.models import (
     ProspectResponse,
     StageSuggestion,
     StageSuggestPayload,
+    FollowUpResponse,
+    FollowUpUpdate,
 )
 from backend.app.stages_data import STAGES
 from backend.app.db import db
@@ -949,5 +951,183 @@ def create_prospect_endpoint(payload: ProspectCreate):
             status_code=status.HTTP_409_CONFLICT,
             detail=str(e)
         )
+
+
+@router.get("/prospects/{prospect_id}", response_model=ProspectResponse, tags=["Prospects"])
+def get_prospect_endpoint(prospect_id: str):
+    """Retrieve details for a single prospect."""
+    p = db.get_prospect(prospect_id)
+    if not p:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Prospect with ID '{prospect_id}' not found."
+        )
+    return p
+
+
+@router.get("/prospects/{prospect_id}/calls", response_model=List[CallResponse], tags=["Prospects"])
+def get_prospect_calls_endpoint(prospect_id: str):
+    """Retrieve all historical calls associated with a given prospect."""
+    p = db.get_prospect(prospect_id)
+    if not p:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Prospect with ID '{prospect_id}' not found."
+        )
+    comp_clean = p["company_name"].strip().lower()
+    calls = db.list_calls()
+    matched = [
+        c for c in calls
+        if (c.get("company_name") or "").strip().lower() == comp_clean
+    ]
+    return matched
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# Follow-up Management Endpoints
+# ──────────────────────────────────────────────────────────────────────────
+
+@router.get("/followups", response_model=List[FollowUpResponse], tags=["Followups"])
+def list_followups_endpoint():
+    """List all follow-up actions and commitments across all calls with prospect information."""
+    calls_list = db.list_calls()
+    calls_by_id = {c["id"]: c for c in calls_list}
+
+    all_commitments = db.list_all_commitments()
+    followups: List[Dict[str, Any]] = []
+    seen_call_actions = set()
+
+    # 1. From explicit commitments
+    for comm in all_commitments:
+        call = calls_by_id.get(comm.get("call_id"))
+        comp_name = call.get("company_name") if call else "Unknown Company"
+        contact_name = call.get("contact_name") if call else None
+        phone_number = call.get("phone_number") if call else None
+        action = comm.get("action", "")
+
+        followups.append({
+            "id": comm["id"],
+            "call_id": comm["call_id"],
+            "company_name": comp_name,
+            "contact_name": contact_name,
+            "phone_number": phone_number,
+            "action": action,
+            "due_at": comm.get("due_at"),
+            "relative_due": comm.get("relative_due"),
+            "channel": comm.get("channel"),
+            "evidence_quote": comm.get("evidence_quote"),
+            "confidence": comm.get("confidence", 1.0),
+            "status": comm.get("status", "pending"),
+            "created_at": comm.get("created_at"),
+            "updated_at": comm.get("updated_at"),
+            "source": "commitment",
+        })
+        if comm.get("call_id"):
+            seen_call_actions.add((comm["call_id"], action.strip().lower()))
+
+    # 2. From call close next_actions that aren't duplicate commitments
+    for call in calls_list:
+        next_act = (call.get("next_action") or "").strip()
+        fup_time = (call.get("follow_up_time") or "").strip()
+        if next_act or fup_time:
+            # Check if this exact action was already extracted as a commitment
+            if (call["id"], next_act.lower()) in seen_call_actions:
+                continue
+            followups.append({
+                "id": f"call_{call['id']}",
+                "call_id": call["id"],
+                "company_name": call.get("company_name"),
+                "contact_name": call.get("contact_name"),
+                "phone_number": call.get("phone_number"),
+                "action": next_act or "Scheduled follow-up",
+                "due_at": None,
+                "relative_due": fup_time or None,
+                "channel": call.get("follow_up_channel"),
+                "evidence_quote": call.get("prospect_statement") or None,
+                "confidence": 1.0,
+                "status": "pending",
+                "created_at": call.get("created_at") or call.get("started_at"),
+                "updated_at": call.get("updated_at"),
+                "source": "call_next_action",
+            })
+
+    return followups
+
+
+@router.patch("/followups/{followup_id}", response_model=FollowUpResponse, tags=["Followups"])
+def update_followup_endpoint(followup_id: str, payload: FollowUpUpdate):
+    """Update follow-up status (e.g. mark completed, reschedule). Persists directly to database."""
+    updates = {k: v for k, v in payload.model_dump().items() if v is not None}
+
+    if followup_id.startswith("call_"):
+        call_id = followup_id.replace("call_", "", 1)
+        call = db.get_call(call_id)
+        if not call:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Originating call not found.")
+
+        new_status = updates.get("status", "completed")
+        due_at = updates.get("due_at")
+        relative_due = updates.get("relative_due", call.get("follow_up_time"))
+        action = updates.get("action", call.get("next_action") or "Scheduled follow-up")
+        channel = updates.get("channel", call.get("follow_up_channel") or "unknown")
+
+        created_comm = db.create_commitment(
+            call_id=call_id,
+            action=action,
+            responsible_party="caller",
+            commitment_status="promised",
+            due_at=due_at,
+            relative_due=relative_due,
+            channel=channel,
+            evidence_quote=call.get("prospect_statement") or "Recorded in call close next action",
+            confidence=1.0,
+            needs_confirmation=False,
+            status=new_status,
+        )
+        return {
+            "id": created_comm["id"],
+            "call_id": call_id,
+            "company_name": call.get("company_name"),
+            "contact_name": call.get("contact_name"),
+            "phone_number": call.get("phone_number"),
+            "action": created_comm["action"],
+            "due_at": created_comm.get("due_at"),
+            "relative_due": created_comm.get("relative_due"),
+            "channel": created_comm.get("channel"),
+            "evidence_quote": created_comm.get("evidence_quote"),
+            "confidence": created_comm.get("confidence", 1.0),
+            "status": created_comm.get("status", new_status),
+            "created_at": created_comm.get("created_at"),
+            "updated_at": created_comm.get("updated_at"),
+            "source": "commitment",
+        }
+
+    comm = db.get_commitment(followup_id)
+    if not comm:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Follow-up with ID '{followup_id}' not found."
+        )
+
+    updated = db.update_commitment(followup_id, updates)
+    call = db.get_call(updated.get("call_id", ""))
+    return {
+        "id": updated["id"],
+        "call_id": updated["call_id"],
+        "company_name": call.get("company_name") if call else "Unknown Company",
+        "contact_name": call.get("contact_name") if call else None,
+        "phone_number": call.get("phone_number") if call else None,
+        "action": updated["action"],
+        "due_at": updated.get("due_at"),
+        "relative_due": updated.get("relative_due"),
+        "channel": updated.get("channel"),
+        "evidence_quote": updated.get("evidence_quote"),
+        "confidence": updated.get("confidence", 1.0),
+        "status": updated.get("status", "pending"),
+        "created_at": updated.get("created_at"),
+        "updated_at": updated.get("updated_at"),
+        "source": "commitment",
+    }
+
 
 

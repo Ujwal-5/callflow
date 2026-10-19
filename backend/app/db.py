@@ -888,6 +888,30 @@ class DatabaseAdapter:
         conn.close()
         return self._format_commitment_dict(dict(row))
 
+    def list_all_commitments(self) -> List[Dict[str, Any]]:
+        if self.use_supabase and self.supabase_client:
+            try:
+                res = (
+                    self.supabase_client
+                    .table("call_commitments")
+                    .select("*")
+                    .order("created_at", desc=True)
+                    .execute()
+                )
+                return [self._format_commitment_dict(r) for r in (res.data or [])]
+            except Exception as exc:
+                if "PGRST205" in str(exc) or "not find the table" in str(exc):
+                    pass
+                else:
+                    raise
+
+        conn = self.get_sqlite_conn()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM call_commitments ORDER BY created_at DESC")
+        rows = cursor.fetchall()
+        conn.close()
+        return [self._format_commitment_dict(dict(r)) for r in rows]
+
     def list_commitments(self, call_id: str) -> List[Dict[str, Any]]:
         if self.use_supabase and self.supabase_client:
             try:
@@ -1632,6 +1656,29 @@ class DatabaseAdapter:
         rows = cursor.fetchall()
         conn.close()
         return [self._format_prospect_dict(dict(r)) for r in rows]
+
+    def get_prospect(self, prospect_id: str) -> Optional[Dict[str, Any]]:
+        """Find a prospect by ID."""
+        clean_id = str(prospect_id).strip()
+        if not clean_id:
+            return None
+
+        self._ensure_prospects_seeded()
+
+        if self.use_supabase and self.supabase_client:
+            try:
+                res = self.supabase_client.table("prospects").select("*").eq("id", clean_id).execute()
+                if res.data:
+                    return self._format_prospect_dict(res.data[0])
+            except Exception:
+                pass
+
+        conn = self.get_sqlite_conn()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM prospects WHERE id = ?", (clean_id,))
+        row = cursor.fetchone()
+        conn.close()
+        return self._format_prospect_dict(dict(row)) if row else None
 
     def get_prospect_by_company(self, company_name: str) -> Optional[Dict[str, Any]]:
         """Find a prospect by company name (case-insensitive)."""

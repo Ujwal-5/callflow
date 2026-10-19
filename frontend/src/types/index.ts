@@ -229,4 +229,33 @@ export interface CreateProspectPayload {
   context?: string;
 }
 
+export interface FollowUpItem {
+  id: string;
+  call_id: string;
+  company_name: string;
+  contact_name: string | null;
+  phone_number: string | null;
+  action: string;
+  due_at: string | null;
+  relative_due: string | null;
+  channel: string | null;
+  evidence_quote: string | null;
+  confidence: number;
+  status: "pending" | "confirmed" | "completed" | "dismissed";
+  created_at: string;
+  updated_at: string | null;
+  source: "commitment" | "call_next_action";
+}
+
+export interface UpdateFollowUpPayload {
+  status?: string;
+  due_at?: string;
+  relative_due?: string;
+  action?: string;
+  channel?: string;
+}
+
+export type MainNavigationArea = "overview" | "prospects" | "followups" | "history" | "active";
+
+
 

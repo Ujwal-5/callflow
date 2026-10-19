@@ -1,7 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
-import { Header } from "@/components/Header";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { NavigationSidebar } from "@/components/NavigationSidebar";
+import { OverviewView } from "@/components/OverviewView";
+import { ProspectWorkspace } from "@/components/ProspectWorkspace";
+import { FollowupsView } from "@/components/FollowupsView";
 import { StageProgress } from "@/components/StageProgress";
 import { CurrentStagePanel } from "@/components/CurrentStagePanel";
 import { StartCallPanel } from "@/components/StartCallPanel";
@@ -19,17 +22,28 @@ import {
   CloseCallPayload,
   StageResult,
   StageSuggestion,
+  Prospect,
+  FollowUpItem,
+  CreateProspectPayload,
+  MainNavigationArea,
 } from "@/types";
 
 const ACTIVE_CALL_STORAGE_KEY = "callflow_active_call_id";
 
 export default function Home() {
-  const [activeView, setActiveView] = useState<"active" | "history">("active");
+  const [activeView, setActiveView] = useState<MainNavigationArea>("overview");
   const [stages, setStages] = useState<StageDefinition[]>([]);
   const [activeCall, setActiveCall] = useState<Call | null>(null);
   const [currentStageNumber, setCurrentStageNumber] = useState<number>(1);
   const [callsHistory, setCallsHistory] = useState<Call[]>([]);
+  const [prospects, setProspects] = useState<Prospect[]>([]);
+  const [followups, setFollowups] = useState<FollowUpItem[]>([]);
+  const [selectedProspectId, setSelectedProspectId] = useState<string | null>(null);
   const [selectedHistoryCall, setSelectedHistoryCall] = useState<Call | null>(null);
+
+  // Pre-call briefing and prefilled prospect for Active Call
+  const [initialCallProspect, setInitialCallProspect] = useState<Prospect | null>(null);
+  const [preCallBriefing, setPreCallBriefing] = useState<string | null>(null);
 
   // UI state
   const [isLoadingInitial, setIsLoadingInitial] = useState(true);
@@ -45,27 +59,16 @@ export default function Home() {
   // Auto-analysis state (triggered after call close)
   const [isAutoAnalyzing, setIsAutoAnalyzing] = useState(false);
   const [autoAnalysisError, setAutoAnalysisError] = useState<string | null>(null);
-  /** Tracks which call ID is currently being auto-analyzed to prevent duplicate runs */
   const analysisRunningForRef = useRef<string | null>(null);
 
   // Wake polling refs
   const wakePollingRef = useRef<NodeJS.Timeout | null>(null);
   const wakeElapsedRef = useRef<NodeJS.Timeout | null>(null);
 
-  /**
-   * stagePanelFlushRef holds a callback that CurrentStagePanel registers so the
-   * parent can read the latest local text state before navigating away.
-   * This avoids lifting exactWords/notes back up to the page (which would cause
-   * the whole page to re-render on every keystroke).
-   */
   const stagePanelFlushRef = useRef<
     (() => { exactWords: string; notes: string }) | null
   >(null);
 
-  /**
-   * copyToExactWordsRef holds a function registered by CurrentStagePanel
-   * that lets the TranscriptPanel push text into the exact-words field.
-   */
   const copyToExactWordsRef = useRef<((text: string) => void) | null>(null);
 
   // Initial data loading
@@ -73,24 +76,26 @@ export default function Home() {
     let ignore = false;
     async function init() {
       try {
-        // Run health check in parallel but don't let it block stages/history
         const healthRes = await api.getHealth().catch(() => null);
         if (ignore) return;
         if (!healthRes) {
-          // Backend is sleeping — still try to load stages from cache or show sleeping state
           setServiceStatus("sleeping");
           setIsLoadingInitial(false);
           return;
         }
         setServiceStatus("online");
 
-        const [stagesRes, historyRes] = await Promise.all([
-          api.getStages(),
-          api.listCalls(),
+        const [stagesRes, historyRes, prospectsRes, followupsRes] = await Promise.all([
+          api.getStages().catch(() => []),
+          api.listCalls().catch(() => []),
+          api.listProspects().catch(() => []),
+          api.listFollowups().catch(() => []),
         ]);
         if (ignore) return;
         setStages(stagesRes);
         setCallsHistory(historyRes);
+        setProspects(prospectsRes);
+        setFollowups(followupsRes);
 
         const savedCallId = localStorage.getItem(ACTIVE_CALL_STORAGE_KEY);
         if (savedCallId) {
@@ -99,6 +104,7 @@ export default function Home() {
             if (!ignore && callData && callData.status === "in_progress") {
               setActiveCall(callData);
               setCurrentStageNumber(callData.current_stage || 1);
+              setActiveView("active");
             } else {
               localStorage.removeItem(ACTIVE_CALL_STORAGE_KEY);
             }
@@ -123,11 +129,35 @@ export default function Home() {
     };
   }, []);
 
-  /**
-   * Persist stage data to backend.
-   * Fire-and-forget by default (no await) so that UI is never blocked.
-   * Returns a promise so callers that need to flush before navigating can await it.
-   */
+  const [overdueCount, setOverdueCount] = useState(0);
+
+  // Compute overdue count for badge in effect to prevent prerender hydration errors
+  useEffect(() => {
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const count = followups.filter((item) => {
+      if (item.status === "completed" || item.status === "dismissed") return false;
+      if (item.due_at) {
+        try {
+          return new Date(item.due_at) < startOfToday;
+        } catch {}
+      }
+      const rel = (item.relative_due || "").toLowerCase();
+      if (rel.includes("yesterday") || rel.includes("last week")) return true;
+      if (item.created_at) {
+        try {
+          const daysDiff = (now.getTime() - new Date(item.created_at).getTime()) / (1000 * 3600 * 24);
+          if (daysDiff > 2 && (rel.includes("tomorrow") || rel.includes("today") || rel.includes("30 min") || rel.includes("evening"))) {
+            return true;
+          }
+        } catch {}
+      }
+      return false;
+    }).length;
+    setOverdueCount(count);
+  }, [followups]);
+
+  // Persist stage data
   const persistStageData = useCallback(
     (
       callId: string,
@@ -170,65 +200,55 @@ export default function Home() {
     []
   );
 
-  /**
-   * Wake the Render backend:
-   * 1. Immediately set status to "waking" and start an elapsed-seconds timer.
-   * 2. Poll /health every 3s until it responds.
-   * 3. On success, load stages + history, then set status to "online".
-   */
+  // Wake backend helper
   const handleWakeService = useCallback(() => {
-    if (serviceStatus === "waking") return; // already trying
+    if (serviceStatus === "waking") return;
 
-    // Clear any existing polling
     if (wakePollingRef.current) clearInterval(wakePollingRef.current);
     if (wakeElapsedRef.current) clearInterval(wakeElapsedRef.current);
 
     setServiceStatus("waking");
     setWakingElapsed(0);
 
-    // Elapsed seconds counter
     let elapsed = 0;
     wakeElapsedRef.current = setInterval(() => {
       elapsed += 1;
       setWakingElapsed(elapsed);
     }, 1000);
 
-    // Poll health every 3 seconds
     const poll = async () => {
       try {
         const healthRes = await api.getHealth().catch(() => null);
         if (healthRes) {
-          // Service is up — stop polling
           if (wakePollingRef.current) clearInterval(wakePollingRef.current);
           if (wakeElapsedRef.current) clearInterval(wakeElapsedRef.current);
 
           setServiceStatus("online");
           setWakingElapsed(0);
 
-          // Now load stages and history
           try {
-            const [stagesRes, historyRes] = await Promise.all([
+            const [stagesRes, historyRes, prospectsRes, followupsRes] = await Promise.all([
               api.getStages(),
               api.listCalls(),
+              api.listProspects(),
+              api.listFollowups(),
             ]);
             setStages(stagesRes);
             setCallsHistory(historyRes);
+            setProspects(prospectsRes);
+            setFollowups(followupsRes);
             setIsLoadingInitial(false);
           } catch (err) {
             console.error("Failed to load data after wake:", err);
           }
         }
-      } catch {
-        // still waking, keep polling
-      }
+      } catch {}
     };
 
-    // Poll immediately, then every 3s
     poll();
     wakePollingRef.current = setInterval(poll, 3000);
   }, [serviceStatus]);
 
-  // Cleanup polling on unmount
   useEffect(() => {
     return () => {
       if (wakePollingRef.current) clearInterval(wakePollingRef.current);
@@ -242,14 +262,13 @@ export default function Home() {
     setGlobalError(null);
     try {
       const newCall = await api.createCall(payload);
-      // Fetch full call with stage_results
       const fullCall = await api.getCall(newCall.id);
       setActiveCall(fullCall);
       setCurrentStageNumber(1);
       localStorage.setItem(ACTIVE_CALL_STORAGE_KEY, fullCall.id);
       setActiveView("active");
 
-      // Refresh history list in background
+      // Refresh calls in background
       api.listCalls().then(setCallsHistory).catch(() => {});
     } catch (err: unknown) {
       setGlobalError(
@@ -260,10 +279,20 @@ export default function Home() {
     }
   };
 
-  /**
-   * Outcome selection: fire save in background — no await, no loading state.
-   * CurrentStagePanel already updated the button visually via local state.
-   */
+  // Start call targeting a selected prospect
+  const handleStartCallWithProspect = (prospect: Prospect, briefing?: string) => {
+    setInitialCallProspect(prospect);
+    setPreCallBriefing(briefing || null);
+    setSelectedProspectId(prospect.id);
+    setActiveView("active");
+  };
+
+  const handleStartNewCall = () => {
+    setInitialCallProspect(null);
+    setPreCallBriefing(null);
+    setActiveView("active");
+  };
+
   const handleSelectOutcome = useCallback(
     (outcome: string) => {
       if (!activeCall) return;
@@ -274,11 +303,6 @@ export default function Home() {
     [activeCall, currentStageNumber, persistStageData]
   );
 
-  /**
-   * Text changes: debounced save is initiated by CurrentStagePanel.
-   * The parent's job here is just to call the API — no state changes that
-   * would re-render siblings.
-   */
   const handleExactWordsChange = useCallback(
     (text: string) => {
       if (!activeCall) return;
@@ -299,14 +323,9 @@ export default function Home() {
     [activeCall, currentStageNumber, persistStageData]
   );
 
-  /**
-   * Stage navigation: flush the panel's latest text before changing stage,
-   * then switch immediately without waiting for the network.
-   */
   const handleSelectStage = useCallback(
     (stageNum: number) => {
       if (!activeCall) return;
-      // Flush latest local text from panel (non-blocking)
       if (stagePanelFlushRef.current) {
         const { exactWords, notes } = stagePanelFlushRef.current();
         persistStageData(activeCall.id, currentStageNumber, {
@@ -329,9 +348,6 @@ export default function Home() {
     [activeCall, currentStageNumber, persistStageData]
   );
 
-  /**
-   * Mark stage as skipped or not applicable and move forward.
-   */
   const handleSkipStage = useCallback(
     async (notApplicable: boolean = false) => {
       if (!activeCall) return;
@@ -383,17 +399,11 @@ export default function Home() {
     [activeCall, currentStageNumber, stages.length, persistStageData]
   );
 
-  /**
-   * Quick early call termination presets (e.g. busy, uninterested, ready to schedule)
-   */
   const handleQuickEndCall = useCallback((presetOutcome: string) => {
     setInitialModalOutcome(presetOutcome);
     setIsEndingCallModalOpen(true);
   }, []);
 
-  /**
-   * AI Stage Suggestion confirmation & dismiss
-   */
   const handleApplyStageSuggestion = useCallback(
     (targetStage: number) => {
       handleSelectStage(targetStage);
@@ -406,7 +416,7 @@ export default function Home() {
     setStageSuggestion(null);
   }, []);
 
-  // Poll or check for transcript-grounded stage suggestions
+  // Poll for AI stage suggestions
   useEffect(() => {
     if (!activeCall) {
       setStageSuggestion(null);
@@ -419,9 +429,7 @@ export default function Home() {
         if (isMounted) {
           setStageSuggestion(sugg);
         }
-      } catch {
-        // ignore background poll errors
-      }
+      } catch {}
     };
 
     checkSuggestion();
@@ -432,11 +440,9 @@ export default function Home() {
     };
   }, [activeCall?.id, currentStageNumber]);
 
-  // Next Stage navigation
   const handleNextStage = useCallback(async () => {
     if (!activeCall) return;
 
-    // Flush the panel's current text (non-blocking fire-and-forget)
     if (stagePanelFlushRef.current) {
       const { exactWords, notes } = stagePanelFlushRef.current();
       persistStageData(activeCall.id, currentStageNumber, {
@@ -448,10 +454,8 @@ export default function Home() {
     if (currentStageNumber < stages.length) {
       const nextStage = currentStageNumber + 1;
       setCurrentStageNumber(nextStage);
-      // Advance call stage in background
       api.advanceCallStage(activeCall.id, nextStage).catch(() => {});
     } else {
-      // Reached Stage 8 finish action
       setInitialModalOutcome(undefined);
       setIsEndingCallModalOpen(true);
     }
@@ -462,7 +466,6 @@ export default function Home() {
     if (!activeCall) return;
     setIsSubmittingClose(true);
     try {
-      // Flush the panel's current text before closing
       if (stagePanelFlushRef.current) {
         const { exactWords, notes } = stagePanelFlushRef.current();
         await persistStageData(activeCall.id, currentStageNumber, {
@@ -476,15 +479,19 @@ export default function Home() {
       setActiveCall(null);
       setIsEndingCallModalOpen(false);
       setInitialModalOutcome(undefined);
+      setPreCallBriefing(null);
+      setInitialCallProspect(null);
 
-      // Refresh history and open the closed call in detail inspection
-      const updatedHistory = await api.listCalls();
+      // Refresh history & follow-ups
+      const [updatedHistory, updatedFollowups] = await Promise.all([
+        api.listCalls(),
+        api.listFollowups(),
+      ]);
       setCallsHistory(updatedHistory);
+      setFollowups(updatedFollowups);
       setSelectedHistoryCall(closedCall);
-      setActiveView("history");
 
-      // ── Auto-analysis: fire-and-forget, non-blocking ──
-      // Guard: only run if this call hasn't already been analyzed
+      // ── Auto-analysis in background ──
       const hasExistingSummary = Boolean(closedCall.ai_summary);
       const callId = closedCall.id;
 
@@ -495,16 +502,12 @@ export default function Home() {
 
         (async () => {
           try {
-            // Run summary + gap analysis + radar concurrently; all results persist to DB.
-            // ConversationReview auto-loads persisted gap/radar data on mount, so we only
-            // need to capture the summary result here to update the call state.
             const [summaryRes] = await Promise.allSettled([
               api.generateCallSummary(callId),
               api.analyzeConversationGaps(callId),
               api.analyzeRadar(callId),
             ]);
 
-            // Update call with summary if available
             if (summaryRes.status === "fulfilled" && summaryRes.value.available && summaryRes.value.summary) {
               setSelectedHistoryCall((prev) =>
                 prev && prev.id === callId
@@ -512,13 +515,14 @@ export default function Home() {
                   : prev
               );
             } else if (summaryRes.status === "rejected") {
-              const msg = summaryRes.reason instanceof Error
-                ? summaryRes.reason.message
-                : "AI summary generation failed.";
-              setAutoAnalysisError(msg);
-            } else if (summaryRes.status === "fulfilled" && summaryRes.value.error) {
-              setAutoAnalysisError(summaryRes.value.error);
+              setAutoAnalysisError(
+                summaryRes.reason instanceof Error
+                  ? summaryRes.reason.message
+                  : "AI summary generation failed."
+              );
             }
+            // Refresh follow-ups with freshly extracted commitments
+            api.listFollowups().then(setFollowups).catch(() => {});
           } catch {
             setAutoAnalysisError("Analysis failed. You can retry from the AI Summary section.");
           } finally {
@@ -536,14 +540,10 @@ export default function Home() {
     }
   };
 
-  /**
-   * Manual retry for auto-analysis — called from CallDetailModal's AI summary section.
-   * Safe to call multiple times; guards against concurrent runs.
-   */
   const handleRetryAnalysis = async () => {
     if (!selectedHistoryCall) return;
     const callId = selectedHistoryCall.id;
-    if (analysisRunningForRef.current === callId) return; // already running
+    if (analysisRunningForRef.current === callId) return;
 
     analysisRunningForRef.current = callId;
     setIsAutoAnalyzing(true);
@@ -562,11 +562,8 @@ export default function Home() {
             ? { ...prev, ai_summary: summaryRes.value.summary! }
             : prev
         );
-      } else if (summaryRes.status === "rejected") {
-        setAutoAnalysisError(
-          summaryRes.reason instanceof Error ? summaryRes.reason.message : "Retry failed."
-        );
       }
+      api.listFollowups().then(setFollowups).catch(() => {});
     } catch {
       setAutoAnalysisError("Retry failed. Check connection and try again.");
     } finally {
@@ -575,9 +572,8 @@ export default function Home() {
     }
   };
 
-  // Direct inspect call from past calls list
+  // Inspect history call
   const handleInspectHistoryCall = async (callId: string) => {
-    // Reset any lingering auto-analysis state from a previous call closure
     setAutoAnalysisError(null);
     setIsAutoAnalyzing(false);
     try {
@@ -590,6 +586,41 @@ export default function Home() {
     }
   };
 
+  // Follow-up actions
+  const handleCompleteFollowup = async (followupId: string) => {
+    try {
+      const updated = await api.updateFollowup(followupId, { status: "completed" });
+      setFollowups((prev) => prev.map((f) => (f.id === followupId ? updated : f)));
+    } catch (err) {
+      console.error("Failed to complete followup:", err);
+    }
+  };
+
+  const handleRescheduleFollowup = async (
+    followupId: string,
+    newTiming: string,
+    newDate?: string
+  ) => {
+    try {
+      const updated = await api.updateFollowup(followupId, {
+        relative_due: newTiming,
+        due_at: newDate,
+        status: "pending",
+      });
+      setFollowups((prev) => prev.map((f) => (f.id === followupId ? updated : f)));
+    } catch (err) {
+      console.error("Failed to reschedule followup:", err);
+    }
+  };
+
+  // Prospect creation
+  const handleCreateProspect = async (payload: CreateProspectPayload): Promise<Prospect> => {
+    const created = await api.createProspect(payload);
+    const updatedList = await api.listProspects();
+    setProspects(updatedList);
+    return created;
+  };
+
   const currentStageDef = stages.find(
     (s) => s.stage_number === currentStageNumber
   ) || stages[0];
@@ -599,267 +630,335 @@ export default function Home() {
   );
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#070d1e] text-slate-100">
-      {/* App Header */}
-      <Header
+    <div className="flex min-h-screen bg-[#070d1e] text-slate-100">
+      {/* ── Persistent Navigation Sidebar ── */}
+      <NavigationSidebar
         activeView={activeView}
         onViewChange={setActiveView}
         activeCall={activeCall}
         historyCount={callsHistory.length}
+        prospectsCount={prospects.length}
+        followupsCount={followups.length}
+        overdueCount={overdueCount}
         serviceStatus={serviceStatus}
+        onStartNewCall={handleStartNewCall}
       />
 
-      {/* Service Status Banner (sleeping / waking / online confirmation) */}
-      <ServiceStatusBanner
-        status={serviceStatus}
-        onWake={handleWakeService}
-        wakingElapsed={wakingElapsed}
-      />
+      {/* ── Main Layout Column ── */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Service Status Banner (sleeping / waking) */}
+        <ServiceStatusBanner
+          status={serviceStatus}
+          onWake={handleWakeService}
+          wakingElapsed={wakingElapsed}
+        />
 
-      {/* Global Error Banner (non-connectivity errors only) */}
-      {globalError && (
-        <div className="border-b border-rose-500/50 bg-rose-950/70 px-4 py-2 text-xs text-rose-200">
-          <div className="mx-auto flex max-w-6xl items-center justify-between">
-            <span>{globalError}</span>
-            <button
-              onClick={() => window.location.reload()}
-              className="ml-4 rounded bg-rose-800 px-2 py-0.5 text-[11px] font-semibold hover:bg-rose-700"
-            >
-              Retry
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Main Content Area */}
-      <main className="flex-1">
-        {isLoadingInitial && serviceStatus !== "sleeping" ? (
-          <div className="flex h-96 flex-col items-center justify-center space-y-3">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#0062ff] border-t-transparent"></div>
-            <p className="text-xs text-slate-400">Initializing CallFlow Assistant...</p>
-          </div>
-        ) : serviceStatus === "sleeping" ? (
-          /* ── Service sleeping splash ── */
-          <div className="flex h-96 flex-col items-center justify-center space-y-4 px-4 text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-slate-700 bg-[#101c3d]">
-              <svg
-                className="h-5 w-5 text-slate-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+        {/* Global Error Banner */}
+        {globalError && (
+          <div className="border-b border-rose-500/50 bg-rose-950/70 px-4 py-2 text-xs text-rose-200">
+            <div className="mx-auto flex max-w-6xl items-center justify-between">
+              <span>{globalError}</span>
+              <button
+                onClick={() => setGlobalError(null)}
+                className="ml-4 rounded bg-rose-800 px-2 py-0.5 text-[11px] font-semibold hover:bg-rose-700"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.8}
-                  d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
-                />
-              </svg>
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-slate-200">Assistant is inactive</p>
-              <p className="mt-1 text-xs text-slate-400 max-w-xs">
-                Start the service using the banner above, then you&apos;ll be ready to take calls.
-              </p>
+                Dismiss
+              </button>
             </div>
           </div>
-        ) : activeView === "history" ? (
-          /* SCREEN B: Past Calls History */
-          <div className="p-4 sm:p-6">
-            <div className="mx-auto max-w-6xl mb-4 flex items-center justify-between">
+        )}
+
+        {/* ── Main View Content ── */}
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+          {isLoadingInitial && serviceStatus !== "sleeping" ? (
+            <div className="flex h-96 flex-col items-center justify-center space-y-3">
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#0062ff] border-t-transparent"></div>
+              <p className="text-xs text-slate-400">Loading CallFlow Workspace...</p>
+            </div>
+          ) : serviceStatus === "sleeping" ? (
+            /* ── Service sleeping splash ── */
+            <div className="flex h-96 flex-col items-center justify-center space-y-4 px-4 text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-slate-700 bg-[#101c3d]">
+                <svg
+                  className="h-5 w-5 text-slate-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.8}
+                    d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+                  />
+                </svg>
+              </div>
               <div>
-                <h1 className="text-lg font-bold text-white">Call History</h1>
-                <p className="text-xs text-slate-400">
-                  Search, review, and analyze previously completed cold-call sessions.
+                <p className="text-sm font-semibold text-slate-200">Assistant is sleeping</p>
+                <p className="mt-1 text-xs text-slate-400 max-w-xs">
+                  Wake the assistant using the banner above to load your active calls and data.
                 </p>
               </div>
-              {activeCall && (
-                <button
-                  onClick={() => setActiveView("active")}
-                  className="rounded bg-[#0062ff] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#0052d9]"
-                >
-                  Return to Live Call →
-                </button>
-              )}
             </div>
-
-            <PastCallsList
+          ) : activeView === "overview" ? (
+            /* ══════════════════════════════════════════════
+               1. OVERVIEW AREA
+               ══════════════════════════════════════════════ */
+            <OverviewView
               calls={callsHistory}
+              followups={followups}
+              prospects={prospects}
+              activeCall={activeCall}
+              onNavigate={setActiveView}
               onSelectCall={handleInspectHistoryCall}
+              onSelectProspect={(id) => {
+                setSelectedProspectId(id);
+                setActiveView("prospects");
+              }}
+              onCompleteFollowup={handleCompleteFollowup}
+              onRescheduleFollowup={(item) => {
+                handleRescheduleFollowup(item.id, "Rescheduled");
+              }}
+              onStartCallWithProspect={handleStartCallWithProspect}
+              onStartNewCall={handleStartNewCall}
             />
-          </div>
-        ) : (
-          /* SCREEN A: Active Call Workflow */
-          <div>
-            {!activeCall ? (
-              <div className="p-6 sm:p-12">
-                <StartCallPanel
-                  onStartCall={handleStartCall}
-                  isLoading={isStartingCall}
-                />
+          ) : activeView === "prospects" ? (
+            /* ══════════════════════════════════════════════
+               2. PROSPECTS WORKSPACE AREA
+               ══════════════════════════════════════════════ */
+            <ProspectWorkspace
+              prospects={prospects}
+              calls={callsHistory}
+              followups={followups}
+              selectedProspectId={selectedProspectId}
+              onSelectProspect={setSelectedProspectId}
+              onStartCallWithProspect={handleStartCallWithProspect}
+              onInspectCall={handleInspectHistoryCall}
+              onCompleteFollowup={handleCompleteFollowup}
+              onRescheduleFollowup={(item) => {
+                handleRescheduleFollowup(item.id, "Rescheduled");
+              }}
+              onCreateProspect={handleCreateProspect}
+            />
+          ) : activeView === "followups" ? (
+            /* ══════════════════════════════════════════════
+               3. FOLLOW-UPS MANAGEMENT AREA
+               ══════════════════════════════════════════════ */
+            <FollowupsView
+              followups={followups}
+              prospects={prospects}
+              onCompleteFollowup={handleCompleteFollowup}
+              onRescheduleFollowup={handleRescheduleFollowup}
+              onSelectProspect={(id) => {
+                setSelectedProspectId(id);
+                setActiveView("prospects");
+              }}
+              onInspectCall={handleInspectHistoryCall}
+              onStartCallWithProspect={handleStartCallWithProspect}
+            />
+          ) : activeView === "history" ? (
+            /* ══════════════════════════════════════════════
+               4. CALL HISTORY AREA
+               ══════════════════════════════════════════════ */
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-[#233554] pb-4">
+                <div>
+                  <h1 className="text-xl font-bold text-white tracking-tight">Call History</h1>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Searchable historical cold-call records with outcome, stage, and next action filters.
+                  </p>
+                </div>
+                {activeCall && (
+                  <button
+                    onClick={() => setActiveView("active")}
+                    className="rounded-lg bg-[#0062ff] px-3.5 py-2 text-xs font-semibold text-white hover:bg-[#0052d9] transition-all self-start sm:self-auto"
+                  >
+                    Return to Live Call →
+                  </button>
+                )}
               </div>
-            ) : (
-              <div>
-                {/* Active Call Prospect Details Bar */}
-                <div className="border-b border-[#233554] bg-[#0b132b] px-4 py-3 sm:px-6">
-                  <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3">
-                    <div className="flex items-center space-x-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded bg-[#101c3d] text-[#0062ff] font-bold text-xs border border-[#233554]">
-                        🏢
-                      </div>
-                      <div>
-                        <div className="flex items-center space-x-2">
-                          <h1 className="text-base font-bold text-white">
-                            {activeCall.company_name}
-                          </h1>
-                          <span className="rounded bg-emerald-950/60 border border-emerald-500/30 px-1.5 py-0.2 text-[10px] font-semibold text-emerald-400 uppercase">
-                            Active
-                          </span>
+
+              <PastCallsList
+                calls={callsHistory}
+                onSelectCall={handleInspectHistoryCall}
+              />
+            </div>
+          ) : (
+            /* ══════════════════════════════════════════════
+               5. ACTIVE CALL WORKFLOW
+               ══════════════════════════════════════════════ */
+            <div>
+              {!activeCall ? (
+                <div className="py-6 sm:py-10">
+                  <StartCallPanel
+                    onStartCall={handleStartCall}
+                    isLoading={isStartingCall}
+                    initialProspect={initialCallProspect}
+                    initialBriefing={preCallBriefing}
+                  />
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {/* Active Call Prospect Details Bar */}
+                  <div className="rounded-lg border border-[#233554] bg-[#0b132b] p-4 sm:px-6">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div className="flex items-center space-x-3">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#101c3d] text-[#0062ff] font-bold text-xs border border-[#233554]">
+                          🏢
                         </div>
-                        <div className="flex flex-wrap items-center gap-x-3 text-xs text-slate-400">
-                          {activeCall.contact_name && (
-                            <span>
-                              <span className="text-slate-400">Contact:</span>{" "}
-                              <strong className="text-slate-200">
-                                {activeCall.contact_name}
-                              </strong>
+                        <div>
+                          <div className="flex items-center space-x-2">
+                            <h1 className="text-base font-bold text-white">
+                              {activeCall.company_name}
+                            </h1>
+                            <span className="rounded bg-emerald-950/80 border border-emerald-500/40 px-2 py-0.2 text-[10px] font-semibold text-emerald-400 uppercase">
+                              Active Call
                             </span>
-                          )}
-                          {activeCall.phone_number && (
-                            <span>
-                              <span className="text-slate-400">Phone:</span>{" "}
-                              <span className="font-mono text-slate-300">
-                                {activeCall.phone_number}
+                          </div>
+                          <div className="flex flex-wrap items-center gap-x-3 text-xs text-slate-400 mt-0.5">
+                            {activeCall.contact_name && (
+                              <span>
+                                <span className="text-slate-400">Contact:</span>{" "}
+                                <strong className="text-slate-200">
+                                  {activeCall.contact_name}
+                                </strong>
                               </span>
-                            </span>
-                          )}
-                          {activeCall.context && (
-                            <span className="italic text-slate-400">
-                              &ldquo;{activeCall.context}&rdquo;
-                            </span>
-                          )}
+                            )}
+                            {activeCall.phone_number && (
+                              <span>
+                                <span className="text-slate-400">Phone:</span>{" "}
+                                <span className="font-mono text-slate-300">
+                                  {activeCall.phone_number}
+                                </span>
+                              </span>
+                            )}
+                            {activeCall.context && (
+                              <span className="italic text-slate-400">
+                                &ldquo;{activeCall.context}&rdquo;
+                              </span>
+                            )}
+                          </div>
                         </div>
+                      </div>
+
+                      <div className="flex items-center space-x-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setInitialModalOutcome(undefined);
+                            setIsEndingCallModalOpen(true);
+                          }}
+                          className="rounded-lg border border-rose-500/40 bg-rose-950/40 px-3.5 py-1.5 text-xs font-semibold text-rose-300 hover:border-rose-400 hover:bg-rose-900/60 hover:text-white transition-colors"
+                        >
+                          End Call Session
+                        </button>
                       </div>
                     </div>
 
-                    {/* Quick End Action */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setInitialModalOutcome(undefined);
-                        setIsEndingCallModalOpen(true);
-                      }}
-                      className="rounded border border-rose-500/40 bg-rose-950/30 px-3 py-1 text-xs font-semibold text-rose-300 hover:border-rose-400 hover:bg-rose-900/50 hover:text-white transition-colors"
-                    >
-                      End Call
-                    </button>
+                    {/* Compact Previous Conversation Briefing Bar (when active call was linked to prospect) */}
+                    {preCallBriefing && (
+                      <div className="mt-3 pt-3 border-t border-[#233554]/70 flex items-start space-x-2 text-xs text-[#60a5fa]">
+                        <span className="font-bold text-[10px] uppercase tracking-wider shrink-0 mt-0.5">
+                          ✦ Previous Briefing:
+                        </span>
+                        <span className="text-slate-200 leading-relaxed">
+                          {preCallBriefing}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                </div>
 
-                {/* Eight-Stage Stepper Progress */}
-                <StageProgress
-                  stages={stages}
-                  currentStageNumber={currentStageNumber}
-                  highestStageReached={activeCall.highest_stage}
-                  stageResults={activeCall.stage_results}
-                  onSelectStage={handleSelectStage}
-                />
-
-                {/* Current Stage Panel */}
-                <div className="mx-auto max-w-4xl p-4 sm:p-6">
-                  {currentStageDef && (
-                    <CurrentStagePanel
-                      key={currentStageNumber}
-                      stage={currentStageDef}
-                      totalStages={stages.length}
-                      allStages={stages}
-                      stageResult={currentStageResult}
-                      onUpdateOutcome={handleSelectOutcome}
-                      onUpdateExactWords={handleExactWordsChange}
-                      onUpdateNotes={handleNotesChange}
-                      onNextStage={handleNextStage}
-                      onEndCall={() => {
-                        setInitialModalOutcome(undefined);
-                        setIsEndingCallModalOpen(true);
-                      }}
-                      onSelectStage={handleSelectStage}
-                      onSkipStage={handleSkipStage}
-                      onQuickEndCall={handleQuickEndCall}
-                      stageSuggestion={stageSuggestion}
-                      onApplyStageSuggestion={handleApplyStageSuggestion}
-                      onDismissStageSuggestion={handleDismissStageSuggestion}
-                      isSaving={false}
-                      isLastStage={currentStageNumber === stages.length}
-                      onRegisterFlush={(fn) => {
-                        stagePanelFlushRef.current = fn;
-                      }}
-                      onRegisterCopyExactWords={(fn) => {
-                        copyToExactWordsRef.current = fn;
-                      }}
-                    />
-                  )}
-
-                  {/* Transcript Panel — collapsible, additive, does not replace manual notes */}
-                  <TranscriptPanel
-                    callId={activeCall.id}
-                    onCopyToExactWords={(text) => {
-                      if (copyToExactWordsRef.current) {
-                        copyToExactWordsRef.current(text);
-                      }
-                    }}
-                    onTranscriptChange={() => {
-                      if (activeCall) {
-                        api
-                          .getStageSuggestion(activeCall.id)
-                          .then(setStageSuggestion)
-                          .catch(() => {});
-                      }
-                    }}
+                  {/* Eight-Stage Stepper Progress */}
+                  <StageProgress
+                    stages={stages}
+                    currentStageNumber={currentStageNumber}
+                    highestStageReached={activeCall.highest_stage}
+                    stageResults={activeCall.stage_results}
+                    onSelectStage={handleSelectStage}
                   />
 
+                  {/* Current Stage Panel */}
+                  <div className="mx-auto max-w-4xl pt-2">
+                    {currentStageDef && (
+                      <CurrentStagePanel
+                        key={currentStageNumber}
+                        stage={currentStageDef}
+                        totalStages={stages.length}
+                        allStages={stages}
+                        stageResult={currentStageResult}
+                        onUpdateOutcome={handleSelectOutcome}
+                        onUpdateExactWords={handleExactWordsChange}
+                        onUpdateNotes={handleNotesChange}
+                        onNextStage={handleNextStage}
+                        onEndCall={() => {
+                          setInitialModalOutcome(undefined);
+                          setIsEndingCallModalOpen(true);
+                        }}
+                        onSelectStage={handleSelectStage}
+                        onSkipStage={handleSkipStage}
+                        onQuickEndCall={handleQuickEndCall}
+                        stageSuggestion={stageSuggestion}
+                        onApplyStageSuggestion={handleApplyStageSuggestion}
+                        onDismissStageSuggestion={handleDismissStageSuggestion}
+                        isSaving={false}
+                        isLastStage={currentStageNumber === stages.length}
+                        onRegisterFlush={(fn) => {
+                          stagePanelFlushRef.current = fn;
+                        }}
+                        onRegisterCopyExactWords={(fn) => {
+                          copyToExactWordsRef.current = fn;
+                        }}
+                      />
+                    )}
+                  </div>
+
+                  {/* Audio Transcription Panel */}
+                  <div className="mx-auto max-w-4xl pt-2">
+                    <TranscriptPanel
+                      callId={activeCall.id}
+                      onCopyToExactWords={(text: string) => {
+                        if (copyToExactWordsRef.current) {
+                          copyToExactWordsRef.current(text);
+                        }
+                      }}
+                    />
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
-        )}
-      </main>
+              )}
+            </div>
+          )}
+        </main>
+      </div>
 
-      {/* End Call Modal */}
-      {activeCall && isEndingCallModalOpen && (
-        <EndCallModal
-          isOpen={isEndingCallModalOpen}
-          call={activeCall}
-          currentStageNumber={currentStageNumber}
-          currentStageName={currentStageDef?.name || "Close"}
-          initialOutcome={initialModalOutcome}
-          onClose={() => {
-            setIsEndingCallModalOpen(false);
-            setInitialModalOutcome(undefined);
-          }}
-          onConfirmEnd={handleConfirmEndCall}
-          isSubmitting={isSubmittingClose}
-        />
-      )}
-
-      {/* Historical Call Detail Inspection Modal */}
+      {/* ── Call Detail Inspection Modal / Drawer ── */}
       {selectedHistoryCall && (
         <CallDetailModal
           call={selectedHistoryCall}
           stages={stages}
-          isAutoAnalyzing={isAutoAnalyzing}
-          autoAnalysisError={autoAnalysisError}
-          onRetryAnalysis={handleRetryAnalysis}
-          onClose={() => {
-            setSelectedHistoryCall(null);
-            setAutoAnalysisError(null);
-          }}
-          onResumeCall={(callToResume) => {
-            setActiveCall(callToResume);
-            setCurrentStageNumber(callToResume.current_stage || 1);
-            localStorage.setItem(ACTIVE_CALL_STORAGE_KEY, callToResume.id);
+          onClose={() => setSelectedHistoryCall(null)}
+          onResumeCall={(call) => {
+            setActiveCall(call);
+            setCurrentStageNumber(call.current_stage || 1);
             setSelectedHistoryCall(null);
             setActiveView("active");
           }}
+          isAutoAnalyzing={isAutoAnalyzing}
+          onRetryAnalysis={handleRetryAnalysis}
+          autoAnalysisError={autoAnalysisError}
+        />
+      )}
+
+      {/* ── End Call Confirmation Modal ── */}
+      {isEndingCallModalOpen && activeCall && (
+        <EndCallModal
+          isOpen={isEndingCallModalOpen}
+          call={activeCall}
+          currentStageNumber={currentStageNumber}
+          currentStageName={currentStageDef?.name || `Stage ${currentStageNumber}`}
+          initialOutcome={initialModalOutcome}
+          onClose={() => setIsEndingCallModalOpen(false)}
+          onConfirmEnd={handleConfirmEndCall}
+          isSubmitting={isSubmittingClose}
         />
       )}
     </div>

@@ -7,25 +7,40 @@ import { api } from "@/lib/api";
 interface StartCallPanelProps {
   onStartCall: (payload: CreateCallPayload) => void;
   isLoading?: boolean;
+  initialProspect?: Prospect | null;
+  initialBriefing?: string | null;
 }
 
 export const StartCallPanel: React.FC<StartCallPanelProps> = ({
   onStartCall,
   isLoading = false,
+  initialProspect = null,
+  initialBriefing = null,
 }) => {
   // Single form fields used for selecting, modifying, and creating prospects
-  const [companyName, setCompanyName] = useState("");
-  const [contactName, setContactName] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [context, setContext] = useState("");
+  const [companyName, setCompanyName] = useState(initialProspect?.company_name || "");
+  const [contactName, setContactName] = useState(initialProspect?.contact_name || "");
+  const [phoneNumber, setPhoneNumber] = useState(initialProspect?.phone_number || "");
+  const [context, setContext] = useState(initialProspect?.context || "");
 
   // Directory and selection state
   const [prospects, setProspects] = useState<Prospect[]>([]);
   const [isLoadingProspects, setIsLoadingProspects] = useState(false);
   const [prospectsError, setProspectsError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(initialProspect?.company_name || "");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [selectedProspectId, setSelectedProspectId] = useState<string | null>(null);
+  const [selectedProspectId, setSelectedProspectId] = useState<string | null>(initialProspect?.id || null);
+
+  useEffect(() => {
+    if (initialProspect) {
+      setSelectedProspectId(initialProspect.id);
+      setCompanyName(initialProspect.company_name);
+      setContactName(initialProspect.contact_name || "");
+      setPhoneNumber(initialProspect.phone_number || "");
+      setContext(initialProspect.context || "");
+      setSearchQuery(initialProspect.company_name);
+    }
+  }, [initialProspect]);
 
   // Saving as new prospect state & feedback
   const [isSavingProspect, setIsSavingProspect] = useState(false);
@@ -182,6 +197,17 @@ export const StartCallPanel: React.FC<StartCallPanelProps> = ({
           Search from existing prospects or enter prospect details below to begin the guided 8-stage cold call workflow.
         </p>
       </div>
+
+      {/* Compact Previous Conversation Briefing */}
+      {initialBriefing && (
+        <div className="mb-4 rounded-lg border border-[#0062ff]/40 bg-[#0062ff]/10 p-3 text-xs text-slate-200 space-y-1">
+          <div className="flex items-center space-x-1.5 font-bold uppercase tracking-wider text-[#60a5fa] text-[10px]">
+            <span>✦</span>
+            <span>Previous Conversation Briefing</span>
+          </div>
+          <p className="leading-relaxed">{initialBriefing}</p>
+        </div>
+      )}
 
       {/* Error alert banner */}
       {formError && (
