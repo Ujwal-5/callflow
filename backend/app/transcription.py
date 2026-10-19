@@ -158,23 +158,21 @@ async def run_live_transcription(
                 try:
                     async for chunk in audio_generator:
                         if chunk:
-                            await session.send(
-                                input=genai_types.RealtimeInputConfig(
-                                    media_chunks=[
-                                        genai_types.Blob(
-                                            data=chunk,
-                                            mime_type="audio/pcm;rate=16000",
-                                        )
-                                    ]
-                                ),
-                                end_of_turn=False,
+                            # Realtime audio must go through send_realtime_input;
+                            # RealtimeInputConfig is session *config* only (it has
+                            # no media_chunks field) and is rejected by the SDK.
+                            await session.send_realtime_input(
+                                media=genai_types.Blob(
+                                    data=chunk,
+                                    mime_type="audio/pcm;rate=16000",
+                                )
                             )
                 except Exception as exc:
                     logger.warning("Live transcription sender error: %s", exc)
                 finally:
-                    # Signal end of audio
+                    # Signal end of audio so Gemini flushes the final transcript.
                     try:
-                        await session.send(input="[END]", end_of_turn=True)
+                        await session.send_realtime_input(audio_stream_end=True)
                     except Exception:
                         pass
 

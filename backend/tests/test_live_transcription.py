@@ -261,5 +261,87 @@ class TestAnalyzeStageNotesEndpoint(unittest.TestCase):
         self.assertEqual(res.status_code, 422)
 
 
+class TestLiveTranscriptionSender(unittest.TestCase):
+    """Regression tests for the SDK calls used to stream audio to Gemini Live.
+
+    ``RealtimeInputConfig`` is a *session config* object and has no
+    ``media_chunks`` field; passing it to ``session.send`` made the SDK raise
+    ``extra_forbidden`` and no audio ever reached Gemini. Audio must instead be
+    sent through ``session.send_realtime_input(media=Blob(...))``.
+    """
+
+    def test_sender_uses_send_realtime_input_with_pcm_blob(self):
+        from backend.app import transcription as transcription_mod
+
+        chunk = _silent_pcm(1600)
+        received = []
+
+        class FakeSession:
+            def __init__(self):
+                self.realtime_inputs = []
+                self.legacy_sends = []
+                self.audio_done = asyncio.Event()
+
+            async def send_realtime_input(self, **kwargs):
+                self.realtime_inputs.append(kwargs)
+                if kwargs.get("audio_stream_end"):
+                    self.audio_done.set()
+
+            async def send(self, **kwargs):
+                self.legacy_sends.append(kwargs)
+
+            async def receive(self):
+                await asyncio.wait_for(self.audio_done.wait(), timeout=5)
+                if False:  # pragma: no cover - makes this an async generator
+                    yield None
+
+        session = FakeSession()
+
+        class FakeConnect:
+            async def __aenter__(self):
+                return session
+
+            async def __aexit__(self, *exc):
+                return False
+
+        class FakeLive:
+            def connect(self, model=None, config=None):
+                return FakeConnect()
+
+        class FakeAio:
+            def __init__(self):
+                self.live = FakeLive()
+
+        class FakeClient:
+            def __init__(self, api_key=None, http_options=None):
+                self.aio = FakeAio()
+
+        async def audio_gen():
+            yield chunk
+
+        async def collect():
+            async for event in transcription_mod.run_live_transcription(audio_gen()):
+                received.append(event)
+
+        fake_settings = MagicMock()
+        fake_settings.gemini_configured = True
+        fake_settings.gemini_api_keys = ["test-key"]
+
+        with patch.object(transcription_mod, "settings", fake_settings), patch(
+            "google.genai.Client", FakeClient
+        ):
+            asyncio.run(collect())
+
+        # Only the realtime-input API is used for audio — no legacy send().
+        self.assertEqual(session.legacy_sends, [])
+        audio_calls = [c for c in session.realtime_inputs if "media" in c]
+        self.assertEqual(len(audio_calls), 1)
+        blob = audio_calls[0]["media"]
+        self.assertEqual(blob.data, chunk)
+        self.assertEqual(blob.mime_type, "audio/pcm;rate=16000")
+        self.assertTrue(session.realtime_inputs[-1].get("audio_stream_end"))
+        self.assertEqual([e["type"] for e in received], ["connected", "done"])
+
+
 if __name__ == "__main__":
     unittest.main()
