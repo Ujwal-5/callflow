@@ -331,6 +331,7 @@ async def analyze_transcript_with_radar(
     call_started_at: Optional[str] = None,
     company_name: Optional[str] = None,
     contact_name: Optional[str] = None,
+    model_pool=None,
 ) -> Dict[str, Any]:
     """
     Run Commitment Radar on a call transcript using Gemini 3.8 Flash,
@@ -365,6 +366,7 @@ Call Started At: {call_started_at or 'Unknown'}
 Analyze the dialogue above according to your system instructions. Extract commitments, potential missed opportunities, and return strict JSON."""
 
             from backend.app.gemini_pool import text_model_pool
+            analysis_pool = model_pool or text_model_pool
 
             def _call_radar(client, model_name: str):
                 return client.models.generate_content(
@@ -380,7 +382,7 @@ Analyze the dialogue above according to your system instructions. Extract commit
             # The GenAI client used here is synchronous.  Running it in the
             # event loop stalls live transcription and all other requests.
             response = await asyncio.to_thread(
-                text_model_pool.execute_with_fallback, _call_radar
+                analysis_pool.execute_with_fallback, _call_radar
             )
 
             if response and response.text:

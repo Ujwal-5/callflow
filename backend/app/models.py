@@ -234,6 +234,7 @@ class HistoricalMatch(BaseModel):
 
 class RadarAnalyzePayload(BaseModel):
     transcript: Optional[str] = Field(None, description="Optional dialogue text to analyze. If omitted, uses the latest saved transcript.")
+    use_light_model: bool = Field(False, description="Use the high-quota light model pool for interactive suggestions.")
 
 
 class RadarAnalysisResponse(BaseModel):

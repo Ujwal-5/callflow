@@ -344,10 +344,13 @@ class ApiClient {
     });
   }
 
-  async analyzeRadar(callId: string, transcript?: string): Promise<RadarAnalysisResponse> {
+  async analyzeRadar(callId: string, transcript?: string, useLightModel = false): Promise<RadarAnalysisResponse> {
     return this.request(`/calls/${callId}/radar/analyze`, {
       method: "POST",
-      body: JSON.stringify(transcript ? { transcript } : {}),
+      body: JSON.stringify({
+        ...(transcript ? { transcript } : {}),
+        use_light_model: useLightModel,
+      }),
     });
   }
 

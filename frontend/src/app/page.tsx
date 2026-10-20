@@ -108,39 +108,75 @@ export default function Home() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [liveTranscription.finalSegments]);
 
-  // One advisory stage-assist request only after meaningful finalized evidence.
-  // It never writes notes or outcomes; confirmed caller choices remain untouched.
+  // Prepare stage assistance in the background for every stage, not only the
+  // currently open tab. Grounded high-confidence suggestions are auto-filled
+  // into empty fields; existing caller values are never overwritten.
   useEffect(() => {
     if (!activeCall) return;
     const transcript = liveTranscription.finalTranscript.trim();
     if (transcript.length < 120) return;
-    const priorLength = stageAssistRequestRef.current.get(currentStageNumber) || 0;
-    // Stage notes already classify the live stream. Stage assist is a more
-    // expensive full-transcript recommendation, so run it less often and
-    // never allow multiple requests for the same stage to overlap.
-    if (transcript.length - priorLength < 600 && priorLength !== 0) return;
-    if (stageAssistInFlightRef.current.has(currentStageNumber)) return;
+    const callId = activeCall.id;
+    const stageNumbers = stages.length ? stages.map((stage) => stage.stage_number) : [1, 2, 3, 4, 5, 6, 7, 8];
+    const eligibleStages = stageNumbers.filter((stageNumber) => {
+      const priorLength = stageAssistRequestRef.current.get(stageNumber) || 0;
+      return transcript.length - priorLength >= 600 && !stageAssistInFlightRef.current.has(stageNumber);
+    });
+    if (eligibleStages.length === 0) return;
+
+    let isMounted = true;
     const timeout = setTimeout(async () => {
-      stageAssistRequestRef.current.set(currentStageNumber, transcript.length);
-      stageAssistInFlightRef.current.add(currentStageNumber);
+      const assistTranscript = transcript.length > 16000 ? transcript.slice(-16000) : transcript;
+      await Promise.all(eligibleStages.map(async (stageNumber) => {
+        stageAssistRequestRef.current.set(stageNumber, transcript.length);
+        stageAssistInFlightRef.current.add(stageNumber);
       try {
-        // Keep prompts bounded on long calls while retaining the latest
-        // speaker-labelled evidence used for recommendations.
-        const assistTranscript = transcript.length > 16000 ? transcript.slice(-16000) : transcript;
-        const recommendation = await api.getStageAssistRecommendation(activeCall.id, currentStageNumber, assistTranscript);
+        const recommendation = await api.getStageAssistRecommendation(callId, stageNumber, assistTranscript);
+        if (!recommendation || !recommendation.confidence || recommendation.confidence < 0.7) return;
+
         setStageAssistRecommendations((previous) => {
           const next = new Map(previous);
-          next.set(currentStageNumber, recommendation);
+          next.set(stageNumber, recommendation);
           return next;
         });
+
+        if (!isMounted) return;
+        const existing = activeCall.stage_results?.find((result) => result.stage_number === stageNumber);
+        const updates: {
+          selected_outcome?: string;
+          prospect_exact_words?: string;
+          notes?: string;
+        } = {};
+        if (!existing?.selected_outcome && recommendation.suggested_outcome) {
+          updates.selected_outcome = recommendation.suggested_outcome;
+        }
+        if (
+          !existing?.prospect_exact_words &&
+          recommendation.suggested_excerpt &&
+          recommendation.excerpt_speaker === "prospect" &&
+          !recommendation.excerpt_uncertain
+        ) {
+          updates.prospect_exact_words = recommendation.suggested_excerpt;
+        }
+        if (!existing?.notes && recommendation.outcome_reason && recommendation.evidence_quote) {
+          updates.notes = `${recommendation.outcome_reason} Evidence: “${recommendation.evidence_quote}”`;
+        }
+        if (Object.keys(updates).length > 0) {
+          await persistAutoStageData(callId, stageNumber, updates);
+        }
       } catch {
         // Assistive suggestions must not disrupt the call UI.
       } finally {
-        stageAssistInFlightRef.current.delete(currentStageNumber);
+        stageAssistInFlightRef.current.delete(stageNumber);
       }
+      }));
     }, 1800);
-    return () => clearTimeout(timeout);
-  }, [activeCall?.id, currentStageNumber, liveTranscription.finalTranscript]);
+    return () => {
+      isMounted = false;
+      clearTimeout(timeout);
+    };
+    // persistAutoStageData is a stable callback declared below this effect.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeCall, stages, liveTranscription.finalTranscript]);
 
   const showError = useCallback(async (err: unknown, fallback: string) => {
     try {
@@ -326,6 +362,36 @@ export default function Home() {
           console.error("Failed to save stage result:", err);
           setGlobalError("Couldn’t save this stage yet. Your edits remain in the form; try again or navigate away and back to retry.");
         });
+    },
+    []
+  );
+
+  // Background AI fill must not advance the caller's current stage while it
+  // updates another stage's record.
+  const persistAutoStageData = useCallback(
+    async (
+      callId: string,
+      stageNum: number,
+      data: {
+        selected_outcome?: string;
+        prospect_exact_words?: string;
+        notes?: string;
+      }
+    ) => {
+      try {
+        const updated = await api.updateStageResult(callId, stageNum, data);
+        setActiveCall((prev) => {
+          if (!prev || prev.id !== callId) return prev;
+          const existing = prev.stage_results || [];
+          const index = existing.findIndex((result) => result.stage_number === stageNum);
+          const next = [...existing];
+          if (index >= 0) next[index] = updated;
+          else next.push(updated);
+          return { ...prev, stage_results: next };
+        });
+      } catch (err) {
+        console.warn("Background stage auto-fill failed:", err);
+      }
     },
     []
   );

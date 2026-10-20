@@ -77,12 +77,17 @@ export const EndCallModal: React.FC<EndCallModalProps> = ({
   useEffect(() => {
     if (isOpen && call?.id) {
       setIsLoadingRadar(true);
-      api.getRadar(call.id)
+      // Generate interactive wrap-up suggestions on demand. This request uses
+      // the light model pool so opening the modal stays quick and does not
+      // consume the powerful analysis pool.
+      api.analyzeRadar(call.id, undefined, true)
+        .catch(() => api.getRadar(call.id))
         .then((res) => {
           setRadarCommitments(res.commitments || []);
           setRadarOpps(res.missed_opportunities || []);
 
-          // If there is an explicitly agreed or requested commitment, pre-fill if nextAction is empty
+          // If there is an explicitly agreed or requested commitment, fill the
+          // wrap-up fields without replacing anything the caller already typed.
           const topComm = (res.commitments || []).find(
             (c) => c.status === "confirmed" || c.commitment_status === "explicitly_agreed" || c.commitment_status === "requested"
           );
@@ -99,10 +104,23 @@ export const EndCallModal: React.FC<EndCallModalProps> = ({
                 setFollowUpChannel(matchedChannel);
               }
             }
-            if (topComm.commitment_status === "requested") {
-              setOutcome((prev) => initialOutcome || prev || "Callback requested");
-            } else if (topComm.action.toLowerCase().includes("referral") || topComm.action.toLowerCase().includes("naik")) {
-              setOutcome((prev) => initialOutcome || prev || "Referred to another person");
+            if (!initialOutcome) {
+              const action = topComm.action.toLowerCase();
+              setOutcome((prev) => {
+                // The initial default is only replaced by a grounded AI
+                // recommendation; a caller's later selection is preserved.
+                if (prev !== "Interested; follow-up agreed") return prev;
+                if (topComm.commitment_status === "requested" || action.includes("call back") || action.includes("callback")) {
+                  return "Callback requested";
+                }
+                if (action.includes("referral") || action.includes("referred") || action.includes("another person")) {
+                  return "Referred to another person";
+                }
+                if (action.includes("send") || action.includes("email") || action.includes("whatsapp") || action.includes("report") || action.includes("deck")) {
+                  return "Information requested";
+                }
+                return prev;
+              });
             }
           }
         })
@@ -193,12 +211,24 @@ export const EndCallModal: React.FC<EndCallModalProps> = ({
         {/* Header */}
         <div className="border-b border-[#233554] bg-[#101c3d] px-5 py-3.5">
           <div className="flex items-center justify-between">
-            <span className="font-mono text-xs font-bold uppercase tracking-wider text-rose-400">
-              Wrap Up Call Record
-            </span>
-            <span className="rounded bg-[#233554] px-2 py-0.5 text-[10px] font-mono text-slate-300">
-              Stage {currentStageNumber}: {currentStageName}
-            </span>
+            <div className="flex items-center gap-3">
+              <span className="font-mono text-xs font-bold uppercase tracking-wider text-rose-400">
+                Wrap Up Call Record
+              </span>
+              <span className="rounded bg-[#233554] px-2 py-0.5 text-[10px] font-mono text-slate-300">
+                Stage {currentStageNumber}: {currentStageName}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isSubmitting}
+              aria-label="Close without saving"
+              title="Close without saving"
+              className="rounded p-1.5 text-slate-400 transition-colors hover:bg-[#233554] hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <span aria-hidden="true" className="text-lg leading-none">×</span>
+            </button>
           </div>
           <h3 className="mt-1 text-base font-bold text-white">
             Complete Session: {call.company_name}
@@ -533,7 +563,7 @@ export const EndCallModal: React.FC<EndCallModalProps> = ({
             onClick={onClose}
             className="rounded border border-[#233554] px-4 py-2 text-xs font-semibold text-slate-300 hover:border-slate-500 hover:text-white"
           >
-            Cancel & Continue
+            Close without saving
           </button>
           <button
             type="submit"

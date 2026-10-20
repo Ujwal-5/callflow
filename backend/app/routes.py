@@ -530,12 +530,18 @@ async def analyze_call_radar(
         dialogue_text = "\n".join(stage_notes)
 
     # 2. Run analysis engine
+    analysis_pool = None
+    if payload and payload.use_light_model:
+        from backend.app.gemini_pool import light_text_model_pool
+        analysis_pool = light_text_model_pool
+
     radar_data = await analyze_transcript_with_radar(
         transcript=dialogue_text,
         call_id=call_id,
         call_started_at=call.get("started_at"),
         company_name=call.get("company_name"),
         contact_name=call.get("contact_name"),
+        model_pool=analysis_pool,
     )
 
     # 3. Idempotently persist extracted commitments and missed opportunities
