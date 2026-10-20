@@ -24,8 +24,8 @@ DEFAULT_LIGHT_TEXT_MODELS = [
 
 # Small/fast pool for live workflow assistance and stage-note processing.
 DEFAULT_SMALL_TEXT_MODELS = [
-    "gemma-4-26b-a4b-it",
-    "gemma-4-31b-it",
+    # "gemma-4-26b-a4b-it",
+    # "gemma-4-31b-it",
     "gemini-3.5-flash-lite",
     "gemini-3.1-flash-lite"
 ]
