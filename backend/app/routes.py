@@ -334,7 +334,9 @@ Transcript:
                 contents=prompt,
                 config=genai_types.GenerateContentConfig(
                     system_instruction=GEMMA_MINIMAL_THINKING_INSTRUCTION,
-                    temperature=0.0,
+                    thinking_config=genai_types.ThinkingConfig(
+                        thinking_level="minimal"
+                    ),
                     response_mime_type="application/json",
                 ),
             )
@@ -445,8 +447,8 @@ async def summarize_call(call_id: str):
 )
 def get_transcript(call_id: str):
     """Return the current transcript record for a call, or null if none exists."""
-    call = db.get_call(call_id)
-    if not call:
+    # Transcript lookup does not need the full call-detail fan-out.
+    if not db.call_exists(call_id):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Call with ID '{call_id}' not found.",
@@ -465,8 +467,9 @@ def save_edited_transcript(call_id: str, payload: EditTranscriptPayload):
     The original raw_transcript is never overwritten.
     Edits are stored in the separate edited_transcript column.
     """
-    call = db.get_call(call_id)
-    if not call:
+    # Do not load the complete call detail here.  That read fan-outs into
+    # stages, commitments, missed opportunities, and gaps before the write.
+    if not db.call_exists(call_id):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Call with ID '{call_id}' not found.",
@@ -1498,7 +1501,9 @@ Only include stages where meaningful content was found. Keep notes concise and f
                 contents=[prompt],
                 config=genai_types.GenerateContentConfig(
                     system_instruction=GEMMA_MINIMAL_THINKING_INSTRUCTION,
-                    temperature=0.1,
+                    thinking_config=genai_types.ThinkingConfig(
+                        thinking_level="minimal"
+                    ),
                     response_mime_type="application/json",
                 ),
             )

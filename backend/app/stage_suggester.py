@@ -216,7 +216,9 @@ Dialogue:
                     contents=prompt,
                     config=types.GenerateContentConfig(
                     system_instruction=GEMMA_MINIMAL_THINKING_INSTRUCTION,
-                        temperature=0.0,
+                        thinking_config=types.ThinkingConfig(
+                            thinking_level="minimal"
+                        ),
                         response_mime_type="application/json",
                     ),
                 )

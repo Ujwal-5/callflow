@@ -45,6 +45,18 @@ class TestGeminiPool(unittest.TestCase):
         self.assertEqual(DEFAULT_LIGHT_TEXT_MODELS[1], "gemini-3.1-flash-lite")
         self.assertNotIn(DEFAULT_LIGHT_TEXT_MODELS[0], self.pool.models)
 
+    def test_gemma_workflow_pool_has_model_fallback(self):
+        from backend.app.gemini_pool import DEFAULT_SMALL_TEXT_MODELS
+
+        self.assertEqual(
+            DEFAULT_SMALL_TEXT_MODELS,
+            [
+                "gemma-4-26b-a4b-it",
+                "gemma-4-31b-it",
+                "gemini-3.5-flash-lite",
+            ],
+        )
+
     def test_keys_are_deduplicated_and_rotated(self):
         with patch.object(settings, "GEMINI_API_KEY_2", "key-1"):
             self.assertEqual(self.key_pool.get_keys(), ["key-1"])

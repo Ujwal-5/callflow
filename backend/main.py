@@ -10,7 +10,10 @@ from backend.app.models import HealthResponse
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # The adapter owns the Supabase client; schema management belongs in Supabase migrations.
-    yield
+    try:
+        yield
+    finally:
+        db.close()
 
 
 app = FastAPI(
@@ -42,6 +45,17 @@ def health():
         "gemini_configured": settings.gemini_configured,
         "version": "1.0.0",
     }
+
+
+@app.get("/health/db", tags=["Health"])
+def database_health():
+    """Report database readiness separately from process health."""
+    try:
+        db.database_readiness()
+    except Exception as exc:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=503, detail=f"Database is not ready: {type(exc).__name__}")
+    return {"status": "ok", "database_mode": "supabase" if db.use_supabase else "unconfigured"}
 
 
 # Include business routes

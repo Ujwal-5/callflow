@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import MagicMock, patch
 import uuid
+import httpx
 from backend.app.config import settings
 from backend.app.db import DatabaseAdapter
 
@@ -198,6 +199,27 @@ class TestSupabaseOperations(unittest.TestCase):
         self.assertEqual(len(full_call["stage_results"]), 2)
         self.assertEqual(full_call["stage_results"][0]["stage_number"], 1)
         self.assertEqual(full_call["stage_results"][1]["stage_number"], 2)
+
+    def test_read_transport_failure_is_retried_with_bounded_budget(self):
+        query = MagicMock()
+        query.execute.side_effect = [httpx.ReadError("temporary"), httpx.ReadError("temporary"), MagicMock(data=[])]
+
+        with patch("backend.app.db.time.sleep") as sleep:
+            result = self.db._execute_read(query, "test_read")
+
+        self.assertEqual(result.data, [])
+        self.assertEqual(query.execute.call_count, 3)
+        self.assertEqual(sleep.call_count, 2)
+
+    def test_read_transport_failure_is_raised_after_retry_budget(self):
+        query = MagicMock()
+        query.execute.side_effect = httpx.ReadError("persistent")
+
+        with patch("backend.app.db.time.sleep"):
+            with self.assertRaises(httpx.ReadError):
+                self.db._execute_read(query, "test_read")
+
+        self.assertEqual(query.execute.call_count, 3)
 
 
 if __name__ == "__main__":

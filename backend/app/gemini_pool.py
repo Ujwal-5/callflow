@@ -25,6 +25,9 @@ DEFAULT_LIGHT_TEXT_MODELS = [
 # Small/fast pool for live workflow assistance and stage-note processing.
 DEFAULT_SMALL_TEXT_MODELS = [
     "gemma-4-26b-a4b-it",
+    "gemma-4-31b-it",
+    "gemini-3.5-flash-lite",
+    "gemini-3.1-flash-lite"
 ]
 
 # Gemma 4 thinking is intentionally not enabled for these interactive tasks.
@@ -100,9 +103,11 @@ def _is_rate_limit_or_temporary(err_str: str) -> bool:
         or "quota" in lowered
         or "rate limit" in lowered
         or "503" in err_str
+        or "500" in err_str
         or "unavailable" in lowered
         or "high demand" in lowered
         or "overloaded" in lowered
+        or "internal error" in lowered
     )
 
 
@@ -162,6 +167,8 @@ def _is_model_unavailable(err_str: str) -> bool:
         or "model_not_found" in lowered
         or "does not exist" in lowered
         or "unknown model" in lowered
+        or "model is unavailable" in lowered
+        or "model is not available" in lowered
         or ("404" in lowered and "model" in lowered)
     )
 

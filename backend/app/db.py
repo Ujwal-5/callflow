@@ -1,13 +1,27 @@
 import json
+import logging
+import time
 import uuid
 from datetime import datetime, timezone
 from typing import Optional, List, Dict, Any
 from backend.app.config import settings
+import httpx
 try:
     from supabase import create_client, Client
+    from supabase.lib.client_options import SyncClientOptions
 except ImportError:
     Client = None
     create_client = None
+    SyncClientOptions = None
+
+_logger = logging.getLogger(__name__)
+_TRANSIENT_READ_ERRORS = (
+    httpx.ReadError,
+    httpx.ConnectError,
+    httpx.RemoteProtocolError,
+    httpx.PoolTimeout,
+)
+_READ_RETRIES = 2
 
 def get_utc_now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
@@ -16,6 +30,7 @@ class DatabaseAdapter:
 
     def __init__(self):
         self.supabase_client = None
+        self._httpx_client = None
         self.use_supabase = False
         self.init_client()
 
@@ -25,7 +40,57 @@ class DatabaseAdapter:
             raise RuntimeError('Supabase is required; configure SUPABASE_URL and a Supabase secret key')
         if not create_client:
             raise RuntimeError('Supabase client dependency is unavailable')
-        self.supabase_client = create_client(settings.SUPABASE_URL, settings.supabase_key)
+        # postgrest 2.33 defaults to HTTP/2.  Render logs showed the failure
+        # specifically in httpcore's HTTP/2 response reader, so use a shared
+        # bounded HTTP/1.1 client for predictable connection lifecycle.
+        self._httpx_client = httpx.Client(
+            http2=False,
+            follow_redirects=True,
+            limits=httpx.Limits(max_connections=20, max_keepalive_connections=10),
+        )
+        options = SyncClientOptions(httpx_client=self._httpx_client)
+        self.supabase_client = create_client(
+            settings.SUPABASE_URL, settings.supabase_key, options=options
+        )
+
+    def close(self):
+        if self._httpx_client is not None:
+            self._httpx_client.close()
+            self._httpx_client = None
+
+    def _execute_read(self, query, operation: str):
+        """Execute a read with a small transport-only retry budget.
+
+        PostgREST does not retry failed requests.  Retrying only transport
+        failures is safe here because this helper is used for reads; writes
+        must not be replayed after a lost response.
+        """
+        for attempt in range(_READ_RETRIES + 1):
+            try:
+                return query.execute()
+            except _TRANSIENT_READ_ERRORS as exc:
+                if attempt >= _READ_RETRIES:
+                    raise
+                delay = 0.15 * (2 ** attempt)
+                _logger.warning(
+                    "Transient database read failure in %s; retry %d/%d in %.2fs: %s",
+                    operation, attempt + 1, _READ_RETRIES, delay, exc,
+                )
+                time.sleep(delay)
+
+    def database_readiness(self) -> None:
+        """Raise if a minimal database read cannot be completed."""
+        self._execute_read(
+            self.supabase_client.table('calls').select('id').limit(1),
+            'database_readiness',
+        )
+
+    def call_exists(self, call_id: str) -> bool:
+        res = self._execute_read(
+            self.supabase_client.table('calls').select('id').eq('id', call_id).limit(1),
+            'call_exists',
+        )
+        return bool(res.data)
 
     def create_call(self, company_name: str, contact_name: Optional[str]=None, phone_number: Optional[str]=None, context: Optional[str]=None) -> Dict[str, Any]:
         call_id = str(uuid.uuid4())
@@ -48,11 +113,16 @@ class DatabaseAdapter:
         return [self._format_call_dict(r) for r in res.data]
 
     def get_call(self, call_id: str) -> Optional[Dict[str, Any]]:
-        call_res = self.supabase_client.table('calls').select('*').eq('id', call_id).execute()
+        call_res = self._execute_read(
+            self.supabase_client.table('calls').select('*').eq('id', call_id), 'get_call.calls'
+        )
         if not call_res.data:
             return None
         call_data = self._format_call_dict(call_res.data[0])
-        stages_res = self.supabase_client.table('call_stage_results').select('*').eq('call_id', call_id).order('stage_number').execute()
+        stages_res = self._execute_read(
+            self.supabase_client.table('call_stage_results').select('*').eq('call_id', call_id).order('stage_number'),
+            'get_call.stage_results',
+        )
         call_data['stage_results'] = stages_res.data or []
         call_data['commitments'] = self.list_commitments(call_id)
         call_data['missed_opportunities'] = self.list_missed_opportunities(call_id)
@@ -154,11 +224,11 @@ class DatabaseAdapter:
 
     def get_transcript(self, call_id: str) -> Optional[Dict[str, Any]]:
         """Return the transcript record for a call, or None if it does not exist."""
-        try:
-            res = self.supabase_client.table('call_transcripts').select('*').eq('call_id', call_id).execute()
-            return self._format_transcript_dict(res.data[0]) if res.data else None
-        except Exception:
-            return None
+        res = self._execute_read(
+            self.supabase_client.table('call_transcripts').select('*').eq('call_id', call_id),
+            'get_transcript',
+        )
+        return self._format_transcript_dict(res.data[0]) if res.data else None
 
     def upsert_transcript_pending(self, call_id: str) -> Dict[str, Any]:
         """Create or reset a transcript record to 'processing' status.
@@ -331,7 +401,10 @@ class DatabaseAdapter:
 
     def list_missed_opportunities(self, call_id: str) -> List[Dict[str, Any]]:
         try:
-            res = self.supabase_client.table('call_missed_opportunities').select('*').eq('call_id', call_id).order('created_at').execute()
+            res = self._execute_read(
+                self.supabase_client.table('call_missed_opportunities').select('*').eq('call_id', call_id).order('created_at'),
+                'list_missed_opportunities',
+            )
             return [self._format_missed_opportunity_dict(r) for r in res.data or []]
         except Exception:
             raise

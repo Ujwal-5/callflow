@@ -111,6 +111,11 @@ class ApiClient {
     retries: number = 3,
     delayMs: number = 1500
   ): Promise<T> {
+    // Reads may be retried; writes are deliberately single-attempt because a
+    // lost response does not prove that the server did not process the write.
+    if (options.method && options.method !== "GET" && retries === 3) {
+      retries = 0;
+    }
     const url = `${this.baseUrl}${endpoint.startsWith("/") ? "" : "/"}${endpoint}`;
     const headers = {
       "Content-Type": "application/json",
