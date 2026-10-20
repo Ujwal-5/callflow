@@ -615,6 +615,14 @@ export default function Home() {
     setIsEndingCallModalOpen(true);
   }, []);
 
+  // Canceling wrap-up should leave the call untouched, but also leave the
+  // active-call workspace so the user can return to it from Overview later.
+  const handleCloseEndCallModal = useCallback(() => {
+    setIsEndingCallModalOpen(false);
+    setInitialModalOutcome(undefined);
+    setActiveView("overview");
+  }, []);
+
   const handleApplyStageSuggestion = useCallback(
     (targetStage: number) => {
       handleSelectStage(targetStage);
@@ -1337,7 +1345,7 @@ export default function Home() {
           currentStageNumber={currentStageNumber}
           currentStageName={currentStageDef?.name || `Stage ${currentStageNumber}`}
           initialOutcome={initialModalOutcome}
-          onClose={() => setIsEndingCallModalOpen(false)}
+          onClose={handleCloseEndCallModal}
           onConfirmEnd={handleConfirmEndCall}
           isSubmitting={isSubmittingClose}
         />
