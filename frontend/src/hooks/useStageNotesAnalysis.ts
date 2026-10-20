@@ -70,13 +70,15 @@ export interface UseStageNotesAnalysisReturn {
 }
 
 /** Min characters to accumulate before triggering analysis */
-const MIN_CHARS_FOR_ANALYSIS = 200;
+// Wait for a useful, speaker-labelled batch.  Smaller batches create many
+// nearly context-free model calls and quickly build a queue behind Gemini.
+const MIN_CHARS_FOR_ANALYSIS = 600;
 
 /** Max wait before forcing analysis even if not enough chars */
-const MAX_DEBOUNCE_MS = 8_000;
+const MAX_DEBOUNCE_MS = 12_000;
 
 /** Min interval between analysis requests */
-const MIN_ANALYSIS_INTERVAL_MS = 3_000;
+const MIN_ANALYSIS_INTERVAL_MS = 6_000;
 
 export function useStageNotesAnalysis(): UseStageNotesAnalysisReturn {
   const [stageNotesState, setStageNotesState] = useState<StageNotesState>({

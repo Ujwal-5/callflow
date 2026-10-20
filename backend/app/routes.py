@@ -331,7 +331,11 @@ Transcript:
                 contents=prompt,
                 config=genai_types.GenerateContentConfig(temperature=0.0, response_mime_type="application/json"),
             )
-        response = light_text_model_pool.execute_with_fallback(_call)
+        # google-genai's synchronous client must not run on FastAPI's event
+        # loop.  Stage assist is called repeatedly during live transcription.
+        response = await asyncio.to_thread(
+            light_text_model_pool.execute_with_fallback, _call
+        )
         data = json.loads((getattr(response, "text", "") or "{}").strip())
     except Exception as exc:
         _logger.warning("Stage assist recommendation failed for %s: %s", call_id, exc)
@@ -382,16 +386,9 @@ async def close_call(call_id: str, payload: CallClose):
         prospect_statement=payload.prospect_statement,
     )
 
-    # Trigger initial conversation gaps analysis if complete transcript is available.
-    # This is optional post-processing — errors here must never block the close response.
-    try:
-        transcript_rec = db.get_transcript(call_id)
-        if transcript_rec and (transcript_rec.get("edited_transcript") or transcript_rec.get("raw_transcript")):
-            await analyze_conversation_gaps_endpoint(call_id)
-            closed = db.get_call(call_id)
-    except Exception:
-        pass
-
+    # Analysis is started by the frontend after the close response.  Running a
+    # Gemini call here made closing wait for analysis and duplicated the gap
+    # scan immediately afterwards.
     return closed
 
 
@@ -1432,7 +1429,7 @@ async def analyze_stage_notes(call_id: str, payload: StageNotesAnalysisPayload):
             "unclassified_segments": [],
         }
 
-    from backend.app.gemini_pool import text_model_pool, make_gemini_client
+    from backend.app.gemini_pool import light_text_model_pool
     from google.genai import types as genai_types
 
     prompt = f"""You are a cold-call analysis assistant. Analyze the following transcript segment and classify useful information into the appropriate cold-call stages.
@@ -1489,7 +1486,11 @@ Only include stages where meaningful content was found. Keep notes concise and f
                 ),
             )
 
-        response = text_model_pool.execute_with_fallback(_call_analyze)
+        # The Google GenAI sync client is blocking; keep it off the ASGI loop
+        # so live transcription and other requests remain responsive.
+        response = await asyncio.to_thread(
+            light_text_model_pool.execute_with_fallback, _call_analyze
+        )
         raw_text = getattr(response, "text", "") or ""
 
         # Parse the JSON response

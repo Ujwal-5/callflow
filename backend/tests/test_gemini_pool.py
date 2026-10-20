@@ -41,7 +41,8 @@ class TestGeminiPool(unittest.TestCase):
             p.stop()
 
     def test_lightweight_models_are_separate_from_important_text_pool(self):
-        self.assertEqual(DEFAULT_LIGHT_TEXT_MODELS[0], "gemma-4-26b-a4b-it")
+        self.assertEqual(DEFAULT_LIGHT_TEXT_MODELS[0], "gemini-3.5-flash-lite")
+        self.assertEqual(DEFAULT_LIGHT_TEXT_MODELS[1], "gemini-3.1-flash-lite")
         self.assertNotIn(DEFAULT_LIGHT_TEXT_MODELS[0], self.pool.models)
 
     def test_keys_are_deduplicated_and_rotated(self):

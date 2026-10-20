@@ -17,18 +17,12 @@ DEFAULT_TEXT_MODELS = [
     "gemini-3.8-flash",            # Latest - built for coding & agentic workflows
     "gemini-3.7-flash",            # Core reasoning & engineering
     "gemini-3.6-flash",            # Multi-step complex workflows
-    
-    # Speed & Latency-Sensitive Lite Models
-    "gemini-3.5-flash-lite",       # Lightweight agent execution
-    "gemini-3.1-flash-lite",       # High-volume workloads       
-    # 🔗 Dynamic String Pointers
-    "gemini-flash-lite-latest",    # Points to latest stable flash-lite version
 ]
 
 # Separate high-quota pool for frequent, lightweight workflow assistance.
 DEFAULT_LIGHT_TEXT_MODELS = [
-    "gemma-4-26b-a4b-it",
-    "gemma-4-31b-it",
+    "gemini-3.5-flash-lite",       # High-volume live workflow assistance
+    "gemini-3.1-flash-lite",       # High-volume fallback / quota balancing
 ]
 
 
@@ -150,6 +144,18 @@ def _is_invalid_key(err_str: str) -> bool:
     )
 
 
+def _is_model_unavailable(err_str: str) -> bool:
+    """Recognize a configured model that this API/version does not expose."""
+    lowered = err_str.lower()
+    return (
+        "model not found" in lowered
+        or "model_not_found" in lowered
+        or "does not exist" in lowered
+        or "unknown model" in lowered
+        or ("404" in lowered and "model" in lowered)
+    )
+
+
 class GeminiModelPool:
     """
     Thread-safe pool of Gemini models + API keys for the free tier.
@@ -216,6 +222,13 @@ class GeminiModelPool:
     def _mark_daily_quota_exhausted(self, api_key: str, model: str) -> None:
         with self._cooldown_lock:
             self._daily_quota_until[(api_key, model)] = _next_daily_reset_epoch()
+
+    def _cool_model_for_all_keys(self, model: str) -> None:
+        """Skip an unavailable model for all configured keys for one cooldown."""
+        with self._cooldown_lock:
+            until = time.monotonic() + self.cooldown_seconds
+            for api_key in self.key_pool.get_keys():
+                self._cooldowns[(api_key, model)] = until
 
     def quota_status(self) -> List[Dict[str, Any]]:
         """Return observed key/model availability; remaining counts are unavailable."""
@@ -290,6 +303,7 @@ class GeminiModelPool:
                 last_exception = exc
                 is_quota = _is_rate_limit_or_temporary(err_str)
                 is_daily_quota = _is_daily_quota_exhausted(err_str)
+                is_model_unavailable = _is_model_unavailable(err_str)
 
                 if _is_invalid_key(err_str):
                     logger.warning(
@@ -297,6 +311,14 @@ class GeminiModelPool:
                         "Removing it from the pool."
                     )
                     self.key_pool.mark_invalid(api_key)
+                elif is_model_unavailable:
+                    # A bad model name should not be retried once per key on
+                    # every request.  Skip it for the cooldown window.
+                    self._cool_model_for_all_keys(model)
+                    logger.warning(
+                        f"[{self.task_name}] Model '{model}' is unavailable; "
+                        f"skipping it for {self.cooldown_seconds:.0f}s."
+                    )
                 elif is_quota:
                     if is_daily_quota:
                         self._mark_daily_quota_exhausted(api_key, model)
@@ -321,6 +343,7 @@ class GeminiModelPool:
                     _, next_model, next_key = next_attempt
                     reason = (
                         "daily quota exhausted" if is_daily_quota
+                        else "model unavailable" if is_model_unavailable
                         else "hit limit/temporary error" if is_quota
                         else "failed"
                     )

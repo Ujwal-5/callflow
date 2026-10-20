@@ -15,6 +15,7 @@ Guarantees:
 import json
 import logging
 import re
+import asyncio
 from datetime import datetime, timezone, timedelta
 from typing import Dict, Any, List, Optional, Tuple
 
@@ -376,7 +377,11 @@ Analyze the dialogue above according to your system instructions. Extract commit
                     ),
                 )
 
-            response = text_model_pool.execute_with_fallback(_call_radar)
+            # The GenAI client used here is synchronous.  Running it in the
+            # event loop stalls live transcription and all other requests.
+            response = await asyncio.to_thread(
+                text_model_pool.execute_with_fallback, _call_radar
+            )
 
             if response and response.text:
                 raw_result = json.loads(response.text.strip())

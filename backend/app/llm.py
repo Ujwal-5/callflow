@@ -1,5 +1,6 @@
 import json
 import logging
+import asyncio
 from datetime import datetime, timezone
 from typing import Dict, Any, Optional
 from backend.app.config import settings
@@ -97,7 +98,10 @@ async def generate_call_summary(call_data: Dict[str, Any]) -> Dict[str, Any]:
                 )
             )
 
-        response = text_model_pool.execute_with_fallback(_call_gemini)
+        # Keep the synchronous GenAI SDK off FastAPI's event loop.
+        response = await asyncio.to_thread(
+            text_model_pool.execute_with_fallback, _call_gemini
+        )
 
         response_text = response.text.strip()
         data = json.loads(response_text)

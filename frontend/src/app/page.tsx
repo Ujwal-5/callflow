@@ -96,6 +96,7 @@ export default function Home() {
   const copyToExactWordsRef = useRef<((text: string) => void) | null>(null);
   const appendStageNotesRef = useRef<((text: string) => void) | null>(null);
   const stageAssistRequestRef = useRef<Map<number, number>>(new Map());
+  const stageAssistInFlightRef = useRef<Set<number>>(new Set());
 
   // Feed each new final segment to stage-note analysis (deduplication is inside the hook)
   useEffect(() => {
@@ -112,13 +113,21 @@ export default function Home() {
   useEffect(() => {
     if (!activeCall) return;
     const transcript = liveTranscription.finalTranscript.trim();
-    if (transcript.length < 80) return;
+    if (transcript.length < 120) return;
     const priorLength = stageAssistRequestRef.current.get(currentStageNumber) || 0;
-    if (transcript.length - priorLength < 200 && priorLength !== 0) return;
+    // Stage notes already classify the live stream. Stage assist is a more
+    // expensive full-transcript recommendation, so run it less often and
+    // never allow multiple requests for the same stage to overlap.
+    if (transcript.length - priorLength < 600 && priorLength !== 0) return;
+    if (stageAssistInFlightRef.current.has(currentStageNumber)) return;
     const timeout = setTimeout(async () => {
       stageAssistRequestRef.current.set(currentStageNumber, transcript.length);
+      stageAssistInFlightRef.current.add(currentStageNumber);
       try {
-        const recommendation = await api.getStageAssistRecommendation(activeCall.id, currentStageNumber, transcript);
+        // Keep prompts bounded on long calls while retaining the latest
+        // speaker-labelled evidence used for recommendations.
+        const assistTranscript = transcript.length > 16000 ? transcript.slice(-16000) : transcript;
+        const recommendation = await api.getStageAssistRecommendation(activeCall.id, currentStageNumber, assistTranscript);
         setStageAssistRecommendations((previous) => {
           const next = new Map(previous);
           next.set(currentStageNumber, recommendation);
@@ -126,8 +135,10 @@ export default function Home() {
         });
       } catch {
         // Assistive suggestions must not disrupt the call UI.
+      } finally {
+        stageAssistInFlightRef.current.delete(currentStageNumber);
       }
-    }, 1200);
+    }, 1800);
     return () => clearTimeout(timeout);
   }, [activeCall?.id, currentStageNumber, liveTranscription.finalTranscript]);
 
@@ -402,6 +413,7 @@ export default function Home() {
       stageNotesAnalysis.resetNotes();
       setStageAssistRecommendations(new Map());
       stageAssistRequestRef.current = new Map();
+      stageAssistInFlightRef.current = new Set();
 
       // Refresh calls in background
       api.listCalls().then(setCallsHistory).catch(() => {});

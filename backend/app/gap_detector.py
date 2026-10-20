@@ -19,6 +19,7 @@ Rules:
 import json
 import logging
 import re
+import asyncio
 from typing import Dict, Any, List, Optional, Tuple
 
 from backend.app.config import settings
@@ -376,7 +377,10 @@ Analyze the dialogue above according to your system instructions. Evaluate the s
                     ),
                 )
 
-            response = text_model_pool.execute_with_fallback(_call_gap)
+            # Do not block the ASGI event loop while waiting for Gemini.
+            response = await asyncio.to_thread(
+                text_model_pool.execute_with_fallback, _call_gap
+            )
 
             if response and response.text:
                 raw_result = json.loads(response.text.strip())
