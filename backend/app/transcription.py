@@ -9,7 +9,10 @@ from backend.app.config import settings
 logger = logging.getLogger("callflow.transcription")
 
 # Model for live streaming transcription
-LIVE_TRANSCRIBE_MODEL = "gemini-3.5-transcribe-live"
+# This preview model is exposed through the v1beta Live API.  Keeping the
+# fully-qualified model name here also avoids the SDK resolving the short name
+# against a different endpoint/version.
+LIVE_TRANSCRIBE_MODEL = "models/gemini-3.5-transcribe-live"
 
 
 async def run_live_transcription(
@@ -48,7 +51,11 @@ async def run_live_transcription(
         from google import genai
         from google.genai import types as genai_types
 
-        client = genai.Client(api_key=api_key, http_options={"api_version": "v1alpha"})
+        # gemini-3.5-transcribe-live is a v1beta Live API model.  v1alpha may
+        # accept the websocket request but reject the model/config immediately
+        # after the socket is opened, which used to surface as a vague client
+        # "failed to connect" error.
+        client = genai.Client(api_key=api_key, http_options={"api_version": "v1beta"})
 
         # Enable the Live Transcription model's input transcription stream.
         config = genai_types.LiveConnectConfig(
@@ -61,11 +68,12 @@ async def run_live_transcription(
             ),
         )
 
-        yield {"type": "connected"}
-
         async with client.aio.live.connect(
             model=LIVE_TRANSCRIBE_MODEL, config=config
         ) as session:
+            # Do not report connected until the upstream Gemini session has
+            # successfully entered its context manager.
+            yield {"type": "connected"}
             # Run sender and receiver concurrently
             send_queue: asyncio.Queue[Optional[bytes]] = asyncio.Queue()
 
@@ -125,10 +133,15 @@ async def run_live_transcription(
         yield {"type": "done"}
 
     except Exception as exc:
-        logger.error("Live transcription session error: %s", exc)
+        logger.error(
+            "Live transcription session error (%s): %s",
+            type(exc).__name__,
+            exc,
+            exc_info=True,
+        )
         yield {
             "type": "error",
-            "message": f"Live transcription failed: {exc}",
+            "message": f"Live transcription failed ({type(exc).__name__}): {exc}",
         }
 
 

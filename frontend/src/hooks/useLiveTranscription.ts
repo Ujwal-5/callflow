@@ -325,6 +325,9 @@ export function useLiveTranscription(): UseLiveTranscriptionReturn {
     });
 
     if (!wsConnected || ws.readyState !== WebSocket.OPEN) {
+      try {
+        ws.close();
+      } catch {}
       releaseAudio();
       wsRef.current = null;
       setError(
@@ -409,7 +412,15 @@ export function useLiveTranscription(): UseLiveTranscriptionReturn {
             scheduleReconnect(socket, "Transcription stream ended. Reconnecting…");
           }
         } else if (type === "error") {
-          scheduleReconnect(socket, "Transcription interrupted. Reconnecting…");
+          // Keep the upstream error.  Replacing it with a generic reconnect
+          // message hid Gemini API/version/model errors from the operator.
+          const upstreamMessage = typeof msg.message === "string" ? msg.message.trim() : "";
+          scheduleReconnect(
+            socket,
+            upstreamMessage
+              ? `Transcription error: ${upstreamMessage}`
+              : "Transcription interrupted. Reconnecting…"
+          );
         }
       } catch {
         // Non-JSON message — ignore

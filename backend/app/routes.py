@@ -1301,18 +1301,17 @@ async def transcribe_live(websocket: WebSocket, call_id: str):
             stop_event.set()
             await audio_queue.put(None)
 
-    # Send "connected" acknowledgement
-    await websocket.send_text(json.dumps({
-        "type": "connected",
-        "call_id": call_id,
-    }))
-
     # Run receiver and transcription pipeline concurrently
     receiver_task = asyncio.create_task(_receive_from_browser())
 
     try:
         async for event in run_live_transcription(_audio_generator()):
             event_type = event.get("type")
+
+            # The transcription layer only knows about Gemini; add the
+            # application call id at the websocket boundary.
+            if event_type == "connected":
+                event = {**event, "call_id": call_id}
 
             # Accumulate finalized text
             if event_type == "final" and event.get("text"):
