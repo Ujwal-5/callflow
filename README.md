@@ -222,8 +222,6 @@ Open `http://localhost:3000` in your web browser.
 | `FRONTEND_ORIGIN` | No | `http://localhost:3000,http://127.0.0.1:3000` | Comma-separated allowed origins for CORS |
 | `GEMINI_API_KEY` | No | `""` | Google Gemini API key (server-side only, never shared with client) |
 | `GEMINI_API_KEY_2` | No | `""` | Optional backup Gemini key, used automatically when the primary key hits its quota |
-| `MISTRAL_API_KEY` | No | `""` | Mistral key for post-call summary, conversation-gap, and commitment-radar analysis |
-| `MISTRAL_MODEL` | No | `ministral-14b-latest` | Mistral model used for those post-call analyses |
 | `SUPABASE_URL` | No | `""` | Supabase project URL (e.g. `https://your-project.supabase.co`) |
 | `SUPABASE_SECRET_KEY` | No | `""` | Supabase backend secret key (preferred, server-side only) |
 | `SUPABASE_SERVICE_ROLE_KEY` | No | `""` | Alternative Supabase service role secret key |

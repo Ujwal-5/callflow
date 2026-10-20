@@ -18,10 +18,6 @@ services:
         sync: false
       - key: GEMINI_API_KEY_2
         sync: false
-      - key: MISTRAL_API_KEY
-        sync: false
-      - key: MISTRAL_MODEL
-        value: ministral-14b-latest
       - key: SUPABASE_URL
         sync: false
       - key: SUPABASE_SECRET_KEY

@@ -11,19 +11,29 @@ from backend.app.config import settings
 logger = logging.getLogger("callflow.gemini_pool")
 
 # Default model pools
-# Primary text models
+# Larger/general-purpose text models.
 DEFAULT_TEXT_MODELS = [
-    # Current Frontier & Workhorse Text Models
-    "gemini-3.8-flash",            # Latest - built for coding & agentic workflows
-    "gemini-3.7-flash",            # Core reasoning & engineering
-    "gemini-3.6-flash",            # Multi-step complex workflows
+    "gemma-4-31b-it",
 ]
 
-# Separate high-quota pool for frequent, lightweight workflow assistance.
+# Post-call analysis pool: summary, conversation gaps, and commitment radar.
 DEFAULT_LIGHT_TEXT_MODELS = [
-    "gemini-3.5-flash-lite",       # High-volume live workflow assistance
-    "gemini-3.1-flash-lite",       # High-volume fallback / quota balancing
+    "gemini-3.5-flash-lite",
+    "gemini-3.1-flash-lite",
 ]
+
+# Small/fast pool for live workflow assistance and stage-note processing.
+DEFAULT_SMALL_TEXT_MODELS = [
+    "gemma-4-26b-a4b-it",
+]
+
+# Gemma 4 thinking is intentionally not enabled for these interactive tasks.
+# Keep reasoning brief so responses stay fast while preserving evidence checks.
+GEMMA_MINIMAL_THINKING_INSTRUCTION = (
+    "Use minimal reasoning and answer directly. Do not spend time on extended "
+    "internal analysis. Follow the requested schema exactly and prioritize "
+    "correctness, grounded evidence, and concise output."
+)
 
 
 # How long a (key, model) pair is skipped after a 429/503 before it is retried.
@@ -371,5 +381,9 @@ class GeminiModelPool:
 text_model_pool = GeminiModelPool(DEFAULT_TEXT_MODELS, task_name="Text-Analysis")
 light_text_model_pool = GeminiModelPool(
     DEFAULT_LIGHT_TEXT_MODELS,
+    task_name="Post-Call-Analysis",
+)
+small_text_model_pool = GeminiModelPool(
+    DEFAULT_SMALL_TEXT_MODELS,
     task_name="Lightweight-Workflow-Assist",
 )

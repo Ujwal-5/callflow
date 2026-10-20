@@ -63,18 +63,19 @@ def format_stage_notes_for_llm(call_data: Dict[str, Any]) -> str:
 
 
 async def generate_call_summary(call_data: Dict[str, Any]) -> Dict[str, Any]:
-    if not settings.mistral_configured:
+    if not settings.gemini_configured:
         return {
             "available": False,
             "error": (
-                "Mistral API key is not configured on the server. "
-                "Please set MISTRAL_API_KEY."
+                "Gemini API key is not configured on the server. "
+                "Please set GEMINI_API_KEY or GEMINI_API_KEY_2."
             ),
             "summary": None,
         }
 
     try:
-        from backend.app.mistral_client import generate_json
+        from google.genai import types
+        from backend.app.gemini_pool import light_text_model_pool
 
         stage_text = format_stage_notes_for_llm(call_data)
 
@@ -87,12 +88,21 @@ async def generate_call_summary(call_data: Dict[str, Any]) -> Dict[str, Any]:
             stage_notes_text=stage_text
         )
 
-        response_text = await asyncio.to_thread(
-            generate_json,
-            prompt,
-            "Return only valid JSON matching the schema in the user prompt.",
-            0.2,
+        def _call_gemini(client, model_name: str):
+            return client.models.generate_content(
+                model=model_name,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    temperature=0.2,
+                )
+            )
+
+        response = await asyncio.to_thread(
+            light_text_model_pool.execute_with_fallback, _call_gemini
         )
+
+        response_text = response.text.strip()
         data = json.loads(response_text)
 
         # Validate required fields
@@ -113,7 +123,7 @@ async def generate_call_summary(call_data: Dict[str, Any]) -> Dict[str, Any]:
             }
         }
     except Exception as e:
-        logger.warning(f"Mistral call summary failed: {str(e)}")
+        logger.warning(f"Gemini call summary failed: {str(e)}")
         return {
             "available": False,
             "error": f"AI summary generation failed: {str(e)}",

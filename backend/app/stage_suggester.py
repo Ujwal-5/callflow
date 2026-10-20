@@ -5,7 +5,10 @@ import asyncio
 from typing import Dict, Any, Optional, List
 from backend.app.config import settings
 from backend.app.radar import verify_quote_in_transcript
-from backend.app.gemini_pool import light_text_model_pool
+from backend.app.gemini_pool import (
+    GEMMA_MINIMAL_THINKING_INSTRUCTION,
+    text_model_pool,
+)
 from backend.app.stages_data import STAGES
 
 logger = logging.getLogger("callflow.stage_suggester")
@@ -212,13 +215,14 @@ Dialogue:
                     model=model_name,
                     contents=prompt,
                     config=types.GenerateContentConfig(
+                    system_instruction=GEMMA_MINIMAL_THINKING_INSTRUCTION,
                         temperature=0.0,
                         response_mime_type="application/json",
                     ),
                 )
 
             res = await asyncio.to_thread(
-                light_text_model_pool.execute_with_fallback, _call_gemini
+                text_model_pool.execute_with_fallback, _call_gemini
             )
             if res and res.text:
                 data = json.loads(res.text.strip())

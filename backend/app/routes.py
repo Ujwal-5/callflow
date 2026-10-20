@@ -302,7 +302,10 @@ async def get_stage_assist_recommendation(call_id: str, payload: StageAssistPayl
         return empty
 
     from google.genai import types as genai_types
-    from backend.app.gemini_pool import light_text_model_pool
+    from backend.app.gemini_pool import (
+        GEMMA_MINIMAL_THINKING_INSTRUCTION,
+        small_text_model_pool,
+    )
 
     prompt = f'''You are assisting a cold-call representative. Review the FINALIZED transcript for this one workflow stage.
 Stage {stage["stage_number"]}: {stage["name"]}
@@ -329,12 +332,16 @@ Transcript:
             return client.models.generate_content(
                 model=model_name,
                 contents=prompt,
-                config=genai_types.GenerateContentConfig(temperature=0.0, response_mime_type="application/json"),
+                config=genai_types.GenerateContentConfig(
+                    system_instruction=GEMMA_MINIMAL_THINKING_INSTRUCTION,
+                    temperature=0.0,
+                    response_mime_type="application/json",
+                ),
             )
         # google-genai's synchronous client must not run on FastAPI's event
         # loop.  Stage assist is called repeatedly during live transcription.
         response = await asyncio.to_thread(
-            light_text_model_pool.execute_with_fallback, _call
+            small_text_model_pool.execute_with_fallback, _call
         )
         data = json.loads((getattr(response, "text", "") or "{}").strip())
     except Exception as exc:
@@ -1435,7 +1442,10 @@ async def analyze_stage_notes(call_id: str, payload: StageNotesAnalysisPayload):
             "unclassified_segments": [],
         }
 
-    from backend.app.gemini_pool import light_text_model_pool
+    from backend.app.gemini_pool import (
+        GEMMA_MINIMAL_THINKING_INSTRUCTION,
+        small_text_model_pool,
+    )
     from google.genai import types as genai_types
 
     prompt = f"""You are a cold-call analysis assistant. Analyze the following transcript segment and classify useful information into the appropriate cold-call stages.
@@ -1487,6 +1497,7 @@ Only include stages where meaningful content was found. Keep notes concise and f
                 model=model_name,
                 contents=[prompt],
                 config=genai_types.GenerateContentConfig(
+                    system_instruction=GEMMA_MINIMAL_THINKING_INSTRUCTION,
                     temperature=0.1,
                     response_mime_type="application/json",
                 ),
@@ -1495,7 +1506,7 @@ Only include stages where meaningful content was found. Keep notes concise and f
         # The Google GenAI sync client is blocking; keep it off the ASGI loop
         # so live transcription and other requests remain responsive.
         response = await asyncio.to_thread(
-            light_text_model_pool.execute_with_fallback, _call_analyze
+            small_text_model_pool.execute_with_fallback, _call_analyze
         )
         raw_text = getattr(response, "text", "") or ""
 
