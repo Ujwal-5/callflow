@@ -10,29 +10,32 @@ from backend.app.config import settings
 
 logger = logging.getLogger("callflow.gemini_pool")
 
-# Default model pools
-# Larger/general-purpose text models.
-DEFAULT_TEXT_MODELS = [
-    "gemma-4-31b-it",
+# Tested Live models for text prompts. Live responses use audio internally;
+# backend.app.live_text extracts output transcription and discards audio.
+LIVE_TEXT_MODELS = [
+    "gemini-3.8-live",
+    "gemini-3.8-live-extended-thinking",
+    "gemini-3.1-flash-live-preview",
 ]
 
-# Post-call analysis pool: summary, conversation gaps, and commitment radar.
-DEFAULT_LIGHT_TEXT_MODELS = [
+TEXT_FALLBACK_MODELS = [
     "gemini-3.5-flash-lite",
     "gemini-3.1-flash-lite",
 ]
 
-# Small/fast pool for live workflow assistance and stage-note processing.
-DEFAULT_SMALL_TEXT_MODELS = [
-    # "gemma-4-26b-a4b-it",
-    # "gemma-4-31b-it",
-    "gemini-3.5-flash-lite",
-    "gemini-3.1-flash-lite"
-]
+ALL_TEXT_MODELS = LIVE_TEXT_MODELS + TEXT_FALLBACK_MODELS
 
-# Gemma 4 thinking is intentionally not enabled for these interactive tasks.
+# Default model pools
+DEFAULT_TEXT_MODELS = ALL_TEXT_MODELS.copy()
+
+# Post-call analysis pool: summary, conversation gaps, and commitment radar.
+DEFAULT_LIGHT_TEXT_MODELS = ALL_TEXT_MODELS.copy()
+
+# Small/fast pool for workflow assistance and stage-note processing.
+DEFAULT_SMALL_TEXT_MODELS = ALL_TEXT_MODELS.copy()
+
 # Keep reasoning brief so responses stay fast while preserving evidence checks.
-GEMMA_MINIMAL_THINKING_INSTRUCTION = (
+MINIMAL_THINKING_INSTRUCTION = (
     "Use minimal reasoning and answer directly. Do not spend time on extended "
     "internal analysis. Follow the requested schema exactly and prioritize "
     "correctness, grounded evidence, and concise output."
@@ -189,11 +192,13 @@ class GeminiModelPool:
         task_name: str = "general",
         key_pool: Optional[GeminiKeyPool] = None,
         cooldown_seconds: float = RATE_LIMIT_COOLDOWN_SECONDS,
+        primary_model_count: int = 0,
     ):
         self.models = list(models)
         self.task_name = task_name
         self.key_pool = key_pool or gemini_key_pool
         self.cooldown_seconds = cooldown_seconds
+        self.primary_model_count = max(0, min(primary_model_count, len(self.models)))
         self._index = 0
         self._lock = threading.Lock()
         self._cooldowns: Dict[Tuple[str, str], float] = {}
@@ -209,6 +214,17 @@ class GeminiModelPool:
         For request N, starts at model N % M, then tries (N+1) % M, etc.
         """
         with self._lock:
+            if self.primary_model_count:
+                primary_count = self.primary_model_count
+                start_idx = self._index % primary_count
+                self._index = (self._index + 1) % primary_count
+                primary = self.models[:primary_count]
+                fallback = self.models[primary_count:]
+                return (
+                    [primary[(start_idx + i) % primary_count] for i in range(primary_count)]
+                    + fallback
+                )
+
             start_idx = self._index
             self._index = (self._index + 1) % len(self.models)
 
@@ -313,7 +329,12 @@ class GeminiModelPool:
                     f"[{self.task_name}] Executing with model '{model}' "
                     f"({key_hint}, attempt {idx + 1}/{total})"
                 )
-                client = factory(api_key)
+                if model in LIVE_TEXT_MODELS:
+                    from backend.app.live_text import LiveTextClient
+
+                    client = LiveTextClient(api_key)
+                else:
+                    client = factory(api_key)
                 return func(client, model)
             except Exception as exc:
                 err_str = str(exc)
@@ -385,12 +406,18 @@ class GeminiModelPool:
 
 
 # Global pool instances
-text_model_pool = GeminiModelPool(DEFAULT_TEXT_MODELS, task_name="Text-Analysis")
+text_model_pool = GeminiModelPool(
+    DEFAULT_TEXT_MODELS,
+    task_name="Text-Analysis",
+    primary_model_count=len(LIVE_TEXT_MODELS),
+)
 light_text_model_pool = GeminiModelPool(
     DEFAULT_LIGHT_TEXT_MODELS,
     task_name="Post-Call-Analysis",
+    primary_model_count=len(LIVE_TEXT_MODELS),
 )
 small_text_model_pool = GeminiModelPool(
     DEFAULT_SMALL_TEXT_MODELS,
     task_name="Lightweight-Workflow-Assist",
+    primary_model_count=len(LIVE_TEXT_MODELS),
 )

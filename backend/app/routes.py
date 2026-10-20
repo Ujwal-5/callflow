@@ -303,7 +303,7 @@ async def get_stage_assist_recommendation(call_id: str, payload: StageAssistPayl
 
     from google.genai import types as genai_types
     from backend.app.gemini_pool import (
-        GEMMA_MINIMAL_THINKING_INSTRUCTION,
+        MINIMAL_THINKING_INSTRUCTION,
         small_text_model_pool,
     )
 
@@ -333,10 +333,7 @@ Transcript:
                 model=model_name,
                 contents=prompt,
                 config=genai_types.GenerateContentConfig(
-                    system_instruction=GEMMA_MINIMAL_THINKING_INSTRUCTION,
-                    thinking_config=genai_types.ThinkingConfig(
-                        thinking_level="minimal"
-                    ),
+                    system_instruction=MINIMAL_THINKING_INSTRUCTION,
                     response_mime_type="application/json",
                 ),
             )
@@ -1446,7 +1443,7 @@ async def analyze_stage_notes(call_id: str, payload: StageNotesAnalysisPayload):
         }
 
     from backend.app.gemini_pool import (
-        GEMMA_MINIMAL_THINKING_INSTRUCTION,
+        MINIMAL_THINKING_INSTRUCTION,
         small_text_model_pool,
     )
     from google.genai import types as genai_types
@@ -1500,10 +1497,7 @@ Only include stages where meaningful content was found. Keep notes concise and f
                 model=model_name,
                 contents=[prompt],
                 config=genai_types.GenerateContentConfig(
-                    system_instruction=GEMMA_MINIMAL_THINKING_INSTRUCTION,
-                    thinking_config=genai_types.ThinkingConfig(
-                        thinking_level="minimal"
-                    ),
+                    system_instruction=MINIMAL_THINKING_INSTRUCTION,
                     response_mime_type="application/json",
                 ),
             )

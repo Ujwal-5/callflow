@@ -465,7 +465,10 @@ reset. Gemini does not expose a remaining-request count through the normal API,
 so availability is inferred from observed API responses rather than guessed by
 repeatedly calling exhausted models.
 
-Frequent workflow assistance uses a separate Gemma 4 pool (`gemma-4-26b-a4b-it`
-then `gemma-4-31b-it`). Higher-value summaries, commitment radar, conversation
-gap analysis, and live transcription continue using their specialized model
-paths.
+Live sessions use the tested Gemini Live model family. Structured JSON and
+post-call analysis remain on the unary Gemini text pool because Live models do
+not support text-only responses or structured outputs. The unary pool uses
+the three tested Live models first, with `gemini-3.5-flash-lite` and
+`gemini-3.1-flash-lite` as fallbacks. The existing text/JSON call sites use a
+compatibility adapter that returns Live output transcription and discards
+generated audio. The existing transcription path and model are unchanged.

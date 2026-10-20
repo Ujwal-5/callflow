@@ -6,7 +6,7 @@ from typing import Dict, Any, Optional, List
 from backend.app.config import settings
 from backend.app.radar import verify_quote_in_transcript
 from backend.app.gemini_pool import (
-    GEMMA_MINIMAL_THINKING_INSTRUCTION,
+    MINIMAL_THINKING_INSTRUCTION,
     text_model_pool,
 )
 from backend.app.stages_data import STAGES
@@ -215,10 +215,7 @@ Dialogue:
                     model=model_name,
                     contents=prompt,
                     config=types.GenerateContentConfig(
-                    system_instruction=GEMMA_MINIMAL_THINKING_INSTRUCTION,
-                        thinking_config=types.ThinkingConfig(
-                            thinking_level="minimal"
-                        ),
+                        system_instruction=MINIMAL_THINKING_INSTRUCTION,
                         response_mime_type="application/json",
                     ),
                 )

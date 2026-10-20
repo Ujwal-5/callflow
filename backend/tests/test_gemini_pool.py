@@ -5,7 +5,10 @@ from unittest.mock import patch
 
 from backend.app.config import settings
 from backend.app.gemini_pool import (
+    ALL_TEXT_MODELS,
     DEFAULT_LIGHT_TEXT_MODELS,
+    LIVE_TEXT_MODELS,
+    TEXT_FALLBACK_MODELS,
     GeminiKeyPool,
     GeminiModelPool,
 )
@@ -41,21 +44,38 @@ class TestGeminiPool(unittest.TestCase):
             p.stop()
 
     def test_lightweight_models_are_separate_from_important_text_pool(self):
-        self.assertEqual(DEFAULT_LIGHT_TEXT_MODELS[0], "gemini-3.5-flash-lite")
-        self.assertEqual(DEFAULT_LIGHT_TEXT_MODELS[1], "gemini-3.1-flash-lite")
+        self.assertEqual(DEFAULT_LIGHT_TEXT_MODELS, ALL_TEXT_MODELS)
+        self.assertEqual(TEXT_FALLBACK_MODELS, [
+            "gemini-3.5-flash-lite",
+            "gemini-3.1-flash-lite",
+        ])
         self.assertNotIn(DEFAULT_LIGHT_TEXT_MODELS[0], self.pool.models)
 
-    def test_gemma_workflow_pool_has_model_fallback(self):
+    def test_workflow_pool_has_no_gemma_models(self):
         from backend.app.gemini_pool import DEFAULT_SMALL_TEXT_MODELS
 
+        self.assertTrue(DEFAULT_SMALL_TEXT_MODELS)
+        self.assertTrue(all("gemma" not in model for model in DEFAULT_SMALL_TEXT_MODELS))
+
+    def test_live_text_models_are_in_tested_fallback_order(self):
         self.assertEqual(
-            DEFAULT_SMALL_TEXT_MODELS,
+            LIVE_TEXT_MODELS,
             [
-                "gemma-4-26b-a4b-it",
-                "gemma-4-31b-it",
-                "gemini-3.5-flash-lite",
+                "gemini-3.8-live-extended-thinking",
+                "gemini-3.1-flash-live-preview",
+                "gemini-3.8-live",
             ],
         )
+        self.assertEqual(ALL_TEXT_MODELS, LIVE_TEXT_MODELS + TEXT_FALLBACK_MODELS)
+
+    def test_primary_models_are_tried_before_flash_lite_fallbacks(self):
+        pool = GeminiModelPool(
+            ALL_TEXT_MODELS,
+            primary_model_count=len(LIVE_TEXT_MODELS),
+            key_pool=self.key_pool,
+        )
+        self.assertEqual(pool.get_models_order()[:3], LIVE_TEXT_MODELS)
+        self.assertEqual(pool.get_models_order()[-2:], TEXT_FALLBACK_MODELS)
 
     def test_keys_are_deduplicated_and_rotated(self):
         with patch.object(settings, "GEMINI_API_KEY_2", "key-1"):
