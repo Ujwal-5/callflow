@@ -11,6 +11,8 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: str = ""
     # Optional backup key. Used automatically when the primary key hits its quota.
     GEMINI_API_KEY_2: str = ""
+    MISTRAL_API_KEY: str = ""
+    MISTRAL_MODEL: str = "ministral-14b-latest"
     FRONTEND_ORIGIN: str = "http://localhost:3000,http://127.0.0.1:3000"
     # Optional regex for allowed origins (e.g. Vercel preview deployments).
     # Matches the project's production and preview domains by default.
@@ -64,6 +66,10 @@ class Settings(BaseSettings):
     @property
     def gemini_configured(self) -> bool:
         return bool(self.gemini_api_keys)
+
+    @property
+    def mistral_configured(self) -> bool:
+        return bool(self.MISTRAL_API_KEY.strip())
 
 
 settings = Settings()

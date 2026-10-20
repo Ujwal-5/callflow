@@ -40,6 +40,7 @@ def health():
         "service": "callflow-api",
         "database_mode": db_mode,
         "gemini_configured": settings.gemini_configured,
+        "mistral_configured": settings.mistral_configured,
         "version": "1.0.0",
     }
 

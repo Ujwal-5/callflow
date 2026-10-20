@@ -119,6 +119,7 @@ class HealthResponse(BaseModel):
     service: str
     database_mode: str
     gemini_configured: bool
+    mistral_configured: bool = False
     version: str = "1.0.0"
 
 

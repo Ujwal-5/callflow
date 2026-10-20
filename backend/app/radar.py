@@ -334,7 +334,7 @@ async def analyze_transcript_with_radar(
     model_pool=None,
 ) -> Dict[str, Any]:
     """
-    Run Commitment Radar on a call transcript using Gemini 3.8 Flash,
+    Run Commitment Radar on a call transcript using Mistral,
     validating all quotes and matching against the 100 historical transcripts.
     """
     clean_transcript = (transcript or "").strip()
@@ -349,10 +349,8 @@ async def analyze_transcript_with_radar(
 
     raw_result = None
 
-    if settings.gemini_configured:
+    if settings.mistral_configured:
         try:
-            from google.genai import types
-
             user_prompt = f"""Call Context:
 Call ID: {call_id}
 Company: {company_name or 'Unknown'}
@@ -365,30 +363,14 @@ Call Started At: {call_started_at or 'Unknown'}
 
 Analyze the dialogue above according to your system instructions. Extract commitments, potential missed opportunities, and return strict JSON."""
 
-            from backend.app.gemini_pool import text_model_pool
-            analysis_pool = model_pool or text_model_pool
+            from backend.app.mistral_client import generate_json
 
-            def _call_radar(client, model_name: str):
-                return client.models.generate_content(
-                    model=model_name,
-                    contents=user_prompt,
-                    config=types.GenerateContentConfig(
-                        system_instruction=RADAR_SYSTEM_PROMPT,
-                        response_mime_type="application/json",
-                        temperature=0.1,
-                    ),
-                )
-
-            # The GenAI client used here is synchronous.  Running it in the
-            # event loop stalls live transcription and all other requests.
-            response = await asyncio.to_thread(
-                analysis_pool.execute_with_fallback, _call_radar
+            response_text = await asyncio.to_thread(
+                generate_json, user_prompt, RADAR_SYSTEM_PROMPT, 0.1
             )
-
-            if response and response.text:
-                raw_result = json.loads(response.text.strip())
+            raw_result = json.loads(response_text)
         except Exception as exc:
-            logger.warning(f"Gemini radar extraction failed or timed out: {exc}. Using rule-assisted fallback.")
+            logger.warning(f"Mistral radar extraction failed or timed out: {exc}. Using rule-assisted fallback.")
             raw_result = None
 
     if not raw_result:

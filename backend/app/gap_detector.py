@@ -334,7 +334,7 @@ async def analyze_transcript_for_gaps(
 ) -> Dict[str, Any]:
     """
     Execute Conversation Gap Detector on a call transcript.
-    Uses Gemini 3.8 Flash with full dialogue context evaluation,
+    Uses Mistral with full dialogue context evaluation,
     validates quotes against source transcript, and seamlessly falls back
     to deterministic context-aware analysis if Gemini is unavailable or rate-limited.
     """
@@ -349,10 +349,8 @@ async def analyze_transcript_for_gaps(
 
     raw_result = None
 
-    if settings.gemini_configured:
+    if settings.mistral_configured:
         try:
-            from google.genai import types
-
             user_prompt = f"""Call Context:
 Call ID: {call_id}
 Company: {company_name or 'Unknown'}
@@ -364,28 +362,14 @@ Contact: {contact_name or 'Unknown'}
 
 Analyze the dialogue above according to your system instructions. Evaluate the sequence of dialogue context. Identify only meaningful potential conversation gaps. Return strict JSON."""
 
-            from backend.app.gemini_pool import text_model_pool
+            from backend.app.mistral_client import generate_json
 
-            def _call_gap(client, model_name: str):
-                return client.models.generate_content(
-                    model=model_name,
-                    contents=user_prompt,
-                    config=types.GenerateContentConfig(
-                        system_instruction=GAP_DETECTOR_SYSTEM_PROMPT,
-                        response_mime_type="application/json",
-                        temperature=0.1,
-                    ),
-                )
-
-            # Do not block the ASGI event loop while waiting for Gemini.
-            response = await asyncio.to_thread(
-                text_model_pool.execute_with_fallback, _call_gap
+            response_text = await asyncio.to_thread(
+                generate_json, user_prompt, GAP_DETECTOR_SYSTEM_PROMPT, 0.1
             )
-
-            if response and response.text:
-                raw_result = json.loads(response.text.strip())
+            raw_result = json.loads(response_text)
         except Exception as exc:
-            logger.warning(f"Gemini conversation gap analysis failed ({exc}). Using context-aware fallback.")
+            logger.warning(f"Mistral conversation gap analysis failed ({exc}). Using context-aware fallback.")
             raw_result = None
 
     if not raw_result or "findings" not in raw_result:
