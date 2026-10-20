@@ -14,9 +14,8 @@ CallFlow is architected with a decoupled frontend and backend:
 
 - **Frontend**: Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4. Designed with an editorial navy (`#070d1e`), slate-card, and vivid electric-blue (`#0062ff`) palette. Real-time active call state is kept in memory with debounced auto-save to backend and resilient local storage recovery across browser reloads.
 - **Backend**: FastAPI (Python 3.13), Pydantic v2 validation models, Uvicorn ASGI server, structured logging, and automated test suite.
-- **Persistence Layer**: Supabase/PostgreSQL storage through the server-side PostgREST adapter:
-  - **Production**: Supabase (PostgreSQL) using the relational schema in `backend/sql/schema.sql` with UUID keys, unique constraints on `(call_id, stage_number)`, and performance indexing.
-- **LLM Synthesis**: Google Gen AI SDK (`google-genai` 2.31.0) using Gemini (`gemini-2.5-flash`) for structured JSON call summarization and next action extraction. The core calling workflow remains 100% operational even when the Gemini API is unconfigured or unreachable.
+- **Persistence Layer**: Supabase/PostgreSQL storage through the server-side PostgREST adapter. Supabase is required for the deployed runtime; the adapter uses bounded HTTP/1.1 connection pooling and retries transient reads.
+- **LLM Synthesis**: Google Gen AI SDK (`google-genai` 2.31.0) using a quota-aware Gemini model/key pool for structured JSON call summarization, stage assistance, radar, gap detection, and transcript analysis. The core call-recording workflow remains usable when Gemini is unavailable, while AI features report graceful fallbacks.
 - **Commitment Radar**: AI-powered analysis of call transcripts to extract candidate commitments, detect missed opportunities, and find historical comparisons from the 100-call dataset.
 - **Conversation Gap Detector**: AI analysis of call dialogue to identify unresolved questions, unconfirmed agreements, unaddressed objections, and unexplored referrals.
 - **Stage Notes Analysis**: AI classification of transcript segments into the 8 cold-call stages with evidence-backed notes.
@@ -91,15 +90,6 @@ callflow/
 │   │   ├── gemini_pool.py      # Gemini API key pooling / failover
 │   │   ├── transcription.py    # Audio transcription (file & live WebSocket)
 │   │   ├── historical_radar.py # Historical call matching
-│   │   ├── stage_notes.py      # Stage notes analysis from transcript
-│   │   ├── routes/
-│   │   │   ├── commitments.py  # Commitment CRUD endpoints
-│   │   │   ├── gaps.py         # Conversation gap endpoints
-│   │   │   ├── prospects.py    # Prospect management endpoints
-│   │   │   ├── followups.py    # Follow-up management endpoints
-│   │   │   └── stage_notes.py  # Stage notes analysis endpoint
-│   ├── sql/
-│   │   └── schema.sql          # PostgreSQL / Supabase relational schema
 │   ├── cold-call-transcripts-100/ # 100 real cold-call transcripts dataset
 │   ├── tests/
 │   │   ├── test_api.py         # API endpoint tests
@@ -110,14 +100,17 @@ callflow/
 │   │   ├── test_prospects.py       # Prospect management tests
 │   │   ├── test_gemini_pool.py     # Gemini key pooling tests
 │   │   ├── test_live_transcription.py  # Live transcription WebSocket tests
-│   │   └── test_delete_endpoints.py # Call/deletion endpoint tests
+│   │   ├── test_delete_endpoints.py # Call/deletion endpoint tests
+│   │   └── test_transcript_transport.py # Transcript request-path tests
 │   ├── .env.example            # Backend env documentation
 │   ├── main.py                 # FastAPI application entrypoint & CORS
 │   ├── requirements.txt        # Pinned Python dependencies
 │   └── scripts/
+│       ├── migrate_sqlite_to_supabase.py # One-time data migration utility
+│       ├── preprocess_transcripts.py # Historical transcript preprocessing
 │       └── verify_supabase.py  # Supabase connection verification script
 ├── docs/
-│   └── transcript-findings.md  # Rigorous auditable analysis of 100 transcripts
+│   ├── transcript-findings.md  # Rigorous auditable analysis of 100 transcripts
 │   └── demo.md                 # Demo configuration and setup
 ├── frontend/
 │   ├── public/                 # Static assets
@@ -127,18 +120,23 @@ callflow/
 │   │   │   ├── layout.tsx      # Root HTML layout & fonts
 │   │   │   └── page.tsx        # Main application controller
 │   │   ├── components/
-│   │   │   ├── CallDetailModal.tsx   # Past call inspection & AI summary
+│   │   │   ├── CallDetailModal.tsx   # Past call inspection & AI analysis
 │   │   │   ├── CurrentStagePanel.tsx # Active stage guide & controls
 │   │   │   ├── EndCallModal.tsx      # Early exit & completion modal
-│   │   │   ├── Header.tsx            # App bar, live call indicator & nav
-│   │   │   ├── OutcomeButtons.tsx    # 4 mutually exclusive stage outcomes
+│   │   │   ├── Header.tsx            # App bar and live call indicator
+│   │   │   ├── NavigationSidebar.tsx # Main navigation and service controls
+│   │   │   ├── OverviewView.tsx      # Dashboard and active-call resume card
+│   │   │   ├── OutcomeButtons.tsx    # Mutually exclusive stage outcomes
 │   │   │   ├── PastCallsList.tsx     # Historical calls table with filters
-│   │   │   ├── ProspectNotesField.tsx# Verbatim exact-words text area
+│   │   │   ├── ProspectWorkspace.tsx # Prospect directory and call history
+│   │   │   ├── FollowupsView.tsx     # Follow-up/commitment management
+│   │   │   ├── TranscriptPanel.tsx   # Live and finalized transcript review
+│   │   │   ├── CommitmentRadarPanel.tsx # Commitment and opportunity analysis
+│   │   │   ├── ConversationReview.tsx # Conversation gap review
+│   │   │   ├── StageAINotesPanel.tsx # AI stage-note findings
+│   │   │   ├── ServiceStatusBanner.tsx # Backend sleeping/waking status
 │   │   │   ├── StageProgress.tsx     # 8-stage stepper indicator
-│   │   │   ├── StartCallPanel.tsx    # Prospect setup form
-│   │   │   ├── CommitmentRadar.tsx   # Commitment analysis panel
-│   │   │   ├── GapDetector.tsx       # Gap detection panel
-│   │   │   └── StageNotesPanel.tsx   # Stage notes classification
+│   │   │   └── StartCallPanel.tsx    # Prospect setup form
 │   │   ├── lib/
 │   │   │   └── api.ts          # Strongly typed client for FastAPI
 │   │   └── types/
@@ -172,9 +170,9 @@ source .venv/bin/activate
 # Install dependencies
 pip install -r requirements.txt
 
-# Configure environment variables
+# Configure environment variables. Supabase is required by the backend runtime.
 cp .env.example .env
-# Edit .env with your optional GEMINI_API_KEY or SUPABASE credentials
+# Edit .env with Supabase credentials and, for AI features, Gemini credentials.
 
 # Run database tests
 python -m unittest tests/test_api.py -v
@@ -188,6 +186,17 @@ The backend starts at `http://127.0.0.1:8000`. Test health:
 ```bash
 curl http://127.0.0.1:8000/health
 ```
+
+For the manual deep readiness check, which performs a real Supabase query and
+a real Gemini request:
+
+```bash
+curl -i http://127.0.0.1:8000/health/ready
+```
+
+`/health` is the fast liveness endpoint used by Render. `/health/ready` returns
+HTTP `200` only when both `supabase_db` and `gemini` are healthy; otherwise it
+returns HTTP `503` and identifies the failed check without exposing secrets.
 
 ### 2. Frontend Setup
 
@@ -219,12 +228,14 @@ Open `http://localhost:3000` in your web browser.
 | Variable | Required | Default | Description |
 |---|---|---|---|
 | `PORT` | No | `8000` | Port for the uvicorn HTTP server |
-| `FRONTEND_ORIGIN` | No | `http://localhost:3000,http://127.0.0.1:3000` | Comma-separated allowed origins for CORS |
-| `GEMINI_API_KEY` | No | `""` | Google Gemini API key (server-side only, never shared with client) |
-| `GEMINI_API_KEY_2` | No | `""` | Optional backup Gemini key, used automatically when the primary key hits its quota |
-| `SUPABASE_URL` | No | `""` | Supabase project URL (e.g. `https://your-project.supabase.co`) |
-| `SUPABASE_SECRET_KEY` | No | `""` | Supabase backend secret key (preferred, server-side only) |
-| `SUPABASE_SERVICE_ROLE_KEY` | No | `""` | Alternative Supabase service role secret key |
+| `FRONTEND_ORIGIN` | No | Localhost origins | Comma-separated allowed origins for CORS |
+| `FRONTEND_ORIGIN_REGEX` | No | Vercel preview pattern | Optional regex for allowed preview frontend origins |
+| `GEMINI_API_KEY` | For AI/readiness | `""` | Google Gemini API key (server-side only, never shared with client) |
+| `GEMINI_API_KEY_2` | No | `""` | Optional backup Gemini key used by the quota/rate-limit failover pool |
+| `SUPABASE_URL` | Yes | `""` | Supabase project URL (e.g. `https://your-project.supabase.co`) |
+| `SUPABASE_SECRET_KEY` | Yes | `""` | Preferred Supabase backend secret key (server-side only) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Alternative | `""` | Alternative Supabase service-role secret key |
+| `SUPABASE_KEY` | Alternative | `""` | Legacy/alternative Supabase key accepted by the adapter |
 
 ### Frontend (`frontend/.env.local`)
 
@@ -238,28 +249,29 @@ Open `http://localhost:3000` in your web browser.
 
 ### Supabase / PostgreSQL (Production)
 
-Run the migration script located at `backend/sql/schema.sql` directly inside the **Supabase Dashboard > SQL Editor**:
-
-The schema creates:
+The production database is Supabase/PostgreSQL. Apply the current CallFlow
+schema and any project migrations in the **Supabase Dashboard > SQL Editor**.
+The backend expects these tables and relationships:
 
 - `calls`: Stores call records, status (`in_progress`, `completed`), current and highest stages (1–8), final outcome, next action, follow-up timing, and JSONB AI summaries.
 - `call_stage_results`: Stores stage number (1–8), mutually exclusive outcome, verbatim prospect exact words (especially prominent in Stage 5), and notes.
 - `call_commitments`: Commitment Radar extracted commitments with action, responsible party, due dates, evidence quotes, and status.
-- `call_missed_opportunities`: Commitment Radar missed opportunity tracking with type, severity, evidence, and suggested actions.
+- `call_missed_opportunities`: Commitment Radar missed-opportunity tracking with type, severity, evidence, and suggested actions.
 - `call_conversation_gaps`: Conversation Gap Detector findings with type, severity, title, description, evidence, context, and suggested actions.
+- `prospects`: Prospect directory records used by the prospect workspace and call linking.
 - Unique constraint `uq_call_stage UNIQUE (call_id, stage_number)` ensuring revisiting a stage updates rather than duplicates records.
 - Performance indexes on `started_at`, `company_name`, `status`, `final_outcome`, `highest_stage`, and `(call_id, stage_number)`.
 - Row Level Security (RLS) policies allowing full server-side backend operations.
 
 #### Verifying Live Supabase Connection
 
-After executing the SQL migration in Supabase, run the verification script:
+After applying the schema and migrations in Supabase, run the verification script:
 
 ```bash
 ./backend/.venv/bin/python backend/scripts/verify_supabase.py
 ```
 
-This script validates table presence, tests call creation, stage outcome logging, verbatim note capture, stage revisit updates, call history retrieval, call completion, and cleanup.
+This script validates table presence, tests call creation, stage outcome logging, verbatim note capture, stage revisit updates, call history retrieval, call completion, and cleanup. For a non-destructive check, use `migrate_sqlite_to_supabase.py --dry-run` when migrating an old local SQLite dataset.
 
 ---
 
@@ -267,7 +279,9 @@ This script validates table presence, tests call creation, stage outcome logging
 
 ### Health & Stages
 
-- `GET /health`: Service status, active database mode (`supabase` or `unconfigured`), and Gemini configuration status.
+- `GET /health`: Fast service liveness check used by Render.
+- `GET /health/db`: Supabase database readiness check (`supabase_db`), retained as a focused database diagnostic.
+- `GET /health/ready`: Manual deep readiness check. Performs a real Supabase query and a real Gemini probe, returning HTTP 503 if either dependency fails. The response names the database check `supabase_db` to make the dependency explicit.
 - `GET /stages`: Returns all 8 cold-call stage specifications, purpose, common responses, and outcome buttons.
 
 ### Calls
@@ -276,10 +290,20 @@ This script validates table presence, tests call creation, stage outcome logging
   - Body: `{"company_name": "Acme Inc", "contact_name": "Jane", "phone_number": "+1...", "context": "Inbound"}`
 - `GET /calls`: List saved calls. Supports query parameters `?search=...`, `?outcome=...`, `?stage=...`, `?status=...`.
 - `GET /calls/{call_id}`: Retrieve a call record with all captured stage results.
+- `DELETE /calls/{call_id}`: Delete a call and its related transcript, stage, commitment, opportunity, and gap records.
 - `PUT /calls/{call_id}/stages/{stage_number}`: Upsert stage outcome, verbatim words, and notes. Validates stage 1-8.
+- `POST /calls/{call_id}/stages/{stage_number}/skip?not_applicable={bool}`: Mark a stage skipped or not applicable and advance the workflow.
 - `POST /calls/{call_id}/advance?stage_number={n}`: Advance active call stage.
+- `GET /calls/{call_id}/stage-suggestion`: Suggest a stage from the available call notes/transcript.
+- `POST /calls/{call_id}/stage-suggestion`: Request a stage suggestion using an optional transcript payload.
+- `POST /calls/{call_id}/stage-assist`: Return quote-grounded stage assistance. This is advisory and never writes a stage result.
 - `POST /calls/{call_id}/close`: Conclude call and record final outcome, next action, follow-up timing, and channel.
 - `POST /calls/{call_id}/summary`: Generate AI call summary and suggested next steps using Google Gemini.
+
+### Transcripts
+
+- `GET /calls/{call_id}/transcript`: Retrieve the raw/edited transcript record.
+- `PUT /calls/{call_id}/transcript`: Save an edited transcript while preserving the original raw transcript.
 
 ### Commitment Radar
 
@@ -288,11 +312,14 @@ This script validates table presence, tests call creation, stage outcome logging
 - `POST /calls/{call_id}/commitments`: Manually add a confirmed or tracked commitment to a call.
 - `PATCH /calls/{call_id}/commitments/{commitment_id}`: Update a commitment status (confirm, edit, complete, dismiss).
 - `DELETE /calls/{call_id}/commitments/{commitment_id}`: Delete a commitment record.
+- `PATCH /calls/{call_id}/missed-opportunities/{opportunity_id}`: Update a missed-opportunity status.
+- `DELETE /calls/{call_id}/missed-opportunities/{opportunity_id}`: Delete a missed-opportunity record.
+- `GET /radar/historical-matches?query=...`: Retrieve up to two relevant examples from the 100-call historical dataset.
 
 ### Conversation Gap Detector
 
 - `POST /calls/{call_id}/gaps/analyze`: Analyze call dialogue to detect potential missed discovery opportunities, unresolved questions, unconfirmed agreements, unaddressed objections, and unexplored referrals. Idempotent.
-- `GET /calls/{call_id}/gaps`: Retrieve existing conversation gap findings for a call. Runs initial analysis if transcript exists and no findings yet.
+- `GET /calls/{call_id}/gaps`: Retrieve existing conversation gap findings for a call without triggering a new paid analysis request.
 - `PATCH /calls/{call_id}/gaps/{gap_id}`: Update finding status (open, resolved, dismissed) or details.
 - `POST /calls/{call_id}/gaps/{gap_id}/create-followup`: Create a concrete follow-up commitment from a conversation gap finding, linking the commitment to the finding and marking the gap as resolved.
 - `DELETE /calls/{call_id}/gaps/{gap_id}`: Delete a conversation gap finding.
@@ -347,13 +374,15 @@ Key Findings:
    - **Runtime**: Python 3
    - **Build Command**: `pip install -r backend/requirements.txt`
    - **Start Command**: `uvicorn backend.main:app --host 0.0.0.0 --port $PORT`
-   - **Health Check Path**: `/health`
+   - **Health Check Path**: `/health` (fast liveness check; use `/health/ready` manually for deep dependency verification)
 4. Set Environment Variables:
    - `GEMINI_API_KEY`: Your Google Gen AI key.
    - `GEMINI_API_KEY_2`: Optional backup key for automatic quota failover.
    - `SUPABASE_URL`: Your Supabase URL (`https://your-project.supabase.co`).
    - `SUPABASE_SECRET_KEY`: Your Supabase backend secret key.
+   - `SUPABASE_SERVICE_ROLE_KEY`: Alternative Supabase service-role key if `SUPABASE_SECRET_KEY` is not used.
    - `FRONTEND_ORIGIN`: Your deployed Vercel frontend URL.
+   - `FRONTEND_ORIGIN_REGEX`: Optional regex for Vercel preview URLs.
 
 ### Frontend on Vercel
 
@@ -455,7 +484,7 @@ The eight cold-call stages are defined in `backend/app/stages_data.py` with the 
 
 ## 13. Gemini AI Key Pooling
 
-The backend supports dual Gemini API key configuration via `GEMINI_API_KEY` and `GEMINI_API_KEY_2`. When the primary key hits its quota/rate limit, the system automatically fails over to the backup key. This ensures continuous AI summarization and transcription capability without manual intervention. Key pooling status can be checked via the `/health` endpoint (`gemini_configured` field).
+The backend supports dual Gemini API key configuration via `GEMINI_API_KEY` and `GEMINI_API_KEY_2`. When the primary key hits its quota/rate limit, the system automatically fails over to the backup key. This ensures continuous AI summarization and transcription capability without manual intervention. `/health` reports whether a key is configured; `/health/ready` performs a real Gemini request and reports whether the service can currently use Gemini.
 
 The model pool is quota-aware. A short-lived 429/503 is cooled down using the
 API-provided retry delay when available. A daily quota error disables only the

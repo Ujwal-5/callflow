@@ -122,6 +122,18 @@ class HealthResponse(BaseModel):
     version: str = "1.0.0"
 
 
+class HealthCheck(BaseModel):
+    status: str
+    detail: Optional[str] = None
+
+
+class ReadinessResponse(BaseModel):
+    status: str
+    service: str
+    version: str = "1.0.0"
+    checks: Dict[str, HealthCheck]
+
+
 class TranscriptResponse(BaseModel):
     id: str
     call_id: str
